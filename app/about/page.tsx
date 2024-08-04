@@ -2,7 +2,7 @@
 // pages/about.tsx
 import Image from 'next/image';
 import experience from '../../public/imgs/Sprite-0001.png';
-import imageLoader from '@/imageLoader';
+import imageLoader from '../../imageLoader';
 
 const ListItem = ({ text }: { text: string }) => (
   <p className="text-xl text-white py-2">{text}</p>
