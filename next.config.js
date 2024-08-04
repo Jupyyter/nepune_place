@@ -3,8 +3,8 @@ const nextConfig = {
        basePath: '/nepune_place',
        images: {
         //unoptimized: true,
-        loader: 'custom',
-        loaderFile: './imageLoader.ts',
+        //loader: 'custom',
+        //loaderFile: './imageLoader.ts',
       },
      }
      

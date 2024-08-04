@@ -1,5 +1,7 @@
+"use client";
 // pages/about.tsx
 import Image from 'next/image';
+import experience from '../../public/imgs/Sprite-0001.png';
 
 const ListItem = ({ text }: { text: string }) => (
   <p className="text-xl text-white py-2">{text}</p>
@@ -15,7 +17,7 @@ const About = () => {
 
   return (
     <div className="flex-grow flex flex-col items-center justify-center">
-      <main className="p-24">
+      <main className="p-4">
         <h1 className="text-4xl font-bold mb-4">
           things about me:
         </h1>
@@ -26,9 +28,7 @@ const About = () => {
           these are the programming languages/software i have experience with:
         </p>
         <Image
-          src="Sprite-0001.png"
-          width={1000}
-          height={1000}
+          src={experience}
           alt="Planets"
           className="mt-4 rounded-lg shadow-lg"
           priority
