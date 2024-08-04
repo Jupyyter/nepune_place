@@ -1,7 +1,7 @@
 import { ImageLoaderProps } from 'next/image';
 
 const imageLoader = ({ src, width, quality }: ImageLoaderProps): string => {
-  return 'https://github.com/Jupyyter/nepune_place/tree/main/public/imgs${src}'
+  return `https://raw.githubusercontent.com/Jupyyter/nepune_place/main/public/imgs/${src}?w=${width}&q=${quality || 75}`;
 };
 
 export default imageLoader;
