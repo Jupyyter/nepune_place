@@ -1,4 +1,3 @@
-"use client";
 // pages/about.tsx
 import Image from 'next/image';
 import experience from '../../public/imgs/Sprite-0001.png';
@@ -29,7 +28,6 @@ const About = () => {
           these are the programming languages/software i have experience with:
         </p>
         <Image
-          loader={imageLoader}
           src="Sprite-0001.png"
           width={7777}
           height={7777}

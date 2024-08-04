@@ -9,7 +9,7 @@ const ContactItem = ({ icon, text, link }: { icon: string, text: string, link?: 
       draggable="false"
     >
       <Image 
-        src={`${icon}`}
+        src={icon}
         alt=""
         width={48}
         height={48}
