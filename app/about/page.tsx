@@ -17,7 +17,7 @@ const About = () => {
 
   return (
     <div className="flex-grow flex flex-col items-center justify-center">
-      <main className="p-4">
+      <main className="p-24">
         <h1 className="text-4xl font-bold mb-4">
           things about me:
         </h1>
@@ -29,8 +29,8 @@ const About = () => {
         </p>
         <Image
           src="Sprite-0001.png"
-          width={7777}
-          height={7777}
+          width={1000}
+          height={1000}
           alt="Planets"
           className="mt-4 rounded-lg shadow-lg"
           priority
