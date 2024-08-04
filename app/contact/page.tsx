@@ -3,6 +3,7 @@ import phoneIcon from "../../public/imgs/phone.jpg";
 import mailIcon from "../../public/imgs/mail.jpg";
 import githubIcon from "../../public/imgs/github.jpg";
 
+
 const ContactItem = ({ icon, text, link }: { icon: StaticImageData, text: string, link?: string }) => (
   <div className="flex items-stretch mb-4">
     <div 
