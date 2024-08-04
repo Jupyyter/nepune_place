@@ -30,7 +30,9 @@ const About = () => {
         </p>
         <Image
           loader={imageLoader}
-          src={experience}
+          src="Sprite-0001.png"
+          width={7777}
+          height={7777}
           alt="Planets"
           className="mt-4 rounded-lg shadow-lg"
           priority
