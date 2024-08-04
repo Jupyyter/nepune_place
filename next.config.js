@@ -3,7 +3,7 @@ const nextConfig = {
        output: 'export',
        basePath: '/nepune_place',
        images: {
-        unoptimized: true,
+        //unoptimized: true,
       },
      }
      module.exports = nextConfig
