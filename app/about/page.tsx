@@ -2,6 +2,7 @@
 // pages/about.tsx
 import Image from 'next/image';
 import experience from '../../public/imgs/Sprite-0001.png';
+import imageLoader from '@/imageLoader';
 
 const ListItem = ({ text }: { text: string }) => (
   <p className="text-xl text-white py-2">{text}</p>
@@ -28,6 +29,7 @@ const About = () => {
           these are the programming languages/software i have experience with:
         </p>
         <Image
+          loader={imageLoader}
           src={experience}
           alt="Planets"
           className="mt-4 rounded-lg shadow-lg"
