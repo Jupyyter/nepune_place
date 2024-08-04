@@ -1,5 +1,4 @@
 "use client";
-
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -22,7 +21,7 @@ const Menu: React.FC = () => {
               key={item.path}
               href={item.path}
               className={`text-white px-12 py-4 rounded-md text-sm sm:text-base font-medium m-1  ${
-                location.pathname === item.path
+                pathname === item.path
                   ? "bg-red-900" // Active button color
                   : "bg-gray-600 hover:bg-yellow-500" // Inactive button color
               }`}

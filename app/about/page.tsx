@@ -1,3 +1,4 @@
+"use client";
 // pages/about.tsx
 import Image from 'next/image';
 import experience from '../../public/imgs/Sprite-0001.png';

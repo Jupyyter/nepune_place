@@ -1,3 +1,4 @@
+"use client";
 import Image, { StaticImageData } from 'next/image';
 import phoneIcon from "../../public/imgs/phone.jpg";
 import mailIcon from "../../public/imgs/mail.jpg";

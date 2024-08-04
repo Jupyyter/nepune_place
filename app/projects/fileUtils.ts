@@ -1,3 +1,4 @@
+"use client";
 // utils/fileUtils.ts
 import JSZip from "jszip";
 
