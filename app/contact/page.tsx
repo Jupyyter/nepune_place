@@ -6,8 +6,12 @@ import githubIcon from "../../public/imgs/github.jpg";
 
 const ContactItem = ({ icon, text, link }: { icon: StaticImageData, text: string, link?: string }) => (
   <div className="flex items-stretch mb-4">
-    <div className="flex-shrink-0 w-12 h-12 mr-4 relative">
-      <Image src={icon} alt=""  priority/>
+    <div 
+      className="flex-shrink-0 w-12 h-12 mr-4 relative" 
+      style={{ userSelect: 'none' }} 
+      draggable="false"
+    >
+      <Image src={icon} alt="" priority draggable="false" />
     </div>
     <div className="flex-grow flex items-center min-h-[3rem]">
       {link ? (

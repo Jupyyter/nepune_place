@@ -1,7 +1,14 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import Image from 'next/image';
+import Image, { StaticImageData } from 'next/image';
 import { combineAndDownload } from "./fileUtils";
+import jhonny from  "../../public/imgs/jhonny.png";
+import baddApple from "../../public/imgs/badApple.png";
+import GabrielIsHungry from "../../public/imgs/GabrielIsHungry.png";
+import bingChilling from "../../public/imgs/bingChilling.png"
+import shadowGang from "../../public/imgs/shadowGang.png"
+import cppGame from "../../public/imgs/cppGame.png"
+import checkers from "../../public/imgs/checkers.png"
 
 const TAGS = {
   UNITY: {
@@ -67,7 +74,7 @@ const TAGS = {
 interface Project {
   id: number;
   title: string;
-  thumbnail: string;
+  thumbnail: StaticImageData;
   description: string;
   downloadUrls: string[];
   tags: (keyof typeof TAGS)[];
@@ -119,7 +126,7 @@ function Projects() {
     {
       id: 0,
       title: "jhonny",
-      thumbnail: "/imgs/jhonny.png",
+      thumbnail: jhonny,
       description:
         "you play as jhonny and you shoot gangsters. i made possible for a multiplayer game, but since i dont have servers for this, you will have to use hamachi if you dont play multiplayer locally. i also dont recomand shooting until all the players are connected :)",
       downloadUrls: ["jhonnyGame.zip"],
@@ -128,7 +135,7 @@ function Projects() {
     {
       id: 1,
       title: "video in ascii",
-      thumbnail: "/imgs/badApple.png",
+      thumbnail: baddApple,
       description:
         "this thing plays any video in ascii, but the default video is bad apple",
       downloadUrls: ["asciiVideo.zip", "badApple.zip"],
@@ -137,7 +144,7 @@ function Projects() {
     {
       id: 2,
       title: "gabriel the hungry",
-      thumbnail: "/imgs/GabrielIsHungry.png",
+      thumbnail: GabrielIsHungry,
       description: "this is the story of gabriel",
       downloadUrls: [`GabrielIsHungry.zip`, "GabrielIsHungry0.zip"],
       tags: ["GODOT", "GDSCRIPT", "LARGE_FILE"],
@@ -145,7 +152,7 @@ function Projects() {
     {
       id: 3,
       title: "fight Jhon Cena",
-      thumbnail: "/imgs/bingChilling.png",
+      thumbnail: bingChilling,
       description:
         "i liked undertale. because of that, i made a game in which you fight john cena in an undertale-style fight",
       downloadUrls: [`bingChilling.zip`],
@@ -154,7 +161,7 @@ function Projects() {
     {
       id: 4,
       title: "shadow wizzard money gang",
-      thumbnail: "/imgs/shadowGang.png",
+      thumbnail: shadowGang,
       description:
         "i made this with a classmate (code: 95% me, art: 1% me ) for a contest. unfortunately the contest required the usage of 'greenfoot'",
       downloadUrls: [`shadowGang.zip`],
@@ -163,7 +170,7 @@ function Projects() {
     {
       id: 5,
       title: "the 3 room adventure",
-      thumbnail: "/imgs/cppGame.png",
+      thumbnail: cppGame,
       description:
         "this looks too simple for a game, and it is, except the fact that it was made in c++ using sdl2 instead of a game engine",
       downloadUrls: [`cppGame.zip`, "cppGame0.zip"],
@@ -172,7 +179,7 @@ function Projects() {
     {
       id: 6,
       title: "checkers",
-      thumbnail: "/imgs/checkers.png",
+      thumbnail: checkers,
       description: "checkers",
       downloadUrls: [`worldOfTanks.zip`],
       tags: ["JAVA"],
@@ -196,7 +203,7 @@ function Projects() {
           {projects.map((project) => (
             <div
               key={project.id}
-              className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg  cursor-pointer transition-all
+              className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer transition-all
                           /*${
                             selectedProject?.id === project.id
                               ? "ring-2 ring-blue-500"
