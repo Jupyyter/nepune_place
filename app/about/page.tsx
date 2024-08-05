@@ -27,7 +27,7 @@ const About = () => {
           these are the programming languages/software i have experience with:
         </p>
         <Image
-          src={"../../public/imgs/Sprite-0001.png"}
+          src={"./imgs/Sprite-0001.png"}
           alt="Planets"
           className="mt-4 rounded-lg shadow-lg"
           priority

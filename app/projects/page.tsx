@@ -126,7 +126,7 @@ function Projects() {
     {
       id: 0,
       title: "jhonny",
-      thumbnail: "../../public/imgs/jhonny.png",
+      thumbnail: "./imgs/jhonny.png",
       description:
         "you play as jhonny and you shoot gangsters. i made possible for a multiplayer game, but since i dont have servers for this, you will have to use hamachi if you dont play multiplayer locally. i also dont recomand shooting until all the players are connected :)",
       downloadUrls: ["jhonnyGame.zip"],
@@ -135,7 +135,7 @@ function Projects() {
     {
       id: 1,
       title: "video in ascii",
-      thumbnail: "../../public/imgs/badApple.png",
+      thumbnail: "./imgs/badApple.png",
       description:
         "this thing plays any video in ascii, but the default video is bad apple",
       downloadUrls: ["asciiVideo.zip", "badApple.zip"],
@@ -144,7 +144,7 @@ function Projects() {
     {
       id: 2,
       title: "gabriel the hungry",
-      thumbnail: "../../public/imgs/GabrielIsHungry.png",
+      thumbnail: "./imgs/GabrielIsHungry.png",
       description: "this is the story of gabriel",
       downloadUrls: [`GabrielIsHungry.zip`, "GabrielIsHungry0.zip"],
       tags: ["GODOT", "GDSCRIPT", "LARGE_FILE"],
@@ -152,7 +152,7 @@ function Projects() {
     {
       id: 3,
       title: "fight Jhon Cena",
-      thumbnail: "../../public/imgs/bingChilling.png",
+      thumbnail: "./imgs/bingChilling.png",
       description:
         "i liked undertale. because of that, i made a game in which you fight john cena in an undertale-style fight",
       downloadUrls: [`bingChilling.zip`],
@@ -161,7 +161,7 @@ function Projects() {
     {
       id: 4,
       title: "shadow wizzard money gang",
-      thumbnail: "../../public/imgs/shadowGang.png",
+      thumbnail: "./imgs/shadowGang.png",
       description:
         "i made this with a classmate (code: 95% me, art: 1% me ) for a contest. unfortunately the contest required the usage of 'greenfoot'",
       downloadUrls: [`shadowGang.zip`],
@@ -170,7 +170,7 @@ function Projects() {
     {
       id: 5,
       title: "the 3 room adventure",
-      thumbnail: "../../public/imgs/cppGame.png",
+      thumbnail: "./imgs/cppGame.png",
       description:
         "this looks too simple for a game, and it is, except the fact that it was made in c++ using sdl2 instead of a game engine",
       downloadUrls: [`cppGame.zip`, "cppGame0.zip"],
@@ -179,7 +179,7 @@ function Projects() {
     {
       id: 6,
       title: "checkers",
-      thumbnail: "../../public/imgs/checkers.png",
+      thumbnail: "./imgs/checkers.png",
       description: "checkers",
       downloadUrls: [`worldOfTanks.zip`],
       tags: ["JAVA"],
