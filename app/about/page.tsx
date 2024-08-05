@@ -24,7 +24,7 @@ const About = () => {
           <ListItem key={index} text={text} />
         ))}
         <p className="text-2xl py-2">
-          these are the programming languages/software i have experience with:
+          these are the programming languages/software i have experience withh:
         </p>
         <Image
           src={"/imgs/Sprite-0001.png"}
