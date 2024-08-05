@@ -3,6 +3,7 @@ import "./globals.css";
 import Menu from "@/app/Menu";
 import jupiter from "../public/imgs/jupiter.jpg";
 import { Inter } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,6 +33,7 @@ export default function RootLayout({
           <Menu />
         </div>
         {children}
+        <SpeedInsights />
         <footer className="bg-black bg-opacity-25 mt-auto">
           <p className="px-5 py-2 text-xs text-white">
             {
