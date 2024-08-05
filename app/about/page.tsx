@@ -32,7 +32,7 @@ const About = () => {
           className="mt-4 rounded-lg shadow-lg"
           priority
           width={1000}
-          height={1000}
+          height={200}
           style={{ height: 'auto' }}
         />
       </main>
