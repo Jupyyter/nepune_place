@@ -209,8 +209,8 @@ function Projects() {
                 src={project.thumbnail}
                 alt={project.title}
                 className="w-full h-48 object-cover"
-                width={7777}
-              height={200}
+                width={564}
+                height={192}
               priority
               />
               <div
@@ -237,8 +237,8 @@ function Projects() {
               src={selectedProject.thumbnail}
               alt={selectedProject.title}
               className="w-full h-48 object-cover"
-              width={777}
-              height={200}
+              width={564}
+              height={192}
             />
             <div className="p-4">
               <h3 className="text-xl font-semibold text-white mb-2">
