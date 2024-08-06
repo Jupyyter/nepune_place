@@ -34,14 +34,22 @@ export async function downloadSingleFile(url: string, fileName: string, setIsLoa
       ],
     });
 
+    // Start the download
     const response = await fetch(url);
     const blob = await response.blob();
 
+    // Create a writable stream
     const writable = await saveHandle.createWritable();
-    await writable.write(blob);
-    await writable.close();
 
-    alert("File saved successfully!");
+    // Write the blob to the file
+    await writable.write(blob);
+
+    // Close the file and show immediate feedback
+    writable.close();
+
+    // Show immediate feedback
+    alert("File download started. It will be saved shortly.");
+
   } catch (err) {
     if (err instanceof Error && err.name === "AbortError") {
       console.log("File save cancelled by user");
