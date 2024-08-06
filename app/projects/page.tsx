@@ -17,7 +17,7 @@ const TAGS = {
   GREENFOOT: {
     name: "Greenfoot",
     description:
-      "created using greenfoot 'engine' (its disrespectful for the other engines to call this a real game engine)",
+      "created using greenfoot 'engine'. since this thing will not let me export any jar or exe file, the only way for you is to play this, is directly in greenfoot, so you should download that too if you wanna run this (its disrespectful for the other engines to call this a real game engine)",
     color: "bg-cyan-500",
   },
   SDL2: {
@@ -28,7 +28,7 @@ const TAGS = {
   LARGE_FILE: {
     name: "100MB+",
     description:
-      "the size of the file is greater than 100 MB so github forced me to separate it into 2 files and combine them into 1 so i can continue abusing their servers. even after it downloaded, wait until the button on which you pressed to download it stops showing 'combining files'",
+      "the size of the file is greater than 100 MB so github forced me to separate it into multiple files and combine them into 1 so i can continue abusing their servers. even after it downloaded, wait until the button on which you pressed to download it stops showing 'processing'",
     color: "bg-red-500",
   },
   CPP: {
@@ -59,6 +59,11 @@ const TAGS = {
   REACT: {
     name: "React",
     description: "Built with React framework (or library or whatever this is)",
+    color: "bg-cyan-500",
+  },
+  JAR: {
+    name: "Jar",
+    description: "there will be a jar instead of an executable. clicking on the jar file while in the zip file will only show you the source code, which is ok, but if you want to run the app without compiling it, you should extract it from the zip file",
     color: "bg-cyan-500",
   },
   // Add more tags as needed
@@ -187,8 +192,8 @@ function Projects() {
       title: "checkers",
       thumbnail: "/imgs/checkers.png",
       description: "checkers",
-      downloadUrls: [`worldOfTanks.zip`],
-      tags: ["JAVA"],
+      downloadUrls: [`worldOfTanks.jar`],
+      tags: ["JAVA","JAR"],
     },
   ];
 

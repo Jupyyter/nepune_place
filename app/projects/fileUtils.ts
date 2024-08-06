@@ -7,17 +7,23 @@ interface Project {
   downloadUrls: string[];
 }
 
-export async function downloadSingleFile(url: string, fileName: string, setIsLoading: (isLoading: boolean) => void) {
+export async function downloadSingleFile(
+  url: string,
+  fileName: string,
+  setIsLoading: (isLoading: boolean) => void
+) {
   setIsLoading(true);
 
-  if (typeof window === 'undefined') {
-    console.error('This function can only be run in a browser environment');
+  if (typeof window === "undefined") {
+    console.error("This function can only be run in a browser environment");
     setIsLoading(false);
     return;
   }
 
   if (!("showSaveFilePicker" in window)) {
-    alert("Your browser doesn't support file saving. The file will be downloaded directly.");
+    alert(
+      "Your browser doesn't support file saving. The file will be downloaded directly."
+    );
     handleDownload([url]);
     setIsLoading(false);
     return;
@@ -49,13 +55,14 @@ export async function downloadSingleFile(url: string, fileName: string, setIsLoa
 
     // Show immediate feedback
     alert("File download started. It will be saved shortly.");
-
   } catch (err) {
     if (err instanceof Error && err.name === "AbortError") {
       console.log("File save cancelled by user");
     } else {
       console.error("Error saving file:", err);
-      alert("There was an error saving the file. It will be downloaded directly.");
+      alert(
+        "There was an error saving the file. It will be downloaded directly."
+      );
       handleDownload([url]);
     }
   } finally {
@@ -69,7 +76,6 @@ export async function combineAndDownload(
 ) {
   setIsLoading(true);
 
-  // Check if we're in a browser environment
   if (typeof window === 'undefined') {
     console.error('This function can only be run in a browser environment');
     setIsLoading(false);
@@ -87,7 +93,6 @@ export async function combineAndDownload(
 
   let saveHandle;
   try {
-    // Call showSaveFilePicker immediately after user interaction
     saveHandle = await (window as any).showSaveFilePicker({
       suggestedName: `${project.title}.zip`,
       types: [
@@ -98,7 +103,6 @@ export async function combineAndDownload(
       ],
     });
   } catch (err) {
-    // User cancelled the save dialog
     if (err instanceof Error && err.name === "AbortError") {
       console.log("File save cancelled by user");
     } else {
@@ -118,6 +122,9 @@ export async function combineAndDownload(
     await Promise.all(
       project.downloadUrls.map(async (url) => {
         const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status} for file: ${url}`);
+        }
         const blob = await response.blob();
         // Read the zip file
         const zip = await JSZip.loadAsync(blob);
@@ -138,10 +145,12 @@ export async function combineAndDownload(
     await writable.close();
     alert("Files combined and saved successfully!");
   } catch (err) {
-    console.error("Error saving file:", err);
-    alert(
-      "There was an error saving the combined file. Files will be downloaded separately."
-    );
+    console.error("Error processing or saving file:", err);
+    if (err instanceof Error) {
+      alert(`Error: ${err.message}\nFiles will be downloaded separately.`);
+    } else {
+      alert("There was an error saving the combined file. Files will be downloaded separately.");
+    }
     handleDownload(project.downloadUrls);
   } finally {
     setIsLoading(false);
