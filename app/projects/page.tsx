@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import Image, { StaticImageData } from 'next/image';
-import { combineAndDownload } from "./fileUtils";
+import Image, { StaticImageData } from "next/image";
+import { combineAndDownload, downloadSingleFile } from "./fileUtils";
 
 const TAGS = {
   UNITY: {
@@ -115,6 +115,19 @@ function Projects() {
 
   const [isLoading, setIsLoading] = useState(false);
 
+  const handleDownload = (project: Project) => {
+    setIsLoading(true);
+    if (project.downloadUrls.length === 1) {
+      // Single file download
+      const fileName =
+        project.downloadUrls[0].split("/").pop() || `${project.title}.zip`;
+      downloadSingleFile(project.downloadUrls[0], fileName, setIsLoading);
+    } else {
+      // Multiple files, use combineAndDownload
+      combineAndDownload(project, setIsLoading);
+    }
+  };
+
   const projects: Project[] = [
     {
       id: 0,
@@ -211,7 +224,7 @@ function Projects() {
                 className="w-full h-48 object-cover"
                 width={564}
                 height={192}
-              priority
+                priority
               />
               <div
                 className={`p-3 ${
@@ -281,12 +294,12 @@ function Projects() {
                 {selectedProject.description}
               </p>
               <button
-      onClick={() => combineAndDownload(selectedProject, setIsLoading)}
-      className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-      disabled={isLoading}
-    >
-      {isLoading ? "Combining files..." : "Windows"}
-    </button>
+                onClick={() => handleDownload(selectedProject)}
+                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                disabled={isLoading}
+              >
+                {isLoading ? "Processing..." : "Download"}
+              </button>
             </div>
           </div>
         )}

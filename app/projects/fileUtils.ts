@@ -7,6 +7,54 @@ interface Project {
   downloadUrls: string[];
 }
 
+export async function downloadSingleFile(url: string, fileName: string, setIsLoading: (isLoading: boolean) => void) {
+  setIsLoading(true);
+
+  if (typeof window === 'undefined') {
+    console.error('This function can only be run in a browser environment');
+    setIsLoading(false);
+    return;
+  }
+
+  if (!("showSaveFilePicker" in window)) {
+    alert("Your browser doesn't support file saving. The file will be downloaded directly.");
+    handleDownload([url]);
+    setIsLoading(false);
+    return;
+  }
+
+  try {
+    const saveHandle = await (window as any).showSaveFilePicker({
+      suggestedName: fileName,
+      types: [
+        {
+          description: "ZIP Archive",
+          accept: { "application/zip": [".zip"] },
+        },
+      ],
+    });
+
+    const response = await fetch(url);
+    const blob = await response.blob();
+
+    const writable = await saveHandle.createWritable();
+    await writable.write(blob);
+    await writable.close();
+
+    alert("File saved successfully!");
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      console.log("File save cancelled by user");
+    } else {
+      console.error("Error saving file:", err);
+      alert("There was an error saving the file. It will be downloaded directly.");
+      handleDownload([url]);
+    }
+  } finally {
+    setIsLoading(false);
+  }
+}
+
 export async function combineAndDownload(
   project: Project,
   setIsLoading: (isLoading: boolean) => void
