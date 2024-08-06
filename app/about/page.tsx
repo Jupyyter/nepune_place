@@ -3,7 +3,7 @@
 import Image from 'next/image';
 
 const ListItem = ({ text }: { text: string }) => (
-  <p className="text-xl text-white p-2">{text}</p>
+  <p className="text-xl text-white px-4 py-2">{text}</p>
 );
 
 const About = () => {
