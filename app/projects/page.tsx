@@ -140,7 +140,7 @@ function Projects() {
       thumbnail: "/imgs/jhonny.png",
       description:
         "you play as jhonny and you shoot gangsters. i made possible for a multiplayer game, but since i dont have servers for this, you will have to use hamachi if you dont play multiplayer locally. i also dont recomand shooting until all the players are connected :)",
-      downloadUrls: ["jhonnyGame.zip"],
+      downloadUrls: ["jhonnyGang.zip"],
       tags: ["UNITY", "C#"],
     },
     {
