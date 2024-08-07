@@ -244,7 +244,7 @@ function Projects() {
           ))}
         </div>
         {selectedProject && (
-          <div className="w-1/3 ml-6 bg-gray-800 rounded-lg shadow-lg relative">
+          <div className="w-1/3 ml-6 bg-gray-800 rounded-lg shadow-lg relative ">
             <button
               onClick={closeProjectDetails}
               className="absolute top-2 right-2 text-white bg-red-500 hover:bg-red-600 rounded-full w-6 h-6 flex items-center justify-center"
@@ -254,10 +254,11 @@ function Projects() {
             <Image
               src={selectedProject.thumbnail}
               alt={selectedProject.title}
-              className="w-full h-48 object-cover"
+              className="w-full h-48 object-cover rounded-t-lg"
               quality={100}
-              width={5640}
+              width={9640}
               height={1920}
+              priority
             />
             <div className="p-4">
               <h3 className="text-xl font-semibold text-white mb-2">
