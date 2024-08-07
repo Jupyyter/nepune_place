@@ -63,7 +63,7 @@ const TAGS = {
   },
   JAR: {
     name: "Jar",
-    description: "there will be a jar instead of an executable. clicking on the jar file while in the zip file will only show you the source code, which is ok, but if you want to run the app without compiling it, you should extract it from the zip file",
+    description: "there will be a jar instead of an executable. clicking on a jar file while in the zip file will only show you the source code, which is ok, but if you want to run the app without compiling it, you should extract it from the zip file",
     color: "bg-cyan-500",
   },
   // Add more tags as needed
