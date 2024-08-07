@@ -75,82 +75,53 @@ export async function combineAndDownload(
   setIsLoading: (isLoading: boolean) => void
 ) {
   setIsLoading(true);
-
-  if (typeof window === 'undefined') {
-    console.error('This function can only be run in a browser environment');
-    setIsLoading(false);
-    return;
-  }
-
-  if (!("showSaveFilePicker" in window)) {
-    alert(
-      "Your browser doesn't support this feature. Files will be downloaded separately."
-    );
-    handleDownload(project.downloadUrls);
-    setIsLoading(false);
-    return;
-  }
-
-  let saveHandle;
   try {
-    saveHandle = await (window as any).showSaveFilePicker({
-      suggestedName: `${project.title}.zip`,
-      types: [
-        {
-          description: "ZIP Archive",
-          accept: { "application/zip": [".zip"] },
-        },
-      ],
-    });
-  } catch (err) {
-    if (err instanceof Error && err.name === "AbortError") {
-      console.log("File save cancelled by user");
-    } else {
-      console.error("Error opening file picker:", err);
-      alert(
-        "Unable to open file picker. Files will be downloaded separately."
-      );
-      handleDownload(project.downloadUrls);
-    }
-    setIsLoading(false);
-    return;
-  }
+    if (typeof window === "undefined")
+      throw new Error("Browser environment required");
 
-  try {
+    const saveHandle =
+      "showSaveFilePicker" in window
+        ? await (window as any).showSaveFilePicker({
+            suggestedName: `${project.title}.zip`,
+            types: [
+              {
+                description: "ZIP Archive",
+                accept: { "application/zip": [".zip"] },
+              },
+            ],
+          })
+        : null;
+
+    if (!saveHandle) throw new Error("File picker not supported");
+
     const mainZip = new JSZip();
-    // Fetch all files, extract their contents, and add to the main zip
     await Promise.all(
       project.downloadUrls.map(async (url) => {
         const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status} for file: ${url}`);
-        }
-        const blob = await response.blob();
-        // Read the zip file
-        const zip = await JSZip.loadAsync(blob);
-        // Extract and add each file from the zip to the main zip
+        if (!response.ok)
+          throw new Error(
+            `HTTP error! status: ${response.status} for file: ${url}`
+          );
+        const zip = await JSZip.loadAsync(await response.blob());
         await Promise.all(
           Object.keys(zip.files).map(async (filename) => {
-            const content = await zip.files[filename].async("blob");
-            mainZip.file(filename, content);
+            mainZip.file(filename, await zip.files[filename].async("blob"));
           })
         );
       })
     );
-    // Generate the final zip file
-    const content = await mainZip.generateAsync({ type: "blob" });
-    // Use the previously obtained file handle to save the file
+
     const writable = await saveHandle.createWritable();
-    await writable.write(content);
+    await writable.write(await mainZip.generateAsync({ type: "blob" }));
     await writable.close();
     alert("Files combined and saved successfully!");
   } catch (err) {
-    console.error("Error processing or saving file:", err);
-    if (err instanceof Error) {
-      alert(`Error: ${err.message}\nFiles will be downloaded separately.`);
-    } else {
-      alert("There was an error saving the combined file. Files will be downloaded separately.");
-    }
+    console.error("Error:", err);
+    alert(
+      `Error: ${
+        err instanceof Error ? err.message : "Unknown error"
+      }. Files will be downloaded separately.`
+    );
     handleDownload(project.downloadUrls);
   } finally {
     setIsLoading(false);
