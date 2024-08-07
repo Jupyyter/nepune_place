@@ -63,7 +63,8 @@ const TAGS = {
   },
   JAR: {
     name: "Jar",
-    description: "there will be a jar instead of an executable. clicking on a jar file while in the zip file will only show you the source code, which is ok, but if you want to run the app without compiling it, you should extract it from the zip file",
+    description:
+      "there will be a jar instead of an executable. clicking on a jar file while in the zip file will only show you the source code, which is ok, but if you want to run the app without compiling it, you should extract it from the zip file",
     color: "bg-cyan-500",
   },
   // Add more tags as needed
@@ -78,9 +79,73 @@ interface Project {
   tags: (keyof typeof TAGS)[];
 }
 
+const projects: Project[] = [
+  {
+    id: 0,
+    title: "jhonny",
+    thumbnail: "/imgs/jhonny.png",
+    description:
+      "you play as jhonny and you shoot gangsters. i made possible for a multiplayer game, but since i dont have servers for this, you will have to use hamachi if you dont play multiplayer locally. i also dont recomand shooting until all the players are connected :)",
+    downloadUrls: ["jhonnyGang.zip"],
+    tags: ["UNITY", "C#"],
+  },
+  {
+    id: 1,
+    title: "video in ascii",
+    thumbnail: "/imgs/badApple.png",
+    description:
+      "this thing plays any video in ascii, but the default video is bad apple",
+    downloadUrls: ["asciiVideo.zip", "badApple.zip"],
+    tags: ["CPP", "LARGE_FILE"],
+  },
+  {
+    id: 2,
+    title: "gabriel the hungry",
+    thumbnail: "/imgs/GabrielIsHungry.png",
+    description: "this is the story of gabriel",
+    downloadUrls: [`gabrielIsHungry.zip`, "gabrielIsHungry0.zip"],
+    tags: ["GODOT", "GDSCRIPT", "LARGE_FILE"],
+  },
+  {
+    id: 3,
+    title: "fight Jhon Cena",
+    thumbnail: "/imgs/bingChilling.png",
+    description:
+      "i liked undertale. because of that, i made a game in which you fight john cena in an undertale-style fight",
+    downloadUrls: [`bingChilling.zip`],
+    tags: ["UNITY", "C#"],
+  },
+  {
+    id: 4,
+    title: "shadow wizzard money gang",
+    thumbnail: "/imgs/shadowGang.png",
+    description:
+      "i made this with a classmate (code: 95% me, art: 1% me ) for a contest. unfortunately the contest required the usage of 'greenfoot'",
+    downloadUrls: [`shadowGang.zip`],
+    tags: ["GREENFOOT", "JAVA"],
+  },
+  {
+    id: 5,
+    title: "the 3 room adventure",
+    thumbnail: "/imgs/cppGame.png",
+    description:
+      "this looks too simple for a game, and it is, except the fact that it was made in c++ using sdl2 instead of a game engine",
+    downloadUrls: [`cppGame.zip`, "cppGame0.zip"],
+    tags: ["CPP", "SDL2", "LARGE_FILE"],
+  },
+  {
+    id: 6,
+    title: "checkers",
+    thumbnail: "/imgs/checkers.png",
+    description: "checkers",
+    downloadUrls: [`worldOfTanks.jar`],
+    tags: ["JAVA", "JAR"],
+  },
+];
+
 function Projects() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-
+  const [isLoading, setIsLoading] = useState(false);
   const [hoveredTag, setHoveredTag] = useState<string | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({
     isAbove: false,
@@ -118,8 +183,6 @@ function Projects() {
     setSelectedProject(null);
   };
 
-  const [isLoading, setIsLoading] = useState(false);
-
   const handleDownload = (project: Project) => {
     setIsLoading(true);
     if (project.downloadUrls.length === 1) {
@@ -132,70 +195,6 @@ function Projects() {
       combineAndDownload(project, setIsLoading);
     }
   };
-
-  const projects: Project[] = [
-    {
-      id: 0,
-      title: "jhonny",
-      thumbnail: "/imgs/jhonny.png",
-      description:
-        "you play as jhonny and you shoot gangsters. i made possible for a multiplayer game, but since i dont have servers for this, you will have to use hamachi if you dont play multiplayer locally. i also dont recomand shooting until all the players are connected :)",
-      downloadUrls: ["jhonnyGang.zip"],
-      tags: ["UNITY", "C#"],
-    },
-    {
-      id: 1,
-      title: "video in ascii",
-      thumbnail: "/imgs/badApple.png",
-      description:
-        "this thing plays any video in ascii, but the default video is bad apple",
-      downloadUrls: ["asciiVideo.zip", "badApple.zip"],
-      tags: ["CPP", "LARGE_FILE"],
-    },
-    {
-      id: 2,
-      title: "gabriel the hungry",
-      thumbnail: "/imgs/GabrielIsHungry.png",
-      description: "this is the story of gabriel",
-      downloadUrls: [`gabrielIsHungry.zip`, "gabrielIsHungry0.zip"],
-      tags: ["GODOT", "GDSCRIPT", "LARGE_FILE"],
-    },
-    {
-      id: 3,
-      title: "fight Jhon Cena",
-      thumbnail: "/imgs/bingChilling.png",
-      description:
-        "i liked undertale. because of that, i made a game in which you fight john cena in an undertale-style fight",
-      downloadUrls: [`bingChilling.zip`],
-      tags: ["UNITY", "C#"],
-    },
-    {
-      id: 4,
-      title: "shadow wizzard money gang",
-      thumbnail: "/imgs/shadowGang.png",
-      description:
-        "i made this with a classmate (code: 95% me, art: 1% me ) for a contest. unfortunately the contest required the usage of 'greenfoot'",
-      downloadUrls: [`shadowGang.zip`],
-      tags: ["GREENFOOT", "JAVA"],
-    },
-    {
-      id: 5,
-      title: "the 3 room adventure",
-      thumbnail: "/imgs/cppGame.png",
-      description:
-        "this looks too simple for a game, and it is, except the fact that it was made in c++ using sdl2 instead of a game engine",
-      downloadUrls: [`cppGame.zip`, "cppGame0.zip"],
-      tags: ["CPP", "SDL2", "LARGE_FILE"],
-    },
-    {
-      id: 6,
-      title: "checkers",
-      thumbnail: "/imgs/checkers.png",
-      description: "checkers",
-      downloadUrls: [`worldOfTanks.jar`],
-      tags: ["JAVA","JAR"],
-    },
-  ];
 
   return (
     <div className="flex flex-col items-center justify-start min-h-screen p-4">
@@ -227,8 +226,9 @@ function Projects() {
                 src={project.thumbnail}
                 alt={project.title}
                 className="w-full h-48 object-cover"
-                width={564}
-                height={192}
+                width={5640}
+                height={1920}
+                quality={100}
                 priority
               />
               <div
@@ -255,8 +255,9 @@ function Projects() {
               src={selectedProject.thumbnail}
               alt={selectedProject.title}
               className="w-full h-48 object-cover"
-              width={564}
-              height={192}
+              quality={100}
+              width={5640}
+              height={1920}
             />
             <div className="p-4">
               <h3 className="text-xl font-semibold text-white mb-2">
