@@ -157,7 +157,7 @@ function Projects() {
       title: "gabriel the hungry",
       thumbnail: "/imgs/GabrielIsHungry.png",
       description: "this is the story of gabriel",
-      downloadUrls: [`GabrielIsHungry.zip`, "GabrielIsHungry0.zip"],
+      downloadUrls: [`gabrielIsHungry.zip`, "gabrielIsHungry0.zip"],
       tags: ["GODOT", "GDSCRIPT", "LARGE_FILE"],
     },
     {
