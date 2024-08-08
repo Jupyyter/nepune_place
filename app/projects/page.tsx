@@ -1,8 +1,10 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
-import Image, { StaticImageData } from "next/image";
+import { useState, useRef, useEffect, lazy, Suspense } from "react";
+import Image, { StaticImageData, ImageProps } from "next/image";
 import { combineAndDownload, downloadSingleFile } from "./fileUtils";
-
+const LazyImage = (props: ImageProps) => {
+  return <Image loading="lazy" {...props} />;
+};
 const TAGS = {
   UNITY: {
     name: "Unity",
@@ -222,14 +224,13 @@ function Projects() {
                           hover:scale-105`}
               onClick={() => handleProjectClick(project)}
             >
-              <Image
+              <LazyImage
                 src={project.thumbnail}
                 alt={project.title}
                 className="w-full h-48 object-cover"
                 width={5640}
                 height={1920}
                 quality={100}
-                priority
               />
               <div
                 className={`p-3 ${
@@ -251,14 +252,13 @@ function Projects() {
             >
               ×
             </button>
-            <Image
+            <LazyImage
               src={selectedProject.thumbnail}
               alt={selectedProject.title}
               className="w-full h-48 object-cover rounded-t-lg"
               quality={100}
               width={9640}
               height={1920}
-              priority
             />
             <div className="p-4">
               <h3 className="text-xl font-semibold text-white mb-2">
