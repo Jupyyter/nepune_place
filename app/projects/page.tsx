@@ -226,8 +226,8 @@ function Projects() {
                 src={project.thumbnail}
                 alt={project.title}
                 className="w-full h-48 object-cover"
-                width={2640}
-                height={1920}
+                width={3640}
+                height={3640}
                 quality={100}
                 priority
               />
@@ -256,8 +256,8 @@ function Projects() {
               alt={selectedProject.title}
               className="w-full h-48 object-cover rounded-t-lg"
               quality={100}
-              width={2640}
-              height={1920}
+              width={3640}
+              height={3640}
               priority
             />
             <div className="p-4">
