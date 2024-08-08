@@ -20,10 +20,7 @@ export async function downloadSingleFile(
   }
 
   if (!("showSaveFilePicker" in window)) {
-    alert(
-      "Your browser doesn't support file saving. The file will be downloaded directly."
-    );
-    handleDownload([url]);
+    handleDownload([url], fileName);
     setIsLoading(false);
     return;
   }
@@ -50,7 +47,7 @@ export async function downloadSingleFile(
     await writable.write(blob);
 
     // Close the file and show immediate feedback
-    writable.close();
+    await writable.close();
 
     // Show immediate feedback
     alert("File download started. It will be saved shortly.");
@@ -60,9 +57,8 @@ export async function downloadSingleFile(
     } else {
       console.error("Error saving file:", err);
       alert(
-        "There was an error saving the file. It will be downloaded directly."
+        "There was an error saving the file. The download has been cancelled."
       );
-      handleDownload([url]);
     }
   } finally {
     setIsLoading(false);
@@ -91,7 +87,10 @@ export async function combineAndDownload(
           })
         : null;
 
-    if (!saveHandle) throw new Error("File picker not supported");
+    if (!saveHandle) {
+      handleDownload(project.downloadUrls, `${project.title}.zip`);
+      return;
+    }
 
     const mainZip = new JSZip();
     await Promise.all(
@@ -119,19 +118,18 @@ export async function combineAndDownload(
     alert(
       `Error: ${
         err instanceof Error ? err.message : "Unknown error"
-      }. Files will be downloaded separately.`
+      }. The download has been cancelled.`
     );
-    handleDownload(project.downloadUrls);
   } finally {
     setIsLoading(false);
   }
 }
 
-function handleDownload(downloadUrls: string[]) {
+function handleDownload(downloadUrls: string[], fileName?: string) {
   downloadUrls.forEach((url) => {
     const link = document.createElement("a");
     link.href = url;
-    link.download = url.split("/").pop() || "";
+    link.download = fileName || url.split("/").pop() || "";
     link.click();
   });
 }
