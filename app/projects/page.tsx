@@ -25,6 +25,11 @@ const TAGS = {
     description: "created  using the SDL2 graphics library",
     color: "bg-yellow-500",
   },
+  SFML: {
+    name: "SFML",
+    description: "created  using the SFML graphics library",
+    color: "bg-purple-700",
+  },
   LARGE_FILE: {
     name: "100MB+",
     description:
@@ -140,6 +145,15 @@ const projects: Project[] = [
     description: "checkers",
     downloadUrls: [`worldOfTanks.jar`],
     tags: ["JAVA", "JAR"],
+  },
+  {
+    id: 7,
+    title: "ikeaBattle",
+    thumbnail: "/imgs/ikeaMan.jpg",
+    description:
+      "you fight ikeaMan",
+    downloadUrls: ["ikeaBattle.zip"],
+    tags: ["CPP", "SFML"],
   },
 ];
 
