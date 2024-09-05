@@ -19,47 +19,36 @@ export async function downloadSingleFile(
     return;
   }
 
-  if (!("showSaveFilePicker" in window)) {
-    handleDownload([url], fileName);
-    setIsLoading(false);
-    return;
-  }
-
   try {
-    const saveHandle = await (window as any).showSaveFilePicker({
-      suggestedName: fileName,
-      types: [
-        {
-          description: "ZIP Archive",
-          accept: { "application/zip": [".zip"] },
-        },
-      ],
-    });
-
-    // Start the download
+    // Fetch the file
     const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
     const blob = await response.blob();
 
-    // Create a writable stream
-    const writable = await saveHandle.createWritable();
+    // Create a URL for the blob
+    const blobUrl = URL.createObjectURL(blob);
 
-    // Write the blob to the file
-    await writable.write(blob);
+    // Create a temporary anchor element
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = blobUrl;
+    a.download = fileName;
 
-    // Close the file and show immediate feedback
-    await writable.close();
+    // Append to the document and trigger the download
+    document.body.appendChild(a);
+    a.click();
 
-    // Show immediate feedback
-    alert("File download started. It will be saved shortly.");
+    // Clean up
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+
+    // Show feedback
+    alert("File downloaded successfully!");
   } catch (err) {
-    if (err instanceof Error && err.name === "AbortError") {
-      console.log("File save cancelled by user");
-    } else {
-      console.error("Error saving file:", err);
-      alert(
-        "There was an error saving the file. The download has been cancelled."
-      );
-    }
+    console.error("Error downloading file:", err);
+    alert("There was an error downloading the file. Please try again.");
   } finally {
     setIsLoading(false);
   }
