@@ -29,7 +29,7 @@ export default function Contact() {
         <h1 className="text-4xl font-bold mb-4">contacts</h1>
         <ContactItem icon="/imgs/phone.jpg" text="my phone number: 0765823655" />
         <ContactItem icon="/imgs/mail.jpg" text="my email: raducea.matei2005@gmail.com" />
-        <ContactItem icon="/imgs/github.jpg" text="my github repositories" link="https://github.com/Jupyyter?tab=repositories" />
+        <ContactItem icon="/imgs/github.jpg" text="github" link="https://github.com/Jupyyter" />
       </main>
     </div>
   );
