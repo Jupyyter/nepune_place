@@ -157,6 +157,7 @@ const projects: Project[] = [
   },
 ];
 
+
 function Projects() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -166,29 +167,10 @@ function Projects() {
     alignRight: false,
   });
   const tagRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const detailsPanelRef = useRef<HTMLDivElement>(null);
+  const navbarHeight = 64;
 
-  useEffect(() => {
-    if (hoveredTag) {
-      const tagElement = tagRefs.current[hoveredTag];
-      if (tagElement) {
-        const rect = tagElement.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const viewportWidth = window.innerWidth;
 
-        // Calculate space above and below
-        const spaceAbove = rect.top;
-        const spaceBelow = viewportHeight - rect.bottom;
-
-        // Check if there's more space above than below
-        const isAbove = spaceBelow < spaceAbove;
-
-        // Check if aligning right is necessary
-        const alignRight = rect.left + 200 > viewportWidth; // 200px is the tooltip width
-
-        setTooltipPosition({ isAbove, alignRight });
-      }
-    }
-  }, [hoveredTag]);
   const handleProjectClick = (project: Project) => {
     setSelectedProject(project.id === selectedProject?.id ? null : project);
   };
@@ -200,85 +182,75 @@ function Projects() {
   const handleDownload = (project: Project) => {
     setIsLoading(true);
     if (project.downloadUrls.length === 1) {
-      // Single file download
-      const fileName =
-        project.downloadUrls[0].split("/").pop() || `${project.title}.zip`;
+      const fileName = project.downloadUrls[0].split("/").pop() || `${project.title}.zip`;
       downloadSingleFile(project.downloadUrls[0], fileName, setIsLoading);
     } else {
-      // Multiple files, use combineAndDownload
       combineAndDownload(project, setIsLoading);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen p-4">
-      <header className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-4 py-4">My Projects</h1>
-        <p className="text-lg mb-4">
+    <div className="flex flex-col items-center justify-start min-h-screen bg-gray-900 text-white">
+      <header className="text-center mt-1 mb-8 w-full max-w-7xl px-4">
+        <h1 className="text-4xl font-bold mb-4 py-4 break-words">My Projects</h1>
+        <p className="text-lg mb-4 break-words">
           projects here and there and here and everywhere
         </p>
       </header>
-      <div className="w-full max-w-6xl flex">
-        <div
-          className={`grid grid-cols-1 sm:grid-cols-2 gap-6 ${
-            selectedProject ? "w-2/3" : "w-full"
-          }`}
-        >
+
+      <div className="w-full max-w-screen-2xl px-4 flex">
+        <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 ${selectedProject ? 'w-2/3 pr-1' : 'w-full'}`}>
           {projects.map((project) => (
             <div
               key={project.id}
-              className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer transition-all
-                          /*${
-                            selectedProject?.id === project.id
-                              ? "ring-2 ring-blue-500"
-                              : ""
-                          }*/
-                          hover:scale-105`}
+              className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer transition-all select-none
+                        ${selectedProject?.id === project.id ? "ring-2 ring-blue-500" : ""}
+                        hover:scale-105`}
               onClick={() => handleProjectClick(project)}
+              onDragStart={(e) => e.preventDefault()}
             >
               <Image
                 src={project.thumbnail}
                 alt={project.title}
-                className="w-full h-48 object-cover"
+                className="w-full h-64 object-cover pointer-events-none"
                 width={5640}
                 height={1920}
                 quality={100}
                 priority
               />
-              <div
-                className={`p-3 ${
-                  selectedProject?.id === project.id ? "bg-blue-700" : ""
-                }`}
-              >
-                <h3 className="text-xl font-semibold text-white">
-                  {project.title}
-                </h3>
+              <div className={`${selectedProject?.id === project.id ? "bg-blue-700" : "bg-gray-800"} w-full h-full`}>
+                <h3 className="text-xl font-semibold text-white p-4">{project.title}</h3>
               </div>
             </div>
           ))}
         </div>
+
         {selectedProject && (
-          <div className="w-1/3 ml-6 bg-gray-800 rounded-lg shadow-lg relative ">
-            <button
-              onClick={closeProjectDetails}
-              className="absolute top-2 right-2 text-white bg-red-500 hover:bg-red-600 rounded-full w-6 h-6 flex items-center justify-center"
-            >
-              ×
-            </button>
-            <Image
-              src={selectedProject.thumbnail}
-              alt={selectedProject.title}
-              className="w-full h-48 object-cover rounded-t-lg"
-              quality={100}
-              width={9640}
-              height={1920}
-              priority
-            />
-            <div className="p-4">
-              <h3 className="text-xl font-semibold text-white mb-2">
+          <div 
+            ref={detailsPanelRef}
+            className="w-1/3 bg-gray-800 rounded-lg shadow-lg fixed right-0 overflow-y-auto"
+            style={{ top: `${navbarHeight}px`, height: `calc(100vh - ${navbarHeight}px)` }}
+          >
+            <div className="p-6">
+              <button
+                onClick={closeProjectDetails}
+                className="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 rounded-full w-8 h-8 flex items-center justify-center text-xl"
+              >
+                ×
+              </button>
+              <Image
+                src={selectedProject.thumbnail}
+                alt={selectedProject.title}
+                className="w-full h-72 object-cover rounded-lg pointer-events-none"
+                quality={100}
+                width={9640}
+                height={1920}
+                priority
+              />
+              <h3 className="text-2xl font-semibold text-white mb-4 mt-6">
                 {selectedProject.title}
               </h3>
-              <div className="flex flex-wrap mb-2">
+              <div className="flex flex-wrap mb-4">
                 {selectedProject.tags.map((tagKey) => (
                   <div
                     key={tagKey}
@@ -291,32 +263,28 @@ function Projects() {
                       }
                     }}
                   >
-                    <span
-                      className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded cursor-help`}
-                    >
+                    <span className={`${TAGS[tagKey].color} text-white text-sm px-3 py-1 rounded cursor-help`}>
                       {TAGS[tagKey].name}
                     </span>
                     {hoveredTag === tagKey && (
-                      <span
-                        className={`
-              absolute bg-gray-900 text-white text-xs p-2 rounded z-50 break-words
-              w-48 
-              ${tooltipPosition.isAbove ? "bottom-full mb-1" : "top-full mt-1"}
-              ${tooltipPosition.alignRight ? "right-0" : "left-0"}
-            `}
-                      >
+                      <span className={`
+                        absolute bg-gray-900 text-white text-sm p-2 rounded z-50 break-words
+                        w-48 
+                        ${tooltipPosition.isAbove ? "bottom-full mb-1" : "top-full mt-1"}
+                        ${tooltipPosition.alignRight ? "right-0" : "left-0"}
+                      `}>
                         {TAGS[tagKey].description}
                       </span>
                     )}
                   </div>
                 ))}
               </div>
-              <p className="text-gray-300 mb-4">
+              <p className="text-gray-300 text-lg mb-6">
                 {selectedProject.description}
               </p>
               <button
                 onClick={() => handleDownload(selectedProject)}
-                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-lg"
                 disabled={isLoading}
               >
                 {isLoading ? "Processing..." : "Download"}

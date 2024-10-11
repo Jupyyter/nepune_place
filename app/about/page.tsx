@@ -11,7 +11,8 @@ const About = () => {
     '-here i call myself "nepune" but on the internet I use names derived from the names of the planets',
     '-im 19 years old',
     '-i code since i was 15 and started taking it more seriously when i was 16',
-    '-i usually program games because its more fun, but i can program more than games, like this site (and anything that is programable (everything is learnable))'
+    '-i usually program games',
+    '-i am best suited as a software engineer'
   ];
 
   return (
