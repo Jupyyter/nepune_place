@@ -3,7 +3,15 @@ import { useState, useRef, useEffect } from "react";
 import Image, { StaticImageData } from "next/image";
 import { combineAndDownload, downloadSingleFile } from "./fileUtils";
 
-const TAGS = {
+// Define the structure of a tag
+interface Tag {
+  name: string;
+  description: string;
+  color: string;
+}
+
+// Define the TAGS object with proper typing
+const TAGS: { [key: string]: Tag } = {
   UNITY: {
     name: "Unity",
     description: "created using Unity engine",
@@ -72,9 +80,7 @@ const TAGS = {
       "there will be a jar instead of an executable. clicking on a jar file while in the zip file will only show you the source code, which is ok, but if you want to run the app without compiling it, you should extract it from the zip file",
     color: "bg-cyan-500",
   },
-  // Add more tags as needed
 };
-
 interface Project {
   id: number;
   title: string;
@@ -83,7 +89,6 @@ interface Project {
   downloadUrls: string[];
   tags: (keyof typeof TAGS)[];
 }
-
 const projects: Project[] = [
   {
     id: 0,
@@ -150,29 +155,70 @@ const projects: Project[] = [
     id: 7,
     title: "ikeaBattle",
     thumbnail: "/imgs/ikeaMan.jpg",
-    description:
-      "you fight ikeaMan",
+    description: "you fight ikeaMan",
     downloadUrls: ["ikeaBattle.zip"],
     tags: ["CPP", "SFML"],
   },
 ];
 
+interface Project {
+  id: number;
+  title: string;
+  thumbnail: string;
+  description: string;
+  downloadUrls: string[];
+  tags: (keyof typeof TAGS)[];
+}
 
 function Projects() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [hoveredTag, setHoveredTag] = useState<string | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState({
-    isAbove: false,
-    alignRight: false,
-  });
-  const tagRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const [hoveredTag, setHoveredTag] = useState<keyof typeof TAGS | null>(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0, alignTop: false });
+  const projectsContainerRef = useRef<HTMLDivElement>(null);
   const detailsPanelRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
   const navbarHeight = 64;
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (projectsContainerRef.current) {
+        const containerWidth = projectsContainerRef.current.offsetWidth;
+        const columns = Math.max(1, Math.floor(containerWidth / 300));
+        projectsContainerRef.current.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const detailsPanel = detailsPanelRef.current;
+    if (!detailsPanel) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      const { deltaY, currentTarget } = e;
+      const panel = currentTarget as HTMLDivElement;
+
+      if (panel.scrollHeight > panel.clientHeight) {
+        e.preventDefault();
+        panel.scrollTop += deltaY;
+      }
+    };
+
+    detailsPanel.addEventListener("wheel", handleWheel, { passive: false });
+
+    return () => {
+      detailsPanel.removeEventListener("wheel", handleWheel);
+    };
+  }, [selectedProject]);
 
   const handleProjectClick = (project: Project) => {
-    setSelectedProject(project.id === selectedProject?.id ? null : project);
+    if (project.id !== selectedProject?.id) {
+      setSelectedProject(project);
+    }
   };
 
   const closeProjectDetails = () => {
@@ -189,110 +235,160 @@ function Projects() {
     }
   };
 
+  const handleTagHover = (tagKey: keyof typeof TAGS, event: React.MouseEvent<HTMLDivElement>) => {
+    setHoveredTag(tagKey);
+    const tagRect = event.currentTarget.getBoundingClientRect();
+    const tooltipWidth = 160;
+    const tooltipHeight = 80;
+    const windowHeight = window.innerHeight;
+
+    let x = tagRect.left;
+    let y = tagRect.bottom;
+    let alignTop = false;
+
+    if (tagRect.top > windowHeight - tagRect.bottom) {
+      y = tagRect.top;
+      alignTop = true;
+    }
+
+    if (x + tooltipWidth > window.innerWidth) {
+      x = window.innerWidth - tooltipWidth;
+    }
+
+    setTooltipPosition({ x, y, alignTop });
+  };
+
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen bg-gray-900 text-white">
-      <header className="text-center mt-1 mb-8 w-full max-w-7xl px-4">
-        <h1 className="text-4xl font-bold mb-4 py-4 break-words">My Projects</h1>
-        <p className="text-lg mb-4 break-words">
-          projects here and there and here and everywhere
-        </p>
-      </header>
+    <div className="flex flex-col items-center justify-start min-h-screen p-2 pt-8">
+      <div className="w-full max-w-7xl px-4 flex flex-col items-center">
+        <header className="text-center mb-8 w-full">
+          <h1 className="text-4xl font-bold mb-4 break-words">My Projects</h1>
+          <p className="text-lg mb-4 break-words whitespace-pre-wrap max-w-full">
+            projects here and there and here and everywhere
+          </p>
+        </header>
 
-      <div className="w-full max-w-screen-2xl px-4 flex">
-        <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 ${selectedProject ? 'w-2/3 pr-1' : 'w-full'}`}>
-          {projects.map((project) => (
-            <div
-              key={project.id}
-              className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer transition-all select-none
-                        ${selectedProject?.id === project.id ? "ring-2 ring-blue-500" : ""}
-                        hover:scale-105`}
-              onClick={() => handleProjectClick(project)}
-              onDragStart={(e) => e.preventDefault()}
-            >
-              <Image
-                src={project.thumbnail}
-                alt={project.title}
-                className="w-full h-64 object-cover pointer-events-none"
-                width={5640}
-                height={1920}
-                quality={100}
-                priority
-              />
-              <div className={`${selectedProject?.id === project.id ? "bg-blue-700" : "bg-gray-800"} w-full h-full`}>
-                <h3 className="text-xl font-semibold text-white p-4">{project.title}</h3>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {selectedProject && (
-          <div 
-            ref={detailsPanelRef}
-            className="w-1/3 bg-gray-800 rounded-lg shadow-lg fixed right-0 overflow-y-auto"
-            style={{ top: `${navbarHeight}px`, height: `calc(100vh - ${navbarHeight}px)` }}
+        <div className="flex justify-between w-full" ref={projectsContainerRef}>
+          <div
+            className="grid gap-8"
+            style={{
+              width: selectedProject ? 'calc(70% - 16px)' : '100%',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+            }}
           >
-            <div className="p-6">
-              <button
-                onClick={closeProjectDetails}
-                className="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 rounded-full w-8 h-8 flex items-center justify-center text-xl"
+            {projects.map((project) => (
+              <div
+                key={project.id}
+                className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer select-none hover:scale-110
+                          ${selectedProject?.id === project.id ? "ring-2 ring-blue-500" : ""}`}
+                onClick={() => handleProjectClick(project)}
+                onDragStart={(e) => e.preventDefault()}
               >
-                ×
-              </button>
-              <Image
-                src={selectedProject.thumbnail}
-                alt={selectedProject.title}
-                className="w-full h-72 object-cover rounded-lg pointer-events-none"
-                quality={100}
-                width={9640}
-                height={1920}
-                priority
-              />
-              <h3 className="text-2xl font-semibold text-white mb-4 mt-6">
-                {selectedProject.title}
-              </h3>
-              <div className="flex flex-wrap mb-4">
-                {selectedProject.tags.map((tagKey) => (
-                  <div
-                    key={tagKey}
-                    className="relative inline-block mr-2 mb-2"
-                    onMouseEnter={() => setHoveredTag(tagKey)}
-                    onMouseLeave={() => setHoveredTag(null)}
-                    ref={(el) => {
-                      if (tagRefs.current) {
-                        tagRefs.current[tagKey] = el;
-                      }
-                    }}
-                  >
-                    <span className={`${TAGS[tagKey].color} text-white text-sm px-3 py-1 rounded cursor-help`}>
-                      {TAGS[tagKey].name}
-                    </span>
-                    {hoveredTag === tagKey && (
-                      <span className={`
-                        absolute bg-gray-900 text-white text-sm p-2 rounded z-50 break-words
-                        w-48 
-                        ${tooltipPosition.isAbove ? "bottom-full mb-1" : "top-full mt-1"}
-                        ${tooltipPosition.alignRight ? "right-0" : "left-0"}
-                      `}>
-                        {TAGS[tagKey].description}
+                <div className="relative w-full h-48">
+                  <Image
+                    src={project.thumbnail}
+                    alt={project.title}
+                    fill
+                    className="object-cover pointer-events-none"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    quality={100}
+                    priority
+                  />
+                </div>
+                <div className={`${selectedProject?.id === project.id ? "bg-blue-700" : "bg-gray-800"} w-full h-full`}>
+                  <h3 className="text-lg font-semibold text-white p-3">{project.title}</h3>
+                  <div className="flex flex-wrap px-2 pb-2">
+                    {project.tags.map((tagKey) => (
+                      <span
+                        key={tagKey}
+                        className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded mr-2 mb-2`}
+                      >
+                        {TAGS[tagKey].name}
                       </span>
-                    )}
+                    ))}
                   </div>
-                ))}
+                </div>
               </div>
-              <p className="text-gray-300 text-lg mb-6">
-                {selectedProject.description}
-              </p>
-              <button
-                onClick={() => handleDownload(selectedProject)}
-                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-lg"
-                disabled={isLoading}
-              >
-                {isLoading ? "Processing..." : "Download"}
-              </button>
-            </div>
+            ))}
           </div>
-        )}
+
+          <div
+            className={`${selectedProject ? 'w-[28%]' : 'w-0'}`}
+            style={{ display: selectedProject ? 'block' : 'none' }}
+          >
+            {selectedProject && (
+              <div
+                ref={detailsPanelRef}
+                className="bg-gray-800 rounded-lg shadow-lg sticky overflow-auto relative"
+                style={{
+                  top: `${navbarHeight + 20}px`,
+                  height: `calc(100vh - ${navbarHeight + 40}px)`,
+                }}
+              >
+                <button
+                  onClick={closeProjectDetails}
+                  className="absolute top-0 right-0 text-white bg-red-500 hover:bg-red-600 w-8 h-8 flex items-center justify-center text-xl font-bold z-10"
+                  style={{
+                    borderTopRightRadius: '0.5rem',
+                    borderBottomLeftRadius: '0.5rem',
+                  }}
+                >
+                  ×
+                </button>
+                <div className="p-3">
+                  <div className="relative w-full h-56">
+                    <Image
+                      src={selectedProject.thumbnail}
+                      alt={selectedProject.title}
+                      fill
+                      className="object-cover rounded-lg pointer-events-none"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      quality={100}
+                      priority
+                    />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-3 mt-4">{selectedProject.title}</h3>
+                  <div className="flex flex-wrap mb-3">
+                    {selectedProject.tags.map((tagKey) => (
+                      <div
+                        key={tagKey}
+                        className="relative inline-block mr-2 mb-2"
+                        onMouseEnter={(e) => handleTagHover(tagKey, e)}
+                        onMouseLeave={() => setHoveredTag(null)}
+                      >
+                        <span className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded cursor-help`}>
+                          {TAGS[tagKey].name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-gray-300 text-sm mb-5">{selectedProject.description}</p>
+                  <button
+                    onClick={() => handleDownload(selectedProject)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm w-full"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Processing..." : "Download"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
+      {hoveredTag && (
+        <div
+          ref={tooltipRef}
+          className={`fixed bg-gray-900 text-white text-xs p-2 rounded z-50 break-words w-40`}
+          style={{
+            left: `${tooltipPosition.x}px`,
+            top: `${tooltipPosition.y}px`,
+            transform: tooltipPosition.alignTop ? 'translateY(-100%)' : 'translateY(0)',
+          }}
+        >
+          {TAGS[hoveredTag].description}
+        </div>
+      )}
     </div>
   );
 }
