@@ -41,7 +41,7 @@ const TAGS: { [key: string]: Tag } = {
   LARGE_FILE: {
     name: "100MB+",
     description:
-      "the size of the file is greater than 100 MB so github forced me to separate it into multiple files and combine them into 1 so i can continue abusing their servers. even after it downloaded, wait until the button on which you pressed to download it stops showing 'processing'",
+      "the size of the file is greater than 100 MB so github forced my hand to separate it into multiple files and combine them into 1 so i can continue abusing their servers. even after it downloaded, wait until the button on which you pressed to download it stops showing 'processing'",
     color: "bg-red-500",
   },
   CPP: {
@@ -140,7 +140,7 @@ const projects: Project[] = [
     thumbnail: "/imgs/cppGame.png",
     description:
       "this looks too simple for a game, and it is, except the fact that it was made in c++ using sdl2 instead of a game engine",
-    downloadUrls: [`cppGame.zip`, "cppGame0.zip"],
+    downloadUrls: [`cppGame2.zip`, "cppGame3.zip"],
     tags: ["CPP", "SDL2", "LARGE_FILE"],
   },
   {
