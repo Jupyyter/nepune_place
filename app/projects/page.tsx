@@ -320,7 +320,11 @@ function Projects() {
               className={`md:w-[28%] w-full ${
                 isMobile ? 'fixed inset-0 z-50 bg-gray-900 bg-opacity-75' : ''
               }`}
-              style={{ display: selectedProject ? 'block' : 'none' }}
+              style={{ 
+                display: selectedProject ? 'block' : 'none',
+                top: isMobile ? `${navbarHeight}px` : 'auto',
+                height: isMobile ? `calc(100vh - ${navbarHeight}px)` : 'auto'
+              }}
             >
               <div
                 ref={detailsPanelRef}
