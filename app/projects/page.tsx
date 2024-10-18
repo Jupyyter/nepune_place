@@ -71,7 +71,7 @@ const TAGS: { [key: string]: Tag } = {
   },
   REACT: {
     name: "React",
-    description: "Built with React framework (or library or whatever this iss)",
+    description: "Built with React framework (or library or whatever this is)",
     color: "bg-cyan-500",
   },
   JAR: {
@@ -175,7 +175,6 @@ function Projects() {
   const [isLoading, setIsLoading] = useState(false);
   const [hoveredTag, setHoveredTag] = useState<keyof typeof TAGS | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0, alignTop: false });
-  const [isMobile, setIsMobile] = useState(false);
   const projectsContainerRef = useRef<HTMLDivElement>(null);
   const detailsPanelRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -188,7 +187,6 @@ function Projects() {
         const columns = Math.max(1, Math.floor(containerWidth / 300));
         projectsContainerRef.current.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
       }
-      setIsMobile(window.innerWidth <= 768);
     };
 
     handleResize();
@@ -270,12 +268,11 @@ function Projects() {
           </p>
         </header>
 
-        <div className="flex flex-col md:flex-row justify-between w-full" ref={projectsContainerRef}>
+        <div className="flex justify-between w-full" ref={projectsContainerRef}>
           <div
-            className={`grid gap-8 ${
-              selectedProject && !isMobile ? 'md:w-[70%]' : 'w-full'
-            }`}
+            className="grid gap-8"
             style={{
+              width: selectedProject ? 'calc(70% - 16px)' : '100%',
               gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
             }}
           >
@@ -315,25 +312,17 @@ function Projects() {
             ))}
           </div>
 
-          {selectedProject && (
-            <div
-              className={`md:w-[28%] w-full ${
-                isMobile ? 'fixed inset-0 z-50 bg-gray-900 bg-opacity-75' : ''
-              }`}
-              style={{ 
-                display: selectedProject ? 'block' : 'none',
-                top: isMobile ? `${navbarHeight}px` : 'auto',
-                height: isMobile ? `calc(100vh - ${navbarHeight}px)` : 'auto'
-              }}
-            >
+          <div
+            className={`${selectedProject ? 'w-[28%]' : 'w-0'}`}
+            style={{ display: selectedProject ? 'block' : 'none' }}
+          >
+            {selectedProject && (
               <div
                 ref={detailsPanelRef}
-                className={`bg-gray-800 rounded-lg shadow-lg overflow-auto ${
-                  isMobile ? 'h-full' : 'sticky'
-                }`}
+                className="bg-gray-800 rounded-lg shadow-lg sticky overflow-auto"
                 style={{
-                  top: isMobile ? '0' : `${navbarHeight}px`,
-                  height: isMobile ? '100%' : `calc(100vh - ${navbarHeight + 40}px)`,
+                  top: `${navbarHeight + 56}px`,
+                  height: `calc(100vh - ${navbarHeight + 40}px)`,
                 }}
               >
                 <button
@@ -383,8 +372,8 @@ function Projects() {
                   </button>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
       {hoveredTag && (
