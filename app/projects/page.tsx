@@ -155,7 +155,7 @@ const projects: Project[] = [
     id: 7,
     title: "ikeaBattle",
     thumbnail: "/imgs/ikeaMan.jpg",
-    description: "you fight ikeaMan",
+    description: "you fight ikeaMan\nyou i recomand you extract the files from the zip file if you wanna use the leveleditor properly",
     downloadUrls: ["ikeaBattle.zip"],
     tags: ["CPP", "SFML"],
   },
@@ -319,9 +319,9 @@ function Projects() {
             {selectedProject && (
               <div
                 ref={detailsPanelRef}
-                className="bg-gray-800 rounded-lg shadow-lg sticky overflow-auto relative"
+                className="bg-gray-800 rounded-lg shadow-lg sticky overflow-auto"
                 style={{
-                  top: `${navbarHeight + 20}px`,
+                  top: `${navbarHeight }px`,
                   height: `calc(100vh - ${navbarHeight + 40}px)`,
                 }}
               >
