@@ -71,7 +71,7 @@ const TAGS: { [key: string]: Tag } = {
   },
   REACT: {
     name: "React",
-    description: "Built with React framework (or library or whatever this is)",
+    description: "Built with React framework (or library or whatever this iss)",
     color: "bg-cyan-500",
   },
   JAR: {
