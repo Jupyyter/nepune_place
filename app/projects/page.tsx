@@ -184,7 +184,7 @@ function Projects() {
     const handleResize = () => {
       if (projectsContainerRef.current) {
         const containerWidth = projectsContainerRef.current.offsetWidth;
-        const minWidth = selectedProject ? 200 : 300; // Smaller minimum width when a project is selected
+        const minWidth = selectedProject ? 180 : 250; // Slightly smaller minimum width
         const columns = Math.max(1, Math.floor(containerWidth / minWidth));
         projectsContainerRef.current.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
       }
@@ -273,8 +273,8 @@ function Projects() {
           <div
             className="grid gap-4"
             style={{
-              width: selectedProject ? 'calc(70% - 16px)' : '100%',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+              width: selectedProject ? 'calc(60% - 16px)' : '100%', // Reduced from 70% to 60%
+              gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', // Reduced minimum width
             }}
           >
             {projects.map((project) => (
@@ -285,7 +285,7 @@ function Projects() {
                 onClick={() => handleProjectClick(project)}
                 onDragStart={(e) => e.preventDefault()}
               >
-                <div className="relative w-full h-36 sm:h-48">
+                <div className="relative w-full h-32 sm:h-40"> {/* Slightly reduced height */}
                   <Image
                     src={project.thumbnail}
                     alt={project.title}
@@ -297,7 +297,7 @@ function Projects() {
                   />
                 </div>
                 <div className={`${selectedProject?.id === project.id ? "bg-blue-700" : "bg-gray-800"} w-full h-full`}>
-                  <h3 className="text-lg font-semibold text-white p-3">{project.title}</h3>
+                  <h3 className="text-base sm:text-lg font-semibold text-white p-2 sm:p-3">{project.title}</h3>
                   <div className="flex flex-wrap px-2 pb-2">
                     {project.tags.map((tagKey) => (
                       <span
@@ -314,7 +314,7 @@ function Projects() {
           </div>
 
           <div
-            className={`w-[28%] ${selectedProject ? 'block' : 'hidden'}`}
+            className={`w-[38%] ${selectedProject ? 'block' : 'hidden'}`} // Increased from 28% to 38%
           >
             {selectedProject && (
               <div
@@ -336,7 +336,7 @@ function Projects() {
                   ×
                 </button>
                 <div className="p-3">
-                  <div className="relative w-full h-40 sm:h-56">
+                  <div className="relative w-full h-48 sm:h-64"> {/* Increased height */}
                     <Image
                       src={selectedProject.thumbnail}
                       alt={selectedProject.title}
