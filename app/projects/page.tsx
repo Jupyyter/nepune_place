@@ -170,33 +170,33 @@ interface Project {
   tags: (keyof typeof TAGS)[];
 }
 
-function Projects() {
+interface Project {
+  id: number;
+  title: string;
+  thumbnail: string;
+  description: string;
+  downloadUrls: string[];
+  tags: (keyof typeof TAGS)[];
+}
+
+const Projects: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [hoveredTag, setHoveredTag] = useState<keyof typeof TAGS | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0, alignTop: false });
-  const [isMobile, setIsMobile] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number; alignTop: boolean }>({ x: 0, y: 0, alignTop: false });
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const projectsContainerRef = useRef<HTMLDivElement>(null);
   const detailsPanelRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const navbarHeight = 64;
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  useEffect(() => {
     const handleResize = () => {
       if (projectsContainerRef.current) {
         const containerWidth = projectsContainerRef.current.offsetWidth;
-        const minWidth = isMobile ? containerWidth : 300;
-        const columns = Math.max(1, Math.floor(containerWidth / minWidth));
+        const isMobileView = window.innerWidth < 768;
+        setIsMobile(isMobileView);
+        const columns = isMobileView ? 1 : Math.max(1, Math.floor(containerWidth / 300));
         projectsContainerRef.current.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
       }
     };
@@ -204,14 +204,13 @@ function Projects() {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [isMobile]);
+  }, []);
 
   useEffect(() => {
     const detailsPanel = detailsPanelRef.current;
     if (!detailsPanel) return;
 
     const handleWheel = (e: WheelEvent) => {
-      if (isMobile) return;
       const { deltaY, currentTarget } = e;
       const panel = currentTarget as HTMLDivElement;
 
@@ -222,17 +221,15 @@ function Projects() {
     };
 
     detailsPanel.addEventListener("wheel", handleWheel, { passive: false });
-    return () => detailsPanel.removeEventListener("wheel", handleWheel);
-  }, [selectedProject, isMobile]);
+
+    return () => {
+      detailsPanel.removeEventListener("wheel", handleWheel);
+    };
+  }, [selectedProject]);
 
   const handleProjectClick = (project: Project) => {
     if (project.id !== selectedProject?.id) {
       setSelectedProject(project);
-      if (isMobile) {
-        setTimeout(() => {
-          detailsPanelRef.current?.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
-      }
     }
   };
 
@@ -251,7 +248,6 @@ function Projects() {
   };
 
   const handleTagHover = (tagKey: keyof typeof TAGS, event: React.MouseEvent<HTMLDivElement>) => {
-    if (isMobile) return;
     setHoveredTag(tagKey);
     const tagRect = event.currentTarget.getBoundingClientRect();
     const tooltipWidth = 160;
@@ -284,19 +280,17 @@ function Projects() {
           </p>
         </header>
 
-        <div className={`flex ${isMobile ? 'flex-col' : 'justify-between'} w-full gap-4`} ref={projectsContainerRef}>
+        <div className={`flex ${isMobile ? 'flex-col' : 'justify-between'} w-full`} ref={projectsContainerRef}>
           <div
-            className="grid gap-8"
+            className={`grid gap-8 ${isMobile ? 'w-full' : selectedProject ? 'w-[70%]' : 'w-full'}`}
             style={{
-              width: !isMobile && selectedProject ? 'calc(70% - 16px)' : '100%',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(250px, 1fr))',
             }}
           >
             {projects.map((project) => (
               <div
                 key={project.id}
-                className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer select-none 
-                          transition-transform duration-200 hover:scale-105 md:hover:scale-110
+                className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer select-none hover:scale-110
                           ${selectedProject?.id === project.id ? "ring-2 ring-blue-500" : ""}`}
                 onClick={() => handleProjectClick(project)}
                 onDragStart={(e) => e.preventDefault()}
@@ -319,12 +313,6 @@ function Projects() {
                       <span
                         key={tagKey}
                         className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded mr-2 mb-2`}
-                        onClick={(e) => {
-                          if (isMobile) {
-                            e.stopPropagation();
-                            alert(TAGS[tagKey].description);
-                          }
-                        }}
                       >
                         {TAGS[tagKey].name}
                       </span>
@@ -335,18 +323,19 @@ function Projects() {
             ))}
           </div>
 
-          {selectedProject && (
-            <div
-              className={`${isMobile ? 'w-full' : 'w-[28%]'}`}
-              style={{ display: selectedProject ? 'block' : 'none' }}
-            >
+          <div
+            className={`${isMobile ? 'w-full mt-8' : selectedProject ? 'w-[28%]' : 'w-0'}`}
+            style={{ display: selectedProject ? 'block' : 'none' }}
+          >
+            {selectedProject && (
               <div
                 ref={detailsPanelRef}
-                className={`bg-gray-800 rounded-lg shadow-lg ${!isMobile ? 'sticky' : ''} overflow-auto`}
+                className="bg-gray-800 rounded-lg shadow-lg overflow-auto"
                 style={{
-                  top: !isMobile ? `${navbarHeight + 56}px` : undefined,
-                  height: !isMobile ? `calc(100vh - ${navbarHeight + 40}px)` : 'auto',
-                  maxHeight: isMobile ? '100vh' : undefined,
+                  position: isMobile ? 'static' : 'sticky',
+                  top: isMobile ? 'auto' : `${navbarHeight + 56}px`,
+                  height: isMobile ? 'auto' : `calc(100vh - ${navbarHeight + 40}px)`,
+                  maxHeight: isMobile ? '80vh' : 'none',
                 }}
               >
                 <button
@@ -380,14 +369,7 @@ function Projects() {
                         onMouseEnter={(e) => handleTagHover(tagKey, e)}
                         onMouseLeave={() => setHoveredTag(null)}
                       >
-                        <span 
-                          className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded ${!isMobile ? 'cursor-help' : ''}`}
-                          onClick={() => {
-                            if (isMobile) {
-                              alert(TAGS[tagKey].description);
-                            }
-                          }}
-                        >
+                        <span className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded cursor-help`}>
                           {TAGS[tagKey].name}
                         </span>
                       </div>
@@ -403,14 +385,14 @@ function Projects() {
                   </button>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
-      {hoveredTag && !isMobile && (
+      {hoveredTag && (
         <div
           ref={tooltipRef}
-          className="fixed bg-gray-900 text-white text-xs p-2 rounded z-50 break-words w-40"
+          className={`fixed bg-gray-900 text-white text-xs p-2 rounded z-50 break-words w-40`}
           style={{
             left: `${tooltipPosition.x}px`,
             top: `${tooltipPosition.y}px`,
