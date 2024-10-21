@@ -175,13 +175,20 @@ function Projects() {
   const [isLoading, setIsLoading] = useState(false);
   const [hoveredTag, setHoveredTag] = useState<keyof typeof TAGS | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0, alignTop: false });
+  const [isMobile, setIsMobile] = useState(false);
   const projectsContainerRef = useRef<HTMLDivElement>(null);
   const detailsPanelRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const navbarHeight = 64;
 
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
     const handleResize = () => {
+      checkMobile();
       if (projectsContainerRef.current) {
         const containerWidth = projectsContainerRef.current.offsetWidth;
         const columns = Math.max(1, Math.floor(containerWidth / 300));
@@ -268,11 +275,12 @@ function Projects() {
           </p>
         </header>
 
-        <div className="flex justify-between w-full" ref={projectsContainerRef}>
+        <div className="flex justify-between w-full relative" ref={projectsContainerRef}>
           <div
-            className="grid gap-8"
+            className={`grid gap-8 transition-all duration-300 ${
+              selectedProject && !isMobile ? 'w-[70%]' : 'w-full'
+            }`}
             style={{
-              width: selectedProject ? 'calc(70% - 16px)' : '100%',
               gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
             }}
           >
@@ -312,68 +320,65 @@ function Projects() {
             ))}
           </div>
 
-          <div
-            className={`${selectedProject ? 'w-[28%]' : 'w-0'}`}
-            style={{ display: selectedProject ? 'block' : 'none' }}
-          >
-            {selectedProject && (
-              <div
-                ref={detailsPanelRef}
-                className="bg-gray-800 rounded-lg shadow-lg sticky overflow-auto"
-                style={{
-                  top: `${navbarHeight + 56}px`,
-                  height: `calc(100vh - ${navbarHeight + 40}px)`,
-                }}
+          {selectedProject && (
+            <div
+              className={`bg-gray-800 shadow-lg overflow-auto transition-all duration-300 ${
+                isMobile
+                  ? 'fixed inset-0 top-[64px] z-50'
+                  : 'w-[28%] sticky'
+              }`}
+              ref={detailsPanelRef}
+              style={{
+                top: isMobile ? undefined : `${navbarHeight + 56}px`,
+                height: isMobile ? undefined : `calc(100vh - ${navbarHeight + 40}px)`,
+              }}
+            >
+              <button
+                onClick={closeProjectDetails}
+                className={`absolute text-white bg-red-500 hover:bg-red-600 w-8 h-8 flex items-center justify-center text-xl font-bold z-10 ${
+                  isMobile ? 'top-2 right-2 rounded-full' : 'top-0 right-0 rounded-tr-lg rounded-bl-lg'
+                }`}
               >
-                <button
-                  onClick={closeProjectDetails}
-                  className="absolute top-0 right-0 text-white bg-red-500 hover:bg-red-600 w-8 h-8 flex items-center justify-center text-xl font-bold z-10"
-                  style={{
-                    borderTopRightRadius: '0.5rem',
-                    borderBottomLeftRadius: '0.5rem',
-                  }}
-                >
-                  ×
-                </button>
-                <div className="p-3">
-                  <div className="relative w-full h-56">
-                    <Image
-                      src={selectedProject.thumbnail}
-                      alt={selectedProject.title}
-                      fill
-                      className="object-cover rounded-lg pointer-events-none"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      quality={100}
-                      priority
-                    />
-                  </div>
-                  <h3 className="text-xl font-semibold text-white mb-3 mt-4">{selectedProject.title}</h3>
-                  <div className="flex flex-wrap mb-3">
-                    {selectedProject.tags.map((tagKey) => (
-                      <div
-                        key={tagKey}
-                        className="relative inline-block mr-2 mb-2"
-                        onMouseEnter={(e) => handleTagHover(tagKey, e)}
-                        onMouseLeave={() => setHoveredTag(null)}
-                      >
-                        <span className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded cursor-help`}>
-                          {TAGS[tagKey].name}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-gray-300 text-sm mb-5">{selectedProject.description}</p>
-                  <button
-                    onClick={() => handleDownload(selectedProject)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm w-full"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Processing..." : "Download"}
-                  </button>
+                ×
+              </button>
+              <div className="p-3">
+                <div className="relative w-full h-56">
+                  <Image
+                    src={selectedProject.thumbnail}
+                    alt={selectedProject.title}
+                    fill
+                    className="object-cover rounded-lg pointer-events-none"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    quality={100}
+                    priority
+                  />
                 </div>
+                <h3 className="text-xl font-semibold text-white mb-3 mt-4">{selectedProject.title}</h3>
+                <div className="flex flex-wrap mb-3">
+                  {selectedProject.tags.map((tagKey) => (
+                    <div
+                      key={tagKey}
+                      className="relative inline-block mr-2 mb-2"
+                      onMouseEnter={(e) => handleTagHover(tagKey, e)}
+                      onMouseLeave={() => setHoveredTag(null)}
+                    >
+                      <span className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded cursor-help`}>
+                        {TAGS[tagKey].name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-gray-300 text-sm mb-5">{selectedProject.description}</p>
+                <button
+                  onClick={() => handleDownload(selectedProject)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm w-full"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Processing..." : "Download"}
+                </button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
       {hoveredTag && (
