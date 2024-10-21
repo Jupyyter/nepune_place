@@ -2,7 +2,7 @@ import "./globals.css";
 import Menu from "@/app/Menu";
 import jupiter from "../public/imgs/jupiter.jpg";
 import { Inter } from "next/font/google";
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="">
+    <html lang="en">
       <body
         className="min-h-screen flex flex-col"
         style={{
@@ -29,8 +29,12 @@ export default function RootLayout({
           backgroundColor: "black",
         }}
       >
-        <div className="sticky top-0 z-10 bg-black bg-opacity-75">
-          <Menu />
+        {/* Sticky Menu */}
+        <div className="sticky top-0 z-10 bg-black bg-opacity-75 px-2 sm:px-4">
+          {/* Limit the max-width of the menu for small screens */}
+          <div className="max-w-full sm:max-w-7xl mx-auto">
+            <Menu />
+          </div>
         </div>
         {children}
         <SpeedInsights />
