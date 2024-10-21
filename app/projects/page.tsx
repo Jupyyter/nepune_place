@@ -175,7 +175,6 @@ const Projects: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [hoveredTag, setHoveredTag] = useState<keyof typeof TAGS | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number; alignTop: boolean }>({ x: 0, y: 0, alignTop: false });
-  const [isMobile, setIsMobile] = useState<boolean>(false);
   const projectsContainerRef = useRef<HTMLDivElement>(null);
   const detailsPanelRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -185,16 +184,17 @@ const Projects: React.FC = () => {
     const handleResize = () => {
       if (projectsContainerRef.current) {
         const containerWidth = projectsContainerRef.current.offsetWidth;
-        const columns = Math.max(1, Math.floor(containerWidth / (isMobile ? 250 : 300)));
+        const isMobile = window.innerWidth <= 768;
+        const minWidth = isMobile ? 150 : 250; // Smaller minimum width on mobile
+        const columns = Math.max(1, Math.floor(containerWidth / minWidth));
         projectsContainerRef.current.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
       }
-      setIsMobile(window.innerWidth < 768);
     };
 
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [isMobile]);
+  }, []);
 
   useEffect(() => {
     const detailsPanel = detailsPanelRef.current;
@@ -274,8 +274,8 @@ const Projects: React.FC = () => {
           <div
             className="grid gap-4 md:gap-8"
             style={{
-              width: isMobile ? '100%' : (selectedProject ? 'calc(70% - 16px)' : '100%'),
-              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+              width: selectedProject ? 'calc(100% - 16px)' : '100%',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
             }}
           >
             {projects.map((project) => (
@@ -286,7 +286,7 @@ const Projects: React.FC = () => {
                 onClick={() => handleProjectClick(project)}
                 onDragStart={(e) => e.preventDefault()}
               >
-                <div className="relative w-full h-40 md:h-48">
+                <div className="relative w-full h-32 md:h-48">
                   <Image
                     src={project.thumbnail}
                     alt={project.title}
@@ -298,12 +298,12 @@ const Projects: React.FC = () => {
                   />
                 </div>
                 <div className={`${selectedProject?.id === project.id ? "bg-blue-700" : "bg-gray-800"} w-full h-full`}>
-                  <h3 className="text-lg font-semibold text-white p-3">{project.title}</h3>
-                  <div className="flex flex-wrap px-2 pb-2">
+                  <h3 className="text-sm md:text-lg font-semibold text-white p-2 md:p-3">{project.title}</h3>
+                  <div className="flex flex-wrap px-1 md:px-2 pb-2">
                     {project.tags.map((tagKey) => (
                       <span
                         key={tagKey}
-                        className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded mr-2 mb-2`}
+                        className={`${TAGS[tagKey].color} text-white text-xs px-1 md:px-2 py-1 rounded mr-1 md:mr-2 mb-1 md:mb-2`}
                       >
                         {TAGS[tagKey].name}
                       </span>
@@ -314,19 +314,16 @@ const Projects: React.FC = () => {
             ))}
           </div>
 
-          <div
-            className={`${isMobile ? 'w-full mt-4' : (selectedProject ? 'w-[28%]' : 'w-0')} transition-all duration-300`}
-            style={{ display: selectedProject ? 'block' : 'none' }}
-          >
-            {selectedProject && (
+          {selectedProject && (
+            <div
+              className="w-full md:w-1/3 mt-4 md:mt-0 md:ml-4"
+            >
               <div
                 ref={detailsPanelRef}
-                className="bg-gray-800 rounded-lg shadow-lg overflow-auto"
+                className="bg-gray-800 rounded-lg shadow-lg sticky overflow-auto"
                 style={{
-                  position: isMobile ? 'relative' : 'sticky',
-                  top: isMobile ? '0' : `${navbarHeight + 56}px`,
-                  height: isMobile ? 'auto' : `calc(100vh - ${navbarHeight + 40}px)`,
-                  maxHeight: isMobile ? '80vh' : 'none',
+                  top: `${navbarHeight + 16}px`,
+                  height: `calc(100vh - ${navbarHeight + 40}px)`,
                 }}
               >
                 <button
@@ -351,7 +348,7 @@ const Projects: React.FC = () => {
                       priority
                     />
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-3 mt-4">{selectedProject.title}</h3>
+                  <h3 className="text-lg md:text-xl font-semibold text-white mb-3 mt-4">{selectedProject.title}</h3>
                   <div className="flex flex-wrap mb-3">
                     {selectedProject.tags.map((tagKey) => (
                       <div
@@ -376,8 +373,8 @@ const Projects: React.FC = () => {
                   </button>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
       {hoveredTag && (
