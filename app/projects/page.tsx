@@ -170,12 +170,11 @@ interface Project {
   tags: (keyof typeof TAGS)[];
 }
 
-const Projects: React.FC = () => {
+function Projects() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [hoveredTag, setHoveredTag] = useState<keyof typeof TAGS | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number; alignTop: boolean }>({ x: 0, y: 0, alignTop: false });
-  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0, alignTop: false });
   const projectsContainerRef = useRef<HTMLDivElement>(null);
   const detailsPanelRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -185,10 +184,7 @@ const Projects: React.FC = () => {
     const handleResize = () => {
       if (projectsContainerRef.current) {
         const containerWidth = projectsContainerRef.current.offsetWidth;
-        const isMobileView = window.innerWidth < 768;
-        setIsMobile(isMobileView);
-        const minColumnWidth = isMobileView ? 150 : 250;
-        const columns = Math.max(1, Math.floor(containerWidth / minColumnWidth));
+        const columns = Math.max(1, Math.floor(containerWidth / 300));
         projectsContainerRef.current.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
       }
     };
@@ -272,23 +268,23 @@ const Projects: React.FC = () => {
           </p>
         </header>
 
-        <div className={`flex flex-col md:flex-row justify-between w-full ${isMobile ? 'space-y-4' : ''}`} ref={projectsContainerRef}>
+        <div className="flex flex-col md:flex-row justify-between w-full" ref={projectsContainerRef}>
           <div
-            className="grid gap-4 md:gap-8"
+            className="grid gap-8 w-full md:w-auto"
             style={{
-              width: selectedProject && !isMobile ? 'calc(70% - 16px)' : '100%',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+              flex: selectedProject ? '0 0 70%' : '1 1 100%',
             }}
           >
             {projects.map((project) => (
               <div
                 key={project.id}
-                className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer select-none hover:scale-105 transition-transform duration-200
+                className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer select-none hover:scale-105 transition-transform
                           ${selectedProject?.id === project.id ? "ring-2 ring-blue-500" : ""}`}
                 onClick={() => handleProjectClick(project)}
                 onDragStart={(e) => e.preventDefault()}
               >
-                <div className="relative w-full h-32 md:h-48">
+                <div className="relative w-full h-48">
                   <Image
                     src={project.thumbnail}
                     alt={project.title}
@@ -300,12 +296,12 @@ const Projects: React.FC = () => {
                   />
                 </div>
                 <div className={`${selectedProject?.id === project.id ? "bg-blue-700" : "bg-gray-800"} w-full h-full`}>
-                  <h3 className="text-sm md:text-lg font-semibold text-white p-2 md:p-3">{project.title}</h3>
+                  <h3 className="text-lg font-semibold text-white p-3">{project.title}</h3>
                   <div className="flex flex-wrap px-2 pb-2">
                     {project.tags.map((tagKey) => (
                       <span
                         key={tagKey}
-                        className={`${TAGS[tagKey].color} text-white text-xs px-1 md:px-2 py-1 rounded mr-1 mb-1 md:mr-2 md:mb-2`}
+                        className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded mr-2 mb-2`}
                       >
                         {TAGS[tagKey].name}
                       </span>
@@ -317,17 +313,15 @@ const Projects: React.FC = () => {
           </div>
 
           <div
-            className={`${selectedProject ? (isMobile ? 'w-full' : 'w-[28%]') : 'w-0'}`}
-            style={{ display: selectedProject ? 'block' : 'none' }}
+            className={`md:w-[28%] w-full mt-8 md:mt-0 ${selectedProject ? 'block' : 'hidden'}`}
           >
             {selectedProject && (
               <div
                 ref={detailsPanelRef}
-                className="bg-gray-800 rounded-lg shadow-lg overflow-auto"
+                className="bg-gray-800 rounded-lg shadow-lg sticky overflow-auto"
                 style={{
-                  position: isMobile ? 'relative' : 'sticky',
-                  top: isMobile ? 'auto' : `${navbarHeight + 56}px`,
-                  height: isMobile ? 'auto' : `calc(100vh - ${navbarHeight + 40}px)`,
+                  top: `${navbarHeight + 16}px`,
+                  height: `calc(100vh - ${navbarHeight + 32}px)`,
                 }}
               >
                 <button
@@ -341,7 +335,7 @@ const Projects: React.FC = () => {
                   ×
                 </button>
                 <div className="p-3">
-                  <div className="relative w-full h-40 md:h-56">
+                  <div className="relative w-full h-56">
                     <Image
                       src={selectedProject.thumbnail}
                       alt={selectedProject.title}
@@ -352,22 +346,22 @@ const Projects: React.FC = () => {
                       priority
                     />
                   </div>
-                  <h3 className="text-lg md:text-xl font-semibold text-white mb-2 md:mb-3 mt-3 md:mt-4">{selectedProject.title}</h3>
-                  <div className="flex flex-wrap mb-2 md:mb-3">
+                  <h3 className="text-xl font-semibold text-white mb-3 mt-4">{selectedProject.title}</h3>
+                  <div className="flex flex-wrap mb-3">
                     {selectedProject.tags.map((tagKey) => (
                       <div
                         key={tagKey}
-                        className="relative inline-block mr-1 mb-1 md:mr-2 md:mb-2"
+                        className="relative inline-block mr-2 mb-2"
                         onMouseEnter={(e) => handleTagHover(tagKey, e)}
                         onMouseLeave={() => setHoveredTag(null)}
                       >
-                        <span className={`${TAGS[tagKey].color} text-white text-xs px-1 md:px-2 py-1 rounded cursor-help`}>
+                        <span className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded cursor-help`}>
                           {TAGS[tagKey].name}
                         </span>
                       </div>
                     ))}
                   </div>
-                  <p className="text-gray-300 text-xs md:text-sm mb-3 md:mb-5">{selectedProject.description}</p>
+                  <p className="text-gray-300 text-sm mb-5">{selectedProject.description}</p>
                   <button
                     onClick={() => handleDownload(selectedProject)}
                     className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm w-full"
