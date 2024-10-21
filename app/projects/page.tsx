@@ -184,8 +184,7 @@ function Projects() {
     const handleResize = () => {
       if (projectsContainerRef.current) {
         const containerWidth = projectsContainerRef.current.offsetWidth;
-        const minWidth = selectedProject ? 180 : 250; // Slightly smaller minimum width
-        const columns = Math.max(1, Math.floor(containerWidth / minWidth));
+        const columns = Math.max(1, Math.floor(containerWidth / 300));
         projectsContainerRef.current.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
       }
     };
@@ -193,7 +192,7 @@ function Projects() {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [selectedProject]);
+  }, []);
 
   useEffect(() => {
     const detailsPanel = detailsPanelRef.current;
@@ -271,21 +270,21 @@ function Projects() {
 
         <div className="flex justify-between w-full" ref={projectsContainerRef}>
           <div
-            className="grid gap-4"
+            className="grid gap-8"
             style={{
-              width: selectedProject ? 'calc(60% - 16px)' : '100%', // Reduced from 70% to 60%
-              gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', // Reduced minimum width
+              width: selectedProject ? 'calc(70% - 16px)' : '100%',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
             }}
           >
             {projects.map((project) => (
               <div
                 key={project.id}
-                className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer select-none hover:scale-105 transition-transform
+                className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer select-none hover:scale-110
                           ${selectedProject?.id === project.id ? "ring-2 ring-blue-500" : ""}`}
                 onClick={() => handleProjectClick(project)}
                 onDragStart={(e) => e.preventDefault()}
               >
-                <div className="relative w-full h-32 sm:h-40"> {/* Slightly reduced height */}
+                <div className="relative w-full h-48">
                   <Image
                     src={project.thumbnail}
                     alt={project.title}
@@ -297,7 +296,7 @@ function Projects() {
                   />
                 </div>
                 <div className={`${selectedProject?.id === project.id ? "bg-blue-700" : "bg-gray-800"} w-full h-full`}>
-                  <h3 className="text-base sm:text-lg font-semibold text-white p-2 sm:p-3">{project.title}</h3>
+                  <h3 className="text-lg font-semibold text-white p-3">{project.title}</h3>
                   <div className="flex flex-wrap px-2 pb-2">
                     {project.tags.map((tagKey) => (
                       <span
@@ -314,15 +313,16 @@ function Projects() {
           </div>
 
           <div
-            className={`w-[38%] ${selectedProject ? 'block' : 'hidden'}`} // Increased from 28% to 38%
+            className={`${selectedProject ? 'w-[28%]' : 'w-0'}`}
+            style={{ display: selectedProject ? 'block' : 'none' }}
           >
             {selectedProject && (
               <div
                 ref={detailsPanelRef}
                 className="bg-gray-800 rounded-lg shadow-lg sticky overflow-auto"
                 style={{
-                  top: `${navbarHeight + 16}px`,
-                  height: `calc(100vh - ${navbarHeight + 32}px)`,
+                  top: `${navbarHeight + 56}px`,
+                  height: `calc(100vh - ${navbarHeight + 40}px)`,
                 }}
               >
                 <button
@@ -336,7 +336,7 @@ function Projects() {
                   ×
                 </button>
                 <div className="p-3">
-                  <div className="relative w-full h-48 sm:h-64"> {/* Increased height */}
+                  <div className="relative w-full h-56">
                     <Image
                       src={selectedProject.thumbnail}
                       alt={selectedProject.title}
@@ -389,6 +389,19 @@ function Projects() {
           {TAGS[hoveredTag].description}
         </div>
       )}
+      <style jsx global>{`
+        @media (max-width: 768px) {
+          .grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+          }
+          .grid > div {
+            transform: none !important;
+          }
+          .grid > div:hover {
+            transform: none !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
