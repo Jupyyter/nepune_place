@@ -184,7 +184,8 @@ function Projects() {
     const handleResize = () => {
       if (projectsContainerRef.current) {
         const containerWidth = projectsContainerRef.current.offsetWidth;
-        const columns = Math.max(1, Math.floor(containerWidth / 300));
+        const minWidth = selectedProject ? 200 : 300; // Smaller minimum width when a project is selected
+        const columns = Math.max(1, Math.floor(containerWidth / minWidth));
         projectsContainerRef.current.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
       }
     };
@@ -192,7 +193,7 @@ function Projects() {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [selectedProject]);
 
   useEffect(() => {
     const detailsPanel = detailsPanelRef.current;
@@ -268,12 +269,12 @@ function Projects() {
           </p>
         </header>
 
-        <div className="flex flex-col md:flex-row justify-between w-full" ref={projectsContainerRef}>
+        <div className="flex justify-between w-full" ref={projectsContainerRef}>
           <div
-            className="grid gap-8 w-full md:w-auto"
+            className="grid gap-4"
             style={{
-              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-              flex: selectedProject ? '0 0 70%' : '1 1 100%',
+              width: selectedProject ? 'calc(70% - 16px)' : '100%',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
             }}
           >
             {projects.map((project) => (
@@ -284,7 +285,7 @@ function Projects() {
                 onClick={() => handleProjectClick(project)}
                 onDragStart={(e) => e.preventDefault()}
               >
-                <div className="relative w-full h-48">
+                <div className="relative w-full h-36 sm:h-48">
                   <Image
                     src={project.thumbnail}
                     alt={project.title}
@@ -313,7 +314,7 @@ function Projects() {
           </div>
 
           <div
-            className={`md:w-[28%] w-full mt-8 md:mt-0 ${selectedProject ? 'block' : 'hidden'}`}
+            className={`w-[28%] ${selectedProject ? 'block' : 'hidden'}`}
           >
             {selectedProject && (
               <div
@@ -335,7 +336,7 @@ function Projects() {
                   ×
                 </button>
                 <div className="p-3">
-                  <div className="relative w-full h-56">
+                  <div className="relative w-full h-40 sm:h-56">
                     <Image
                       src={selectedProject.thumbnail}
                       alt={selectedProject.title}
