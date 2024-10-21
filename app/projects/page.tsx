@@ -313,7 +313,7 @@ function Projects() {
           </div>
 
           <div
-            className={`${selectedProject ? 'w-[28%]' : 'w-0'} details-panel`}
+            className={`details-panel ${selectedProject ? 'w-[28%]' : 'w-0'}`}
             style={{ display: selectedProject ? 'block' : 'none' }}
           >
             {selectedProject && (
@@ -393,7 +393,7 @@ function Projects() {
         @media (max-width: 768px) {
           .projects-grid {
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
-            width: 60% !important;
+            width: 100% !important;
           }
           .projects-grid > div {
             transform: none !important;
@@ -402,7 +402,16 @@ function Projects() {
             transform: none !important;
           }
           .details-panel {
-            width: 38% !important;
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 70% !important;
+            height: 100vh;
+            z-index: 50;
+          }
+          .details-panel > div {
+            top: 0 !important;
+            height: 100% !important;
           }
         }
       `}</style>
