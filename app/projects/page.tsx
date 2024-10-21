@@ -170,13 +170,12 @@ interface Project {
   tags: (keyof typeof TAGS)[];
 }
 
-
-function Projects() {
+const Projects: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [hoveredTag, setHoveredTag] = useState<keyof typeof TAGS | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0, alignTop: false });
+  const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number; alignTop: boolean }>({ x: 0, y: 0, alignTop: false });
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const projectsContainerRef = useRef<HTMLDivElement>(null);
   const detailsPanelRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -186,25 +185,16 @@ function Projects() {
     const handleResize = () => {
       if (projectsContainerRef.current) {
         const containerWidth = projectsContainerRef.current.offsetWidth;
-        const minCardWidth = isMobile ? 150 : 250;
-        const columns = Math.max(1, Math.floor(containerWidth / minCardWidth));
+        const columns = Math.max(1, Math.floor(containerWidth / (isMobile ? 250 : 300)));
         projectsContainerRef.current.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
       }
+      setIsMobile(window.innerWidth < 768);
     };
 
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [isMobile]);
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   useEffect(() => {
     const detailsPanel = detailsPanelRef.current;
@@ -272,33 +262,31 @@ function Projects() {
 
   return (
     <div className="flex flex-col items-center justify-start min-h-screen p-2 pt-8">
-      <div className="w-full max-w-7xl px-2 md:px-4 flex flex-col items-center">
-        <header className="text-center mb-4 md:mb-8 w-full">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 md:mb-4 break-words">My Projects</h1>
-          <p className="text-base md:text-lg mb-2 md:mb-4 break-words whitespace-pre-wrap max-w-full">
+      <div className="w-full max-w-7xl px-4 flex flex-col items-center">
+        <header className="text-center mb-8 w-full">
+          <h1 className="text-4xl font-bold mb-4 break-words">My Projects</h1>
+          <p className="text-lg mb-4 break-words whitespace-pre-wrap max-w-full">
             projects here and there and here and everywhere
           </p>
         </header>
 
-        <div className="flex flex-col md:flex-row w-full gap-4" ref={projectsContainerRef}>
+        <div className="flex flex-col md:flex-row justify-between w-full" ref={projectsContainerRef}>
           <div
-            className={`grid gap-4 md:gap-8 w-full ${
-              !isMobile && selectedProject ? 'md:w-[70%]' : 'md:w-full'
-            }`}
+            className="grid gap-4 md:gap-8"
             style={{
-              gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))'
+              width: isMobile ? '100%' : (selectedProject ? 'calc(70% - 16px)' : '100%'),
+              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
             }}
           >
             {projects.map((project) => (
               <div
                 key={project.id}
-                className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer select-none 
-                          transition-transform duration-200 hover:scale-105 md:hover:scale-110
+                className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer select-none hover:scale-105 transition-transform duration-200
                           ${selectedProject?.id === project.id ? "ring-2 ring-blue-500" : ""}`}
                 onClick={() => handleProjectClick(project)}
                 onDragStart={(e) => e.preventDefault()}
               >
-                <div className="relative w-full h-32 md:h-48">
+                <div className="relative w-full h-40 md:h-48">
                   <Image
                     src={project.thumbnail}
                     alt={project.title}
@@ -310,7 +298,7 @@ function Projects() {
                   />
                 </div>
                 <div className={`${selectedProject?.id === project.id ? "bg-blue-700" : "bg-gray-800"} w-full h-full`}>
-                  <h3 className="text-base md:text-lg font-semibold text-white p-2 md:p-3">{project.title}</h3>
+                  <h3 className="text-lg font-semibold text-white p-3">{project.title}</h3>
                   <div className="flex flex-wrap px-2 pb-2">
                     {project.tags.map((tagKey) => (
                       <span
@@ -326,31 +314,33 @@ function Projects() {
             ))}
           </div>
 
-          {selectedProject && (
-            <div
-              className={`w-full md:w-[28%] ${
-                isMobile ? 'relative' : 'sticky'
-              }`}
-              style={{
-                top: isMobile ? undefined : `${navbarHeight + 56}px`,
-                height: isMobile ? 'auto' : `calc(100vh - ${navbarHeight + 40}px)`
-              }}
-            >
+          <div
+            className={`${isMobile ? 'w-full mt-4' : (selectedProject ? 'w-[28%]' : 'w-0')} transition-all duration-300`}
+            style={{ display: selectedProject ? 'block' : 'none' }}
+          >
+            {selectedProject && (
               <div
                 ref={detailsPanelRef}
                 className="bg-gray-800 rounded-lg shadow-lg overflow-auto"
                 style={{
-                  maxHeight: isMobile ? '80vh' : undefined
+                  position: isMobile ? 'relative' : 'sticky',
+                  top: isMobile ? '0' : `${navbarHeight + 56}px`,
+                  height: isMobile ? 'auto' : `calc(100vh - ${navbarHeight + 40}px)`,
+                  maxHeight: isMobile ? '80vh' : 'none',
                 }}
               >
                 <button
                   onClick={closeProjectDetails}
-                  className="absolute top-0 right-0 text-white bg-red-500 hover:bg-red-600 w-8 h-8 flex items-center justify-center text-xl font-bold z-10 rounded-tr-lg rounded-bl-lg"
+                  className="absolute top-0 right-0 text-white bg-red-500 hover:bg-red-600 w-8 h-8 flex items-center justify-center text-xl font-bold z-10"
+                  style={{
+                    borderTopRightRadius: '0.5rem',
+                    borderBottomLeftRadius: '0.5rem',
+                  }}
                 >
                   ×
                 </button>
                 <div className="p-3">
-                  <div className="relative w-full h-40 md:h-56">
+                  <div className="relative w-full h-48 md:h-56">
                     <Image
                       src={selectedProject.thumbnail}
                       alt={selectedProject.title}
@@ -361,10 +351,8 @@ function Projects() {
                       priority
                     />
                   </div>
-                  <h3 className="text-lg md:text-xl font-semibold text-white mb-2 md:mb-3 mt-3 md:mt-4">
-                    {selectedProject.title}
-                  </h3>
-                  <div className="flex flex-wrap mb-2 md:mb-3">
+                  <h3 className="text-xl font-semibold text-white mb-3 mt-4">{selectedProject.title}</h3>
+                  <div className="flex flex-wrap mb-3">
                     {selectedProject.tags.map((tagKey) => (
                       <div
                         key={tagKey}
@@ -378,7 +366,7 @@ function Projects() {
                       </div>
                     ))}
                   </div>
-                  <p className="text-gray-300 text-sm mb-4 md:mb-5">{selectedProject.description}</p>
+                  <p className="text-gray-300 text-sm mb-5">{selectedProject.description}</p>
                   <button
                     onClick={() => handleDownload(selectedProject)}
                     className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm w-full"
@@ -388,14 +376,14 @@ function Projects() {
                   </button>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
-      {hoveredTag && !isMobile && (
+      {hoveredTag && (
         <div
           ref={tooltipRef}
-          className="fixed bg-gray-900 text-white text-xs p-2 rounded z-50 break-words w-40"
+          className={`fixed bg-gray-900 text-white text-xs p-2 rounded z-50 break-words w-40`}
           style={{
             left: `${tooltipPosition.x}px`,
             top: `${tooltipPosition.y}px`,
@@ -407,6 +395,6 @@ function Projects() {
       )}
     </div>
   );
-}
+};
 
 export default Projects;
