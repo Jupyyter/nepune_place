@@ -270,7 +270,7 @@ function Projects() {
 
         <div className="flex justify-between w-full" ref={projectsContainerRef}>
           <div
-            className="grid gap-8"
+            className="grid gap-8 projects-grid"
             style={{
               width: selectedProject ? 'calc(70% - 16px)' : '100%',
               gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
@@ -313,7 +313,7 @@ function Projects() {
           </div>
 
           <div
-            className={`${selectedProject ? 'w-[28%]' : 'w-0'}`}
+            className={`${selectedProject ? 'w-[28%]' : 'w-0'} details-panel`}
             style={{ display: selectedProject ? 'block' : 'none' }}
           >
             {selectedProject && (
@@ -391,14 +391,18 @@ function Projects() {
       )}
       <style jsx global>{`
         @media (max-width: 768px) {
-          .grid {
+          .projects-grid {
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+            width: 60% !important;
           }
-          .grid > div {
+          .projects-grid > div {
             transform: none !important;
           }
-          .grid > div:hover {
+          .projects-grid > div:hover {
             transform: none !important;
+          }
+          .details-panel {
+            width: 38% !important;
           }
         }
       `}</style>
