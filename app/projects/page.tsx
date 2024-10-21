@@ -172,10 +172,10 @@ interface Project {
 
 const Projects: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [hoveredTag, setHoveredTag] = useState<keyof typeof TAGS | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0, alignTop: false });
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const projectsContainerRef = useRef<HTMLDivElement>(null);
   const detailsPanelRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -185,12 +185,10 @@ const Projects: React.FC = () => {
     const handleResize = () => {
       if (projectsContainerRef.current) {
         const containerWidth = projectsContainerRef.current.offsetWidth;
-        const isMobileView = window.innerWidth < 768;
-        setIsMobile(isMobileView);
-        const minColumnWidth = isMobileView ? 150 : 250;
-        const columns = Math.max(1, Math.floor(containerWidth / minColumnWidth));
+        const columns = Math.max(1, Math.floor(containerWidth / 300));
         projectsContainerRef.current.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
       }
+      setIsMobile(window.innerWidth < 768);
     };
 
     handleResize();
@@ -274,21 +272,20 @@ const Projects: React.FC = () => {
 
         <div className={`flex ${isMobile ? 'flex-col' : 'justify-between'} w-full`} ref={projectsContainerRef}>
           <div
-            className="grid gap-4 sm:gap-8"
+            className={`grid gap-8 ${isMobile ? 'w-full' : selectedProject ? 'w-[70%]' : 'w-full'}`}
             style={{
-              width: isMobile || !selectedProject ? '100%' : 'calc(70% - 16px)',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
             }}
           >
             {projects.map((project) => (
               <div
                 key={project.id}
-                className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer select-none hover:scale-105 transition-transform duration-200
+                className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer select-none hover:scale-110
                           ${selectedProject?.id === project.id ? "ring-2 ring-blue-500" : ""}`}
                 onClick={() => handleProjectClick(project)}
                 onDragStart={(e) => e.preventDefault()}
               >
-                <div className="relative w-full h-36 sm:h-48">
+                <div className="relative w-full h-48">
                   <Image
                     src={project.thumbnail}
                     alt={project.title}
@@ -300,7 +297,7 @@ const Projects: React.FC = () => {
                   />
                 </div>
                 <div className={`${selectedProject?.id === project.id ? "bg-blue-700" : "bg-gray-800"} w-full h-full`}>
-                  <h3 className="text-base sm:text-lg font-semibold text-white p-2 sm:p-3">{project.title}</h3>
+                  <h3 className="text-lg font-semibold text-white p-3">{project.title}</h3>
                   <div className="flex flex-wrap px-2 pb-2">
                     {project.tags.map((tagKey) => (
                       <span
@@ -316,18 +313,17 @@ const Projects: React.FC = () => {
             ))}
           </div>
 
-          {selectedProject && (
-            <div
-              className={`${isMobile ? 'w-full mt-8' : 'w-[28%]'}`}
-              style={{ display: selectedProject ? 'block' : 'none' }}
-            >
+          <div
+            className={`${isMobile ? 'w-full mt-8' : selectedProject ? 'w-[28%]' : 'w-0'}`}
+            style={{ display: selectedProject ? 'block' : 'none' }}
+          >
+            {selectedProject && (
               <div
                 ref={detailsPanelRef}
-                className="bg-gray-800 rounded-lg shadow-lg sticky overflow-auto"
+                className={`bg-gray-800 rounded-lg shadow-lg ${isMobile ? '' : 'sticky'} overflow-auto`}
                 style={{
-                  top: `${navbarHeight + 16}px`,
+                  top: isMobile ? 'auto' : `${navbarHeight + 56}px`,
                   height: isMobile ? 'auto' : `calc(100vh - ${navbarHeight + 40}px)`,
-                  maxHeight: isMobile ? '100vh' : 'none',
                 }}
               >
                 <button
@@ -341,7 +337,7 @@ const Projects: React.FC = () => {
                   ×
                 </button>
                 <div className="p-3">
-                  <div className="relative w-full h-48 sm:h-56">
+                  <div className="relative w-full h-56">
                     <Image
                       src={selectedProject.thumbnail}
                       alt={selectedProject.title}
@@ -377,8 +373,8 @@ const Projects: React.FC = () => {
                   </button>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
       {hoveredTag && (
