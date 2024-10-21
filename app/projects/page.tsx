@@ -172,9 +172,10 @@ interface Project {
 
 const Projects: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [hoveredTag, setHoveredTag] = useState<keyof typeof TAGS | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number; alignTop: boolean }>({ x: 0, y: 0, alignTop: false });
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0, alignTop: false });
+  const [isMobile, setIsMobile] = useState(false);
   const projectsContainerRef = useRef<HTMLDivElement>(null);
   const detailsPanelRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -184,9 +185,10 @@ const Projects: React.FC = () => {
     const handleResize = () => {
       if (projectsContainerRef.current) {
         const containerWidth = projectsContainerRef.current.offsetWidth;
-        const isMobile = window.innerWidth <= 768;
-        const minWidth = isMobile ? 150 : 250; // Smaller minimum width on mobile
-        const columns = Math.max(1, Math.floor(containerWidth / minWidth));
+        const isMobileView = window.innerWidth < 768;
+        setIsMobile(isMobileView);
+        const minColumnWidth = isMobileView ? 150 : 250;
+        const columns = Math.max(1, Math.floor(containerWidth / minColumnWidth));
         projectsContainerRef.current.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
       }
     };
@@ -270,11 +272,11 @@ const Projects: React.FC = () => {
           </p>
         </header>
 
-        <div className="flex flex-col md:flex-row justify-between w-full" ref={projectsContainerRef}>
+        <div className={`flex ${isMobile ? 'flex-col' : 'justify-between'} w-full`} ref={projectsContainerRef}>
           <div
-            className="grid gap-4 md:gap-8"
+            className="grid gap-4 sm:gap-8"
             style={{
-              width: selectedProject ? 'calc(100% - 16px)' : '100%',
+              width: isMobile || !selectedProject ? '100%' : 'calc(70% - 16px)',
               gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
             }}
           >
@@ -286,7 +288,7 @@ const Projects: React.FC = () => {
                 onClick={() => handleProjectClick(project)}
                 onDragStart={(e) => e.preventDefault()}
               >
-                <div className="relative w-full h-32 md:h-48">
+                <div className="relative w-full h-36 sm:h-48">
                   <Image
                     src={project.thumbnail}
                     alt={project.title}
@@ -298,12 +300,12 @@ const Projects: React.FC = () => {
                   />
                 </div>
                 <div className={`${selectedProject?.id === project.id ? "bg-blue-700" : "bg-gray-800"} w-full h-full`}>
-                  <h3 className="text-sm md:text-lg font-semibold text-white p-2 md:p-3">{project.title}</h3>
-                  <div className="flex flex-wrap px-1 md:px-2 pb-2">
+                  <h3 className="text-base sm:text-lg font-semibold text-white p-2 sm:p-3">{project.title}</h3>
+                  <div className="flex flex-wrap px-2 pb-2">
                     {project.tags.map((tagKey) => (
                       <span
                         key={tagKey}
-                        className={`${TAGS[tagKey].color} text-white text-xs px-1 md:px-2 py-1 rounded mr-1 md:mr-2 mb-1 md:mb-2`}
+                        className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded mr-2 mb-2`}
                       >
                         {TAGS[tagKey].name}
                       </span>
@@ -316,14 +318,16 @@ const Projects: React.FC = () => {
 
           {selectedProject && (
             <div
-              className="w-full md:w-1/3 mt-4 md:mt-0 md:ml-4"
+              className={`${isMobile ? 'w-full mt-8' : 'w-[28%]'}`}
+              style={{ display: selectedProject ? 'block' : 'none' }}
             >
               <div
                 ref={detailsPanelRef}
                 className="bg-gray-800 rounded-lg shadow-lg sticky overflow-auto"
                 style={{
                   top: `${navbarHeight + 16}px`,
-                  height: `calc(100vh - ${navbarHeight + 40}px)`,
+                  height: isMobile ? 'auto' : `calc(100vh - ${navbarHeight + 40}px)`,
+                  maxHeight: isMobile ? '100vh' : 'none',
                 }}
               >
                 <button
@@ -337,7 +341,7 @@ const Projects: React.FC = () => {
                   ×
                 </button>
                 <div className="p-3">
-                  <div className="relative w-full h-48 md:h-56">
+                  <div className="relative w-full h-48 sm:h-56">
                     <Image
                       src={selectedProject.thumbnail}
                       alt={selectedProject.title}
@@ -348,7 +352,7 @@ const Projects: React.FC = () => {
                       priority
                     />
                   </div>
-                  <h3 className="text-lg md:text-xl font-semibold text-white mb-3 mt-4">{selectedProject.title}</h3>
+                  <h3 className="text-xl font-semibold text-white mb-3 mt-4">{selectedProject.title}</h3>
                   <div className="flex flex-wrap mb-3">
                     {selectedProject.tags.map((tagKey) => (
                       <div
