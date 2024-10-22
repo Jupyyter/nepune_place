@@ -20,7 +20,7 @@ const Menu: React.FC = () => {
             <Link
               key={item.path}
               href={item.path}
-              className={`text-white px-6 sm:px-12 py-4 rounded-md text-sm font-medium m-1 ${
+              className={`text-white px-3 sm:px-12 py-4 rounded-md text-sm sm:text-base font-medium m-1 sm:m-1 ${
                 pathname === item.path
                   ? "bg-red-900" // Active button color
                   : "bg-gray-600 hover:bg-yellow-500" // Inactive button color
