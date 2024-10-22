@@ -277,7 +277,7 @@ function Projects() {
 
         <div className="flex justify-between w-full relative" ref={projectsContainerRef}>
           <div
-            className={`grid gap-8 transition-all duration-300 ${
+            className={`grid gap-8 ${
               selectedProject && !isMobile ? 'w-[70%]' : 'w-full'
             }`}
             style={{
@@ -322,7 +322,7 @@ function Projects() {
 
           {selectedProject && (
             <div
-              className={`bg-gray-800 shadow-lg overflow-auto transition-all duration-300 ${
+              className={`bg-gray-800 shadow-lg overflow-auto ${
                 isMobile
                   ? 'fixed inset-0 top-[64px] z-50'
                   : 'w-[28%] sticky'
@@ -335,9 +335,7 @@ function Projects() {
             >
               <button
                 onClick={closeProjectDetails}
-                className={`absolute text-white bg-red-500 hover:bg-red-600 w-8 h-8 flex items-center justify-center text-xl font-bold z-10 ${
-                  isMobile ? 'top-2 right-2 rounded-full' : 'top-0 right-0 rounded-tr-lg rounded-bl-lg'
-                }`}
+                className="absolute text-white bg-red-500 hover:bg-red-600 w-8 h-8 flex items-center justify-center text-xl font-bold z-10 top-0 right-0 rounded-tr-lg rounded-bl-lg"
               >
                 ×
               </button>
@@ -371,7 +369,8 @@ function Projects() {
                 <p className="text-gray-300 text-sm mb-5">{selectedProject.description}</p>
                 <button
                   onClick={() => handleDownload(selectedProject)}
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm w-full"
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg
+                  text-sm w-full"
                   disabled={isLoading}
                 >
                   {isLoading ? "Processing..." : "Download"}
@@ -384,11 +383,11 @@ function Projects() {
       {hoveredTag && (
         <div
           ref={tooltipRef}
-          className={`fixed bg-gray-900 text-white text-xs p-2 rounded z-50 break-words w-40`}
+          className="fixed bg-gray-900 text-white text-xs p-2 rounded z-50 break-words w-40"
           style={{
             left: `${tooltipPosition.x}px`,
             top: `${tooltipPosition.y}px`,
-            transform: tooltipPosition.alignTop ? 'translateY(-100%)' : 'translateY(0)',
+            ...(tooltipPosition.alignTop && { transform: 'translateY(-100%)' })
           }}
         >
           {TAGS[hoveredTag].description}
