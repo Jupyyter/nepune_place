@@ -203,24 +203,23 @@ function Projects() {
 
   useEffect(() => {
     const detailsPanel = detailsPanelRef.current;
-    if (!detailsPanel) return;
-
-    const handleWheel = (e: WheelEvent) => {
-      const { deltaY, currentTarget } = e;
-      const panel = currentTarget as HTMLDivElement;
-
-      if (panel.scrollHeight > panel.clientHeight) {
-        e.preventDefault();
-        panel.scrollTop += deltaY;
-      }
+    if (!detailsPanel || !isMobile) return;
+  
+    const handleScroll = (e: WheelEvent) => {
+      e.preventDefault();
+      detailsPanel.scrollTop += e.deltaY;
     };
-
-    detailsPanel.addEventListener("wheel", handleWheel, { passive: false });
-
+  
+    if (selectedProject) {
+      detailsPanel.addEventListener("wheel", handleScroll, { passive: false });
+    } else {
+      detailsPanel.removeEventListener("wheel", handleScroll);
+    }
+  
     return () => {
-      detailsPanel.removeEventListener("wheel", handleWheel);
+      detailsPanel.removeEventListener("wheel", handleScroll);
     };
-  }, [selectedProject]);
+  }, [selectedProject, isMobile]);
 
   const handleProjectClick = (project: Project) => {
     if (project.id !== selectedProject?.id) {
