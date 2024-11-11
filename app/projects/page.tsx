@@ -139,7 +139,7 @@ const projects: Project[] = [
     title: "the 3 room adventure",
     thumbnail: "/imgs/cppGame.png",
     description:
-      "this looks too simple for a game, and it is, except the fact that it was made in c++ using sdl2 instead of a game engine",
+      "a simple project made in c++ using sdl2 instead of a game engine",
     downloadUrls: [`cppGame2.zip`, "cppGame3.zip"],
     tags: ["CPP", "SDL2", "LARGE_FILE"],
   },
@@ -203,23 +203,24 @@ function Projects() {
 
   useEffect(() => {
     const detailsPanel = detailsPanelRef.current;
-    if (!detailsPanel || !isMobile) return;
-  
-    const handleScroll = (e: WheelEvent) => {
-      e.preventDefault();
-      detailsPanel.scrollTop += e.deltaY;
+    if (!detailsPanel) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      const { deltaY, currentTarget } = e;
+      const panel = currentTarget as HTMLDivElement;
+
+      if (panel.scrollHeight > panel.clientHeight) {
+        e.preventDefault();
+        panel.scrollTop += deltaY;
+      }
     };
-  
-    if (selectedProject) {
-      detailsPanel.addEventListener("wheel", handleScroll, { passive: false });
-    } else {
-      detailsPanel.removeEventListener("wheel", handleScroll);
-    }
-  
+
+    detailsPanel.addEventListener("wheel", handleWheel, { passive: false });
+
     return () => {
-      detailsPanel.removeEventListener("wheel", handleScroll);
+      detailsPanel.removeEventListener("wheel", handleWheel);
     };
-  }, [selectedProject, isMobile]);
+  }, [selectedProject]);
 
   const handleProjectClick = (project: Project) => {
     if (project.id !== selectedProject?.id) {
