@@ -25,7 +25,7 @@ const TAGS: { [key: string]: Tag } = {
   GREENFOOT: {
     name: "Greenfoot",
     description:
-      "created using greenfoot 'engine'. since this thing will not let me export any jar or exe file, the only way for you is to play this, is directly in greenfoot, so you should download that too if you wanna run this (its disrespectful for the other engines to call this a real game engine)",
+      "created using greenfoot 'engine'. since this thing will not let me export any jar or exe file, the only way for you to play this, is directly in greenfoot, so you should download that too if you wanna run this (its disrespectful for the other engines to call this a real game engine)",
     color: "bg-cyan-500",
   },
   SDL2: {
@@ -121,7 +121,7 @@ const projects: Project[] = [
     title: "fight Jhon Cena",
     thumbnail: "/imgs/bingChilling.png",
     description:
-      "i liked undertale. because of that, i made a game in which you fight john cena in an undertale-style fight",
+      "i like undertale. because of that, i made a game in which you fight john cena in an undertale-style fight",
     downloadUrls: [`bingChilling.zip`],
     tags: ["UNITY", "C#"],
   },
