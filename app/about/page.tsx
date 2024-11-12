@@ -12,7 +12,7 @@ const About = () => {
     '-im 19 years old',
     '-i code since i was 15 and started taking it more seriously when i was 16',
     '-i usually program games',
-    '-i am best suited as a software engineer'
+    '-i am best suited as a software developer'
   ];
 
   return (
