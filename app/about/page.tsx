@@ -9,7 +9,7 @@ const ListItem = ({ text }: { text: string }) => (
 const About = () => {
   const aboutTexts = [
     '-here i call myself "nepune" but on the internet I use names derived from the names of the planets',
-    '-im 19 years old',
+    '-i am 19 years old',
     '-i code since i was 15 and started taking it more seriously when i was 16',
     '-i usually program games',
     '-i am best suited as a software developer'
@@ -25,7 +25,7 @@ const About = () => {
           <ListItem key={index} text={text} />
         ))}
         <p className="text-2xl py-2">
-          these are the programming languages/software i have experience withh:
+          these are the programming languages/software i have experience with:
         </p>
         <Image
           src={"/imgs/things.png"}
