@@ -156,7 +156,7 @@ const projects: Project[] = [
     title: "ikeaBattle",
     thumbnail: "/imgs/ikeaMan.jpg",
     description: "you fight ikeaMan. i recomand you extract the files from the zip file if you wanna use the leveleditor properly",
-    downloadUrls: ["ikeaBattle.zip"],
+    downloadUrls: ["ikeaBattle0.zip","ikeaBattle1.zip"],
     tags: ["CPP", "SFML"],
   },
 ];
