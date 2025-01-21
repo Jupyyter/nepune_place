@@ -156,7 +156,7 @@ const projects: Project[] = [
     title: "shadow wizzard money gang",
     thumbnail: shadowGangImg.src,
     description:
-      "i made this with a classmate (code: 95% me, art: 1% me ) for a contest. unfortunately the contest required the usage of 'greenfoot'. the creation date shown here is wrong (the github api shows the date on which the repository was created, and i had to fork this project from my classmate for the api to work, so it shows the date on which i forked the project, true date: i dont remember, but it was 2024)",
+      "i made this with a classmate (code: 95% me, art: 1% me ) for a contest. unfortunately the contest required the usage of 'greenfoot'. the creation date shown here is wrong (the github api shows the date on which the repository was created, and i had to fork this project from my classmate for the api to work, so it shows the date on which i forked the project, true date: i dont remember, but it was 2024 :) )",
     downloadUrls: [`shadowGang.zip`],
     tags: ["GREENFOOT", "JAVA"],
     createdAt: new Date(),
