@@ -15,15 +15,15 @@ const Menu: React.FC = () => {
   return (
     <nav>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-nowrap sm:flex-wrap justify-center items-center">
+        <div className="flex justify-center items-center">
           {menuItems.map((item) => (
             <Link
               key={item.path}
               href={item.path}
               className={`text-white py-4 rounded-md text-sm sm:text-base font-medium 
-              m-0.5 sm:m-1
+              text-center m-0.5 sm:m-1
               ${pathname === item.path ? "bg-red-900" : "bg-gray-600 hover:bg-yellow-500"}
-              w-auto sm:w-[auto] px-2 sm:px-12`}
+              w-full sm:w-auto px-4 sm:px-8`}
             >
               {item.label}
             </Link>

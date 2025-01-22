@@ -33,7 +33,7 @@ const About = () => {
           className="rounded"
           priority // Prioritize this image
         />
-      ), 
+      ),
       name: 'Greenfoot', 
       comment: 'a joke of a game engine. the sound system simply doesnt work properly for some reason. worst experience that i ever had using any software' 
     },

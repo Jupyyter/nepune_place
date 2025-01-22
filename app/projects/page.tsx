@@ -113,7 +113,7 @@ const projects: Project[] = [
     downloadUrls: ["jhonnyGang.zip"],
     tags: ["UNITY", "C#"],
     createdAt: new Date(),
-    relevance: 8,
+    relevance: 7,
     repoName: "jhonny"
   },
   {
@@ -125,7 +125,7 @@ const projects: Project[] = [
     downloadUrls: ["asciiVideo.zip", "badApple.zip"],
     tags: ["CPP", "LARGE_FILE"],
     createdAt: new Date(),
-    relevance: 2,
+    relevance: 8,
     repoName: "BADAPPLE"
   },
   {
@@ -136,7 +136,7 @@ const projects: Project[] = [
     downloadUrls: [`gabrielIsHungry.zip`, "gabrielIsHungry0.zip"],
     tags: ["GODOT", "GDSCRIPT", "LARGE_FILE"],
     createdAt: new Date(),
-    relevance: 9,
+    relevance: 6,
     repoName: "I-am-hungry-and-my-name-is-Gabriel"
   },
   {
@@ -148,7 +148,7 @@ const projects: Project[] = [
     downloadUrls: [`bingChilling.zip`],
     tags: ["UNITY", "C#"],
     createdAt: new Date(),
-    relevance: 6,
+    relevance: 2,
     repoName: "fightJohnCena"
   },
   {
@@ -160,7 +160,7 @@ const projects: Project[] = [
     downloadUrls: [`shadowGang.zip`],
     tags: ["GREENFOOT", "JAVA"],
     createdAt: new Date(),
-    relevance: 5,
+    relevance: 4,
     repoName: "WizardGang"
   },
   {
@@ -172,7 +172,7 @@ const projects: Project[] = [
     downloadUrls: [`cppGame2.zip`, "cppGame3.zip"],
     tags: ["CPP", "SDL2", "LARGE_FILE"],
     createdAt: new Date(),
-    relevance: 7,
+    relevance: 1,
     repoName: "project-rpg"
   },
   {
@@ -183,7 +183,7 @@ const projects: Project[] = [
     downloadUrls: [`worldOfTanks.jar`],
     tags: ["JAVA", "JAR"],
     createdAt: new Date(),
-    relevance: 4,
+    relevance: 5,
     repoName: "checkers"
   },
   {
@@ -195,7 +195,7 @@ const projects: Project[] = [
     downloadUrls: ["ikeaBattle0.zip", "ikeaBattle1.zip"],
     tags: ["CPP", "SFML","LARGE_FILE"],
     createdAt: new Date(),
-    relevance: 1,
+    relevance: 9,
     repoName: "99layers"
   },
 ];
