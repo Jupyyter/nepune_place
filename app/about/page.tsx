@@ -31,7 +31,7 @@ const About = () => {
           width={32}
           height={32}
           className="rounded"
-          priority
+          priority // Prioritize this image
         />
       ), 
       name: 'Greenfoot', 
@@ -46,7 +46,7 @@ const About = () => {
           width={32}
           height={32}
           className="rounded"
-          priority
+          priority // Prioritize this image
         />
       ), 
       name: 'SDL2', 
@@ -64,7 +64,7 @@ const About = () => {
           width={32}
           height={32}
           className="rounded"
-          priority
+          priority // Prioritize this image
         />
       ), 
       name: 'Godot', 
@@ -78,7 +78,7 @@ const About = () => {
           width={32}
           height={32}
           className="rounded"
-          priority
+          priority // Prioritize this image
         />
       ), 
       name: 'GDScript', 
@@ -90,11 +90,11 @@ const About = () => {
   return (
     <div className="flex-grow flex flex-col items-center justify-center">
       <Head>
-        {/* Preload critical images */}
-        <link rel="preload" href="/imgs/godot.png" as="image" />
-        <link rel="preload" href="/imgs/gdscript.jpg" as="image" />
+        {/* Preload all images */}
         <link rel="preload" href="/imgs/Greenfoot_Logo.jpg" as="image" />
         <link rel="preload" href="/imgs/sdl.svg" as="image" />
+        <link rel="preload" href="/imgs/godot.png" as="image" />
+        <link rel="preload" href="/imgs/gdscript.jpg" as="image" />
       </Head>
       <main className="p-4">
         <h1 className="text-4xl font-bold mb-4">
