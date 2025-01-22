@@ -1,5 +1,7 @@
-import Image, { StaticImageData } from 'next/image';
-
+"use client";
+// pages/contact.tsx
+import Image from 'next/image';
+import Head from 'next/head';
 
 const ContactItem = ({ icon, text, link }: { icon: string, text: string, link?: string }) => (
   <div className="flex items-stretch mb-4">
@@ -8,7 +10,14 @@ const ContactItem = ({ icon, text, link }: { icon: string, text: string, link?: 
       style={{ userSelect: 'none' }} 
       draggable="false"
     >
-      <Image src={icon} alt="" width={50} height={50} priority draggable="false" />
+      <Image 
+        src={icon} 
+        alt="" 
+        width={50} 
+        height={50} 
+        priority // Prioritize this image
+        draggable="false" 
+      />
     </div>
     <div className="flex-grow flex items-center min-h-[3rem]">
       {link ? (
@@ -25,6 +34,11 @@ const ContactItem = ({ icon, text, link }: { icon: string, text: string, link?: 
 export default function Contact() {
   return (
     <div className="flex-grow flex items-center justify-center">
+      <Head>
+        {/* Preload all images */}
+        <link rel="preload" href="/imgs/mail.jpg" as="image" />
+        <link rel="preload" href="/imgs/github.jpg" as="image" />
+      </Head>
       <main className="text-center p-4">
         <h1 className="text-4xl font-bold mb-4">contacts</h1>
         <ContactItem icon="/imgs/mail.jpg" text="my email: raducea.matei2005@gmail.com" />
