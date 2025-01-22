@@ -1,6 +1,7 @@
 "use client";
 // pages/about.tsx
 import Image from 'next/image';
+import Head from 'next/head';
 import { FaJava, FaReact, FaHtml5, FaCss3Alt, FaUnity, FaNodeJs } from 'react-icons/fa';
 import { SiCplusplus, SiJavascript, SiTypescript, SiSfml, SiNextdotjs } from 'react-icons/si';
 
@@ -27,9 +28,10 @@ const About = () => {
         <Image
           src="/imgs/Greenfoot_Logo.jpg"
           alt="Greenfoot"
-          width={32} // Adjust the size as needed
+          width={32}
           height={32}
-          className="rounded" // Optional: Add rounded corners
+          className="rounded"
+          priority
         />
       ), 
       name: 'Greenfoot', 
@@ -41,15 +43,16 @@ const About = () => {
         <Image
           src="/imgs/sdl.svg"
           alt="SDL2"
-          width={32} // Adjust the size as needed
+          width={32}
           height={32}
-          className="rounded" // Optional: Add rounded corners
+          className="rounded"
+          priority
         />
       ), 
       name: 'SDL2', 
       comment: 'its ok. i had a good experience with sdl2, but i would only use it over sfml when developing android or ios apps. i dont really know why, but i think i simply dont like how the code looks' 
     },
-    { icon: <FaUnity />, name: 'Unity', comment: 'great engine. unfortunately due to all the ui, making a game in unity doesnt compare to making a game without an engine. also, its not open source' },
+    { icon: <FaUnity />, name: 'Unity', comment: 'great engine. unfortunately due to all the ui, making a game in unity doesnt compare to making a game without an engine' },
     { icon: <FaReact />, name: 'React', comment: 'i used nextjs which uses react for this site, so react=yes=i do indeed like it over the other site-making-software' },
     { icon: <FaHtml5 />, name: 'HTML', comment: 'umm...do i have to say that i do know some html since i made this site?'},
     { icon: <FaCss3Alt />, name: 'CSS', comment: 'yes, i can code some css since i made this site' },
@@ -58,32 +61,41 @@ const About = () => {
         <Image
           src="/imgs/godot.png"
           alt="Godot"
-          width={32} // Adjust the size as needed
+          width={32}
           height={32}
-          className="rounded" // Optional: Add rounded corners
+          className="rounded"
+          priority
         />
       ), 
       name: 'Godot', 
-      comment: 'great engine. i like it more than unity because its more lightweight and open source' 
+      comment: 'great engine. i like it more than unity because its more lightweight and the code is more fun to write' 
     },
     { 
       icon: (
         <Image
           src="/imgs/gdscript.jpg"
           alt="GDScript"
-          width={32} // Adjust the size as needed
+          width={32}
           height={32}
-          className="rounded" // Optional: Add rounded corners
+          className="rounded"
+          priority
         />
       ), 
       name: 'GDScript', 
-      comment: 'the language used in godot. its like python but better since it lets you use this open source game engine' 
+      comment: 'the language used in godot. its like python but better' 
     },
-    { icon: <SiNextdotjs />, name: 'Next.js', comment: 'used it to make this site. its great for making websites with react (yay)' }
+    { icon: <SiNextdotjs />, name: 'Next.js', comment: 'used it to make this site. its great for making websites with react' }
   ];
 
   return (
     <div className="flex-grow flex flex-col items-center justify-center">
+      <Head>
+        {/* Preload critical images */}
+        <link rel="preload" href="/imgs/godot.png" as="image" />
+        <link rel="preload" href="/imgs/gdscript.jpg" as="image" />
+        <link rel="preload" href="/imgs/Greenfoot_Logo.jpg" as="image" />
+        <link rel="preload" href="/imgs/sdl.svg" as="image" />
+      </Head>
       <main className="p-4">
         <h1 className="text-4xl font-bold mb-4">
           things about me:
