@@ -121,11 +121,11 @@ const projects: Project[] = [
     title: "video in ascii",
     thumbnail: badAppleImg.src,
     description:
-      "this thing plays any video in ascii, but the default video is bad apple",
+      "this thing plays any video in ascii, but the default video is bad apple. yes, now this can be done by an average AI, but i've done this project when AI was like cardboard at coding so i consider this project a decent achievement",
     downloadUrls: ["asciiVideo.zip", "badApple.zip"],
     tags: ["CPP", "LARGE_FILE"],
     createdAt: new Date(),
-    relevance: 7,
+    relevance: 2,
     repoName: "BADAPPLE"
   },
   {
@@ -193,9 +193,9 @@ const projects: Project[] = [
     description:
       "you fight ikeaMan. i recomand you extract the files from the zip file if you wanna use the leveleditor properly",
     downloadUrls: ["ikeaBattle0.zip", "ikeaBattle1.zip"],
-    tags: ["CPP", "SFML"],
+    tags: ["CPP", "SFML","LARGE_FILE"],
     createdAt: new Date(),
-    relevance: 9,
+    relevance: 1,
     repoName: "99layers"
   },
 ];

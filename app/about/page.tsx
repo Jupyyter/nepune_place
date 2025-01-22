@@ -1,6 +1,8 @@
 "use client";
 // pages/about.tsx
 import Image from 'next/image';
+import { FaJava, FaReact, FaHtml5, FaCss3Alt, FaUnity, FaNodeJs } from 'react-icons/fa';
+import { SiCplusplus, SiJavascript, SiTypescript, SiSfml, SiNextdotjs } from 'react-icons/si';
 
 const ListItem = ({ text }: { text: string }) => (
   <p className="text-xl text-white px-4 py-2">{text}</p>
@@ -15,6 +17,71 @@ const About = () => {
     '-i am best suited as a software developer'
   ];
 
+  const technologies = [
+    { icon: <FaJava />, name: 'Java', comment: 'I learned the basics by making checkers and some other game in greenfoot. i hate the syntax' },
+    { icon: <SiCplusplus />, name: 'C/C++', comment: 'my favoryte programing language. can do anything with it. the program not eficient? skill issue' },
+    { icon: <SiJavascript />, name: 'JavaScript', comment: '0 == [] (true); 0 == "0" (true); "0" == [] (false); do I need to say anything else?'},
+    { icon: <SiTypescript />, name: 'TypeScript', comment: 'JavaScript but better. I used it to make this site' },
+    { 
+      icon: (
+        <Image
+          src="/imgs/Greenfoot_Logo.jpg"
+          alt="Greenfoot"
+          width={32} // Adjust the size as needed
+          height={32}
+          className="rounded" // Optional: Add rounded corners
+        />
+      ), 
+      name: 'Greenfoot', 
+      comment: 'a joke of a game engine. the sound systom simply doesnt work properly for some reason. worst experience that i ever had using any software' 
+    },
+    { icon: <SiSfml />, name: 'SFML', comment: 'practical graphics library when you want to make things appear on the screen. i choose it over sdl2 altho thats just because its more simple' },
+    { 
+      icon: (
+        <Image
+          src="/imgs/sdl.svg"
+          alt="SDL2"
+          width={32} // Adjust the size as needed
+          height={32}
+          className="rounded" // Optional: Add rounded corners
+        />
+      ), 
+      name: 'SDL2', 
+      comment: 'its ok. i had a good experience with sdl2, but i would only use it over sfml when developing android or ios apps. i dont really know why, but i think i simply dont like how the code looks' 
+    },
+    { icon: <FaUnity />, name: 'Unity', comment: 'great engine. unfortunately due to all the ui, making a game in unity doesnt compare to making a game without an engine. also, its not open source' },
+    { icon: <FaReact />, name: 'React', comment: 'i used nextjs which uses react for this site, so react=yes=i do indeed like it over the other site-making-software' },
+    { icon: <FaHtml5 />, name: 'HTML', comment: 'umm...do i have to say that i do know some html since i made this site?'},
+    { icon: <FaCss3Alt />, name: 'CSS', comment: 'yes, i can code some css since i made this site' },
+    { 
+      icon: (
+        <Image
+          src="/imgs/godot.png"
+          alt="Godot"
+          width={32} // Adjust the size as needed
+          height={32}
+          className="rounded" // Optional: Add rounded corners
+        />
+      ), 
+      name: 'Godot', 
+      comment: 'great engine. i like it more than unity because its more lightweight and open source' 
+    },
+    { 
+      icon: (
+        <Image
+          src="/imgs/gdscript.jpg"
+          alt="GDScript"
+          width={32} // Adjust the size as needed
+          height={32}
+          className="rounded" // Optional: Add rounded corners
+        />
+      ), 
+      name: 'GDScript', 
+      comment: 'the language used in godot. its like python but better since it lets you use this open source game engine' 
+    },
+    { icon: <SiNextdotjs />, name: 'Next.js', comment: 'used it to make this site. its great for making websites with react (yay)' }
+  ];
+
   return (
     <div className="flex-grow flex flex-col items-center justify-center">
       <main className="p-4">
@@ -27,15 +94,19 @@ const About = () => {
         <p className="text-2xl py-2">
           these are the programming languages/software i have experience with:
         </p>
-        <Image
-          src={"/imgs/things.png"}
-          alt="Planets"
-          className="mt-4 rounded-lg shadow-lg"
-          priority
-          width={1000}
-          height={147}
-          style={{ height: 'auto' }}
-        />
+        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
+          {technologies.map((tech, index) => (
+            <div key={index} className="group relative flex flex-col items-center p-4 bg-gray-800 rounded-lg shadow-lg">
+              <div className="text-4xl text-white">
+                {tech.icon}
+              </div>
+              <p className="text-white mt-2">{tech.name}</p>
+              <div className="absolute bottom-full mb-2 hidden group-hover:block bg-purple-600 text-white text-sm p-2 rounded">
+                {tech.comment}
+              </div>
+            </div>
+          ))}
+        </div>
       </main>
     </div>
   );
