@@ -1,5 +1,4 @@
 "use client";
-// pages/about.tsx
 import Image from 'next/image';
 import Head from 'next/head';
 import { FaJava, FaReact, FaHtml5, FaCss3Alt, FaUnity, FaNodeJs } from 'react-icons/fa';
@@ -26,7 +25,7 @@ const About = () => {
     { 
       icon: (
         <Image
-          src="/imgs/Greenfoot_Logo.jpg"
+          src="/imgs/Greenfoot_Logo.webp" // Use WebP format
           alt="Greenfoot"
           width={32}
           height={32}
@@ -59,7 +58,7 @@ const About = () => {
     { 
       icon: (
         <Image
-          src="/imgs/godot.png"
+          src="/imgs/godot.webp" // Use WebP format
           alt="Godot"
           width={32}
           height={32}
@@ -73,7 +72,7 @@ const About = () => {
     { 
       icon: (
         <Image
-          src="/imgs/gdscript.jpg"
+          src="/imgs/gdscript.webp" // Use WebP format
           alt="GDScript"
           width={32}
           height={32}
@@ -91,10 +90,10 @@ const About = () => {
     <div className="flex-grow flex flex-col items-center justify-center">
       <Head>
         {/* Preload all images */}
-        <link rel="preload" href="/imgs/Greenfoot_Logo.jpg" as="image" />
+        <link rel="preload" href="/imgs/Greenfoot_Logo.webp" as="image" />
         <link rel="preload" href="/imgs/sdl.svg" as="image" />
-        <link rel="preload" href="/imgs/godot.png" as="image" />
-        <link rel="preload" href="/imgs/gdscript.jpg" as="image" />
+        <link rel="preload" href="/imgs/godot.webp" as="image" />
+        <link rel="preload" href="/imgs/gdscript.webp" as="image" />
       </Head>
       <main className="p-4">
         <h1 className="text-4xl font-bold mb-4">
