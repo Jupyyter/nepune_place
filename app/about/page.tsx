@@ -85,7 +85,7 @@ const About = () => {
       comment: 'the language used in godot. its like python but better :)' 
     },
     { icon: <SiNextdotjs />, name: 'Next.js', comment: 'used it to make this site. its great for making websites with react' },
-    { icon: <FaGitAlt />, name: 'Git', comment: 'i like typings commands instead of using an ui for managing my projects with github' }
+    { icon: <FaGitAlt />, name: 'Git', comment: 'i like typing commands instead of using an ui for managing my projects with github' }
   ];
 
   return (
