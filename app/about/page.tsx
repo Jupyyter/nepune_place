@@ -52,7 +52,7 @@ const About = () => {
       name: 'SDL2', 
       comment: 'its ok. i had a good experience with sdl2, but i would only use it over sfml when developing android or ios apps. i dont really know why, but i think i simply dont like how the code looks' 
     },
-    { icon: <FaUnity />, name: 'Unity', comment: 'great engine. unfortunately due to all the ui, making a game in unity doesnt compare to making a game without an engine. besides, its not open source' },
+    { icon: <FaUnity />, name: 'Unity', comment: 'unfortunately due to all the ui, making a game in unity doesnt compare to making a game without an engine. besides, its not open source' },
     { icon: <FaReact />, name: 'React', comment: 'i used nextjs which uses react for this site, so react=yes=i do indeed like it over the other site-making-software' },
     { icon: <FaHtml5 />, name: 'HTML', comment: 'umm...do i have to say that i do know some html since i made this site?'},
     { icon: <FaCss3Alt />, name: 'CSS', comment: 'yes, i can code some css since i made this site' },
