@@ -2,7 +2,7 @@
 // pages/about.tsx
 import Image from 'next/image';
 import Head from 'next/head';
-import { FaJava, FaReact, FaHtml5, FaCss3Alt, FaUnity, FaNodeJs } from 'react-icons/fa';
+import { FaJava, FaReact, FaHtml5, FaCss3Alt, FaUnity, FaNodeJs, FaGitAlt } from 'react-icons/fa';
 import { SiCplusplus, SiJavascript, SiTypescript, SiSfml, SiNextdotjs } from 'react-icons/si';
 
 const ListItem = ({ text }: { text: string }) => (
@@ -84,7 +84,8 @@ const About = () => {
       name: 'GDScript', 
       comment: 'the language used in godot. its like python but better :)' 
     },
-    { icon: <SiNextdotjs />, name: 'Next.js', comment: 'used it to make this site. its great for making websites with react' }
+    { icon: <SiNextdotjs />, name: 'Next.js', comment: 'used it to make this site. its great for making websites with react' },
+    { icon: <FaGitAlt />, name: 'Git', comment: 'i like typings commands instead of using an ui for managing my projects with github' }
   ];
 
   return (
