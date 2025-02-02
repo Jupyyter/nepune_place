@@ -103,7 +103,7 @@ const projects: Project[] = [
   {
     id: 0,
     title: "jhonny",
-    thumbnail: "/imgs/jhonny0.png", // Thumbnail image
+    thumbnail: "/imgs/jhonny.png", // Thumbnail image
     description:
       "you play as jhonny and you shoot gangsters. i made possible for a multiplayer game, but since i dont have servers for this, you will have to use hamachi if you dont play multiplayer locally. i also dont recomand shooting until all the players are connected :)",
     downloadUrls: ["jhonnyGang.zip"],
