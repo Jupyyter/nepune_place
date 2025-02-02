@@ -79,16 +79,6 @@ const TAGS: { [key: string]: Tag } = {
     color: "bg-cyan-500",
   },
 };
-
-import jhonnyImg from "/public/imgs/jhonny.png";
-import badAppleImg from "/public/imgs/badApple.png";
-import gabrielImg from "/public/imgs/GabrielIsHungry.png";
-import bingChillingImg from "/public/imgs/bingChilling.png";
-import shadowGangImg from "/public/imgs/shadowGang.png";
-import cppGameImg from "/public/imgs/cppGame.png";
-import checkersImg from "/public/imgs/checkers.png";
-import ikeaManImg from "/public/imgs/ikeaMan.jpg";
-
 interface Project {
   id: number;
   title: string;
@@ -98,46 +88,55 @@ interface Project {
   tags: (keyof typeof TAGS)[];
   createdAt: Date;
   relevance: number;
-  repoName?: string; // Added for GitHub integration
+  repoName?: string;
+  images: string[]; // Array of image paths for the project
 }
-
-type SortOption = "relevance" | "date" | "none";
-
+import jhonnyImg from "/public/imgs/jhonny.png";
+import badAppleImg from "/public/imgs/badApple.png";
+import gabrielImg from "/public/imgs/GabrielIsHungry.png";
+import bingChillingImg from "/public/imgs/bingChilling.png";
+import shadowGangImg from "/public/imgs/shadowGang.png";
+import cppGameImg from "/public/imgs/cppGame.png";
+import checkersImg from "/public/imgs/checkers.png";
+import ikeaManImg from "/public/imgs/ikeaMan.jpg";
 const projects: Project[] = [
   {
     id: 0,
     title: "jhonny",
-    thumbnail: jhonnyImg.src,
+    thumbnail: "/imgs/jhonny0.png", // Thumbnail image
     description:
       "you play as jhonny and you shoot gangsters. i made possible for a multiplayer game, but since i dont have servers for this, you will have to use hamachi if you dont play multiplayer locally. i also dont recomand shooting until all the players are connected :)",
     downloadUrls: ["jhonnyGang.zip"],
     tags: ["UNITY", "C#"],
     createdAt: new Date(),
     relevance: 7,
-    repoName: "jhonny"
+    repoName: "jhonny",
+    images: Array.from({ length: 4 }, (_, i) => `/imgs/jhonny${i}.png`), // Dynamically generate image paths
   },
   {
     id: 1,
     title: "video in ascii",
-    thumbnail: badAppleImg.src,
+    thumbnail: "/imgs/badApple.png", // Thumbnail image
     description:
       "this thing plays any video in ascii, but the default video is bad apple. yes, now this can be done by an average AI, but i've done this project when AI was like cardboard at coding so i consider this project a decent achievement",
     downloadUrls: ["asciiVideo.zip", "badApple.zip"],
     tags: ["CPP", "LARGE_FILE"],
     createdAt: new Date(),
     relevance: 8,
-    repoName: "BADAPPLE"
+    repoName: "BADAPPLE",
+    images: Array.from({ length: 3 }, (_, i) => `/imgs/badApple${i}.png`), // Example images
   },
   {
     id: 2,
     title: "gabriel the hungry",
-    thumbnail: gabrielImg.src,
+    thumbnail: "/imgs/GabrielIsHungry.png", // Thumbnail image
     description: "this is the story of gabriel",
     downloadUrls: [`gabrielIsHungry.zip`, "gabrielIsHungry0.zip"],
     tags: ["GODOT", "GDSCRIPT", "LARGE_FILE"],
     createdAt: new Date(),
     relevance: 6,
-    repoName: "I-am-hungry-and-my-name-is-Gabriel"
+    repoName: "I-am-hungry-and-my-name-is-Gabriel",
+    images: Array.from({ length: 5 }, (_, i) => `/imgs/GabrielIsHungry${i}.png`), // Example images
   },
   {
     id: 3,
@@ -149,7 +148,13 @@ const projects: Project[] = [
     tags: ["UNITY", "C#"],
     createdAt: new Date(),
     relevance: 2,
-    repoName: "fightJohnCena"
+    repoName: "fightJohnCena",
+    images: [
+      "/imgs/jhonny0.png", // Add the paths to the images here
+      "/imgs/jhonny1.png",
+      "/imgs/jhonny2.png",
+      "/imgs/jhonny3.png",
+    ]
   },
   {
     id: 4,
@@ -161,7 +166,13 @@ const projects: Project[] = [
     tags: ["GREENFOOT", "JAVA"],
     createdAt: new Date(),
     relevance: 4,
-    repoName: "WizardGang"
+    repoName: "WizardGang",
+    images: [
+      "/imgs/jhonny0.png", // Add the paths to the images here
+      "/imgs/jhonny1.png",
+      "/imgs/jhonny2.png",
+      "/imgs/jhonny3.png",
+    ]
   },
   {
     id: 5,
@@ -173,7 +184,13 @@ const projects: Project[] = [
     tags: ["CPP", "SDL2", "LARGE_FILE"],
     createdAt: new Date(),
     relevance: 1,
-    repoName: "project-rpg"
+    repoName: "project-rpg",
+    images: [
+      "/imgs/jhonny0.png", // Add the paths to the images here
+      "/imgs/jhonny1.png",
+      "/imgs/jhonny2.png",
+      "/imgs/jhonny3.png",
+    ]
   },
   {
     id: 6,
@@ -184,7 +201,13 @@ const projects: Project[] = [
     tags: ["JAVA", "JAR"],
     createdAt: new Date(),
     relevance: 5,
-    repoName: "checkers"
+    repoName: "checkers",
+    images: [
+      "/imgs/jhonny0.png", // Add the paths to the images here
+      "/imgs/jhonny1.png",
+      "/imgs/jhonny2.png",
+      "/imgs/jhonny3.png",
+    ]
   },
   {
     id: 7,
@@ -196,16 +219,22 @@ const projects: Project[] = [
     tags: ["CPP", "SFML","LARGE_FILE"],
     createdAt: new Date(),
     relevance: 9,
-    repoName: "99layers"
+    repoName: "99layers",
+    images: [
+      "/imgs/jhonny0.png", // Add the paths to the images here
+      "/imgs/jhonny1.png",
+      "/imgs/jhonny2.png",
+      "/imgs/jhonny3.png",
+    ]
   },
 ];
+type SortOption = "relevance" | "date" | "none";
 
 const sortButtonOptions: { value: SortOption; label: string }[] = [
   { value: "none", label: "Default" },
   { value: "date", label: "Latest First" },
   { value: "relevance", label: "Most Relevant First" },
 ];
-
 // GitHub API configuration
 const GITHUB_USERNAME = "Jupyyter"; // Replace with your GitHub username
 const GITHUB_API_BASE = "https://api.github.com";
@@ -216,9 +245,9 @@ async function fetchRepoCreationDate(repoName: string): Promise<Date | null> {
       `${GITHUB_API_BASE}/repos/${GITHUB_USERNAME}/${repoName}`,
       {
         headers: {
-          "Accept": "application/vnd.github.v3+json",
+          Accept: "application/vnd.github.v3+json",
           //"Authorization": "Bearer github wont let me put any codes here :)"
-        }
+        },
       }
     );
 
@@ -237,6 +266,7 @@ async function fetchRepoCreationDate(repoName: string): Promise<Date | null> {
 
 function Projects() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0); // Track the current image index
   const [isLoading, setIsLoading] = useState(false);
   const [hoveredTag, setHoveredTag] = useState<keyof typeof TAGS | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({
@@ -270,6 +300,7 @@ function Projects() {
     fetchDates();
   }, []);
 
+  // Sort projects based on the selected sort option
   const sortedProjects = [...projectsWithDates].sort((a, b) => {
     switch (sortOption) {
       case "date":
@@ -281,7 +312,29 @@ function Projects() {
     }
   });
 
+  // Handle image cycling
+  const handleNextImage = () => {
+    if (selectedProject) {
+      setCurrentImageIndex((prevIndex) =>
+        (prevIndex + 1) % selectedProject.images.length
+      );
+    }
+  };
+
+  const handlePreviousImage = () => {
+    if (selectedProject) {
+      setCurrentImageIndex((prevIndex) =>
+        prevIndex === 0 ? selectedProject.images.length - 1 : prevIndex - 1
+      );
+    }
+  };
+
+  // Reset the image index when a new project is selected
   useEffect(() => {
+    setCurrentImageIndex(0);
+  }, [selectedProject]);
+   // Handle mobile responsiveness
+   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -301,6 +354,7 @@ function Projects() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Handle wheel events for the details panel
   useEffect(() => {
     const detailsPanel = detailsPanelRef.current;
     if (!detailsPanel) return;
@@ -321,16 +375,19 @@ function Projects() {
     };
   }, [selectedProject]);
 
+  // Handle project click
   const handleProjectClick = (project: Project) => {
     if (project.id !== selectedProject?.id) {
       setSelectedProject(project);
     }
   };
 
+  // Close project details
   const closeProjectDetails = () => {
     setSelectedProject(null);
   };
 
+  // Handle download
   const handleDownload = (project: Project) => {
     setIsLoading(true);
     if (project.downloadUrls.length === 1) {
@@ -342,6 +399,7 @@ function Projects() {
     }
   };
 
+  // Handle tag hover
   const handleTagHover = (
     tagKey: keyof typeof TAGS,
     event: React.MouseEvent<HTMLDivElement>
@@ -368,11 +426,11 @@ function Projects() {
     setTooltipPosition({ x, y, alignTop });
   };
 
+  // Handle sort change
   const handleSortChange = (option: SortOption) => {
     setSortOption(option);
     setSelectedProject(null);
   };
-
   return (
     <div className="flex flex-col items-center justify-start min-h-screen p-2 pt-8">
       <div className="w-full max-w-7xl px-4 flex flex-col items-center">
@@ -487,7 +545,7 @@ function Projects() {
               <div className="p-3">
                 <div className="relative w-full h-56">
                   <Image
-                    src={selectedProject.thumbnail}
+                    src={selectedProject.images[currentImageIndex]}
                     alt={selectedProject.title}
                     fill
                     className="object-cover rounded-lg pointer-events-none"
@@ -495,6 +553,20 @@ function Projects() {
                     quality={100}
                     priority
                   />
+                  {/* Left Arrow */}
+                  <button
+                    onClick={handlePreviousImage}
+                    className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-r-lg"
+                  >
+                    ‹
+                  </button>
+                  {/* Right Arrow */}
+                  <button
+                    onClick={handleNextImage}
+                    className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-l-lg"
+                  >
+                    ›
+                  </button>
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-3 mt-4">
                   {selectedProject.title}
