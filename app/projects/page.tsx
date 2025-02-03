@@ -263,6 +263,21 @@ function Projects() {
   const tooltipRef = useRef<HTMLDivElement>(null);
   const navbarHeight = 64;
 
+  // Function to preload images
+  const preloadImages = (imageUrls: string[]) => {
+    imageUrls.forEach((url) => {
+      const img = new (Image as any)(); // Cast Image to 'any' to avoid TypeScript error
+      img.src = url;
+    });
+  };
+
+  // Preload images when a project is selected
+  useEffect(() => {
+    if (selectedProject) {
+      preloadImages(selectedProject.images);
+    }
+  }, [selectedProject]);
+
   // Fetch repository creation dates
   useEffect(() => {
     const fetchDates = async () => {
@@ -519,87 +534,87 @@ function Projects() {
           </div>
 
           {selectedProject && (
-  <div
-    className={`bg-gray-800 shadow-lg overflow-auto ${
-      isMobile ? "fixed inset-0 top-[64px] z-50" : "w-[28%] sticky"
-    }`}
-    ref={detailsPanelRef}
-    style={{
-      top: isMobile ? undefined : `${navbarHeight + 56}px`,
-      height: isMobile
-        ? undefined
-        : `calc(100vh - ${navbarHeight + 40}px)`,
-    }}
-  >
-    <button
-      onClick={closeProjectDetails}
-      className="absolute text-white bg-red-500 hover:bg-red-600 w-8 h-8 flex items-center justify-center text-xl font-bold z-10 top-0 right-0 rounded-tr-lg rounded-bl-lg"
-    >
-      ×
-    </button>
-    <div className="p-3">
-      <div className="relative w-full h-56">
-        <Image
-          src={selectedProject.images[currentImageIndex]}
-          alt={selectedProject.title}
-          fill
-          className="object-cover rounded-lg cursor-pointer" // Removed pointer-events-none
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          quality={100}
-          priority
-          onClick={handleImageClick} // Ensure the click handler is applied
-        />
-        {/* Left Arrow */}
-        <button
-          onClick={handlePreviousImage}
-          className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-r-lg hover:bg-gray-700"
-        >
-          ‹
-        </button>
-        {/* Right Arrow */}
-        <button
-          onClick={handleNextImage}
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-l-lg hover:bg-gray-700"
-        >
-          ›
-        </button>
-      </div>
-      <h3 className="text-xl font-semibold text-white mb-3 mt-4">
-        {selectedProject.title}
-      </h3>
-      <div className="flex flex-wrap mb-3">
-        {selectedProject.tags.map((tagKey) => (
-          <div
-            key={tagKey}
-            className="relative inline-block mr-2 mb-2"
-            onMouseEnter={(e) => handleTagHover(tagKey, e)}
-            onMouseLeave={() => setHoveredTag(null)}
-          >
-            <span
-              className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded cursor-help`}
+            <div
+              className={`bg-gray-800 shadow-lg overflow-auto ${
+                isMobile ? "fixed inset-0 top-[64px] z-50" : "w-[28%] sticky"
+              }`}
+              ref={detailsPanelRef}
+              style={{
+                top: isMobile ? undefined : `${navbarHeight + 56}px`,
+                height: isMobile
+                  ? undefined
+                  : `calc(100vh - ${navbarHeight + 40}px)`,
+              }}
             >
-              {TAGS[tagKey].name}
-            </span>
-          </div>
-        ))}
-      </div>
-      <p className="text-gray-300 text-sm mb-2">
-        {selectedProject.description}
-      </p>
-      <p className="text-gray-400 text-sm mb-5">
-        Created: {selectedProject.createdAt.toLocaleDateString()}
-      </p>
-      <button
-        onClick={() => handleDownload(selectedProject)}
-        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg
-      text-sm w-full"
-        disabled={isLoading}
-      >
-        {isLoading ? "Processing..." : "Download"}
-      </button>
-    </div>
-  </div>
-)}
+              <button
+                onClick={closeProjectDetails}
+                className="absolute text-white bg-red-500 hover:bg-red-600 w-8 h-8 flex items-center justify-center text-xl font-bold z-10 top-0 right-0 rounded-tr-lg rounded-bl-lg"
+              >
+                ×
+              </button>
+              <div className="p-3">
+                <div className="relative w-full h-56">
+                  <Image
+                    src={selectedProject.images[currentImageIndex]}
+                    alt={selectedProject.title}
+                    fill
+                    className="object-cover rounded-lg cursor-pointer" // Removed pointer-events-none
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    quality={100}
+                    priority
+                    onClick={handleImageClick} // Ensure the click handler is applied
+                  />
+                  {/* Left Arrow */}
+                  <button
+                    onClick={handlePreviousImage}
+                    className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-r-lg hover:bg-gray-700"
+                  >
+                    ‹
+                  </button>
+                  {/* Right Arrow */}
+                  <button
+                    onClick={handleNextImage}
+                    className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-l-lg hover:bg-gray-700"
+                  >
+                    ›
+                  </button>
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-3 mt-4">
+                  {selectedProject.title}
+                </h3>
+                <div className="flex flex-wrap mb-3">
+                  {selectedProject.tags.map((tagKey) => (
+                    <div
+                      key={tagKey}
+                      className="relative inline-block mr-2 mb-2"
+                      onMouseEnter={(e) => handleTagHover(tagKey, e)}
+                      onMouseLeave={() => setHoveredTag(null)}
+                    >
+                      <span
+                        className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded cursor-help`}
+                      >
+                        {TAGS[tagKey].name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-gray-300 text-sm mb-2">
+                  {selectedProject.description}
+                </p>
+                <p className="text-gray-400 text-sm mb-5">
+                  Created: {selectedProject.createdAt.toLocaleDateString()}
+                </p>
+                <button
+                  onClick={() => handleDownload(selectedProject)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg
+                text-sm w-full"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Processing..." : "Download"}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
