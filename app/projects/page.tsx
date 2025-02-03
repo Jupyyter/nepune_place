@@ -201,7 +201,7 @@ const projects: Project[] = [
     relevance: 9,
     repoName: "99layers",
     images: [
-      "/imgs/jhonny0.png", // Add the paths to the images here
+      "/imgs/jhonny0.png",
       "/imgs/jhonny1.png",
       "/imgs/jhonny2.png",
       "/imgs/jhonny3.png",
@@ -215,8 +215,9 @@ const sortButtonOptions: { value: SortOption; label: string }[] = [
   { value: "date", label: "Latest First" },
   { value: "relevance", label: "Most Relevant First" },
 ];
+
 // GitHub API configuration
-const GITHUB_USERNAME = "Jupyyter"; // Replace with your GitHub username
+const GITHUB_USERNAME = "Jupyyter"; //GitHub username
 const GITHUB_API_BASE = "https://api.github.com";
 
 async function fetchRepoCreationDate(repoName: string): Promise<Date | null> {
@@ -226,7 +227,6 @@ async function fetchRepoCreationDate(repoName: string): Promise<Date | null> {
       {
         headers: {
           Accept: "application/vnd.github.v3+json",
-          //"Authorization": "Bearer github wont let me put any codes here :)"
         },
       }
     );
@@ -246,7 +246,7 @@ async function fetchRepoCreationDate(repoName: string): Promise<Date | null> {
 
 function Projects() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0); // Track the current image index
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [hoveredTag, setHoveredTag] = useState<keyof typeof TAGS | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({
@@ -257,6 +257,7 @@ function Projects() {
   const [isMobile, setIsMobile] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>("none");
   const [projectsWithDates, setProjectsWithDates] = useState(projects);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const projectsContainerRef = useRef<HTMLDivElement>(null);
   const detailsPanelRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -313,8 +314,9 @@ function Projects() {
   useEffect(() => {
     setCurrentImageIndex(0);
   }, [selectedProject]);
-   // Handle mobile responsiveness
-   useEffect(() => {
+
+  // Handle mobile responsiveness
+  useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -365,6 +367,7 @@ function Projects() {
   // Close project details
   const closeProjectDetails = () => {
     setSelectedProject(null);
+    setIsFullscreen(false);
   };
 
   // Handle download
@@ -411,6 +414,17 @@ function Projects() {
     setSortOption(option);
     setSelectedProject(null);
   };
+
+  // Handle image click for fullscreen
+  const handleImageClick = () => {
+    setIsFullscreen(true);
+  };
+
+  // Handle fullscreen close
+  const handleCloseFullscreen = () => {
+    setIsFullscreen(false);
+  };
+
   return (
     <div className="flex flex-col items-center justify-start min-h-screen p-2 pt-8">
       <div className="w-full max-w-7xl px-4 flex flex-col items-center">
@@ -426,7 +440,7 @@ function Projects() {
                 <button
                   key={value}
                   onClick={() => handleSortChange(value)}
-                  className={`px-4 py-2 rounded-lg transition-colors duration-200 ${
+                  className={`px-4 py-2 rounded-lg transition-colors duration-0 ${
                     sortOption === value
                       ? "bg-purple-900 text-white hover:bg-white hover:text-black"
                       : "bg-gray-700 text-gray-300 hover:bg-white hover:text-black"
@@ -462,6 +476,7 @@ function Projects() {
                           }`}
                 onClick={() => handleProjectClick(project)}
                 onDragStart={(e) => e.preventDefault()}
+                style={{ maxHeight: "400px" }} // Added max height for project cards
               >
                 <div className="relative w-full h-48">
                   <Image
@@ -504,88 +519,125 @@ function Projects() {
           </div>
 
           {selectedProject && (
-            <div
-              className={`bg-gray-800 shadow-lg overflow-auto ${
-                isMobile ? "fixed inset-0 top-[64px] z-50" : "w-[28%] sticky"
-              }`}
-              ref={detailsPanelRef}
-              style={{
-                top: isMobile ? undefined : `${navbarHeight + 56}px`,
-                height: isMobile
-                  ? undefined
-                  : `calc(100vh - ${navbarHeight + 40}px)`,
-              }}
+  <div
+    className={`bg-gray-800 shadow-lg overflow-auto ${
+      isMobile ? "fixed inset-0 top-[64px] z-50" : "w-[28%] sticky"
+    }`}
+    ref={detailsPanelRef}
+    style={{
+      top: isMobile ? undefined : `${navbarHeight + 56}px`,
+      height: isMobile
+        ? undefined
+        : `calc(100vh - ${navbarHeight + 40}px)`,
+    }}
+  >
+    <button
+      onClick={closeProjectDetails}
+      className="absolute text-white bg-red-500 hover:bg-red-600 w-8 h-8 flex items-center justify-center text-xl font-bold z-10 top-0 right-0 rounded-tr-lg rounded-bl-lg"
+    >
+      ×
+    </button>
+    <div className="p-3">
+      <div className="relative w-full h-56">
+        <Image
+          src={selectedProject.images[currentImageIndex]}
+          alt={selectedProject.title}
+          fill
+          className="object-cover rounded-lg cursor-pointer" // Removed pointer-events-none
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          quality={100}
+          priority
+          onClick={handleImageClick} // Ensure the click handler is applied
+        />
+        {/* Left Arrow */}
+        <button
+          onClick={handlePreviousImage}
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-r-lg hover:bg-gray-700"
+        >
+          ‹
+        </button>
+        {/* Right Arrow */}
+        <button
+          onClick={handleNextImage}
+          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-l-lg hover:bg-gray-700"
+        >
+          ›
+        </button>
+      </div>
+      <h3 className="text-xl font-semibold text-white mb-3 mt-4">
+        {selectedProject.title}
+      </h3>
+      <div className="flex flex-wrap mb-3">
+        {selectedProject.tags.map((tagKey) => (
+          <div
+            key={tagKey}
+            className="relative inline-block mr-2 mb-2"
+            onMouseEnter={(e) => handleTagHover(tagKey, e)}
+            onMouseLeave={() => setHoveredTag(null)}
+          >
+            <span
+              className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded cursor-help`}
             >
-              <button
-                onClick={closeProjectDetails}
-                className="absolute text-white bg-red-500 hover:bg-red-600 w-8 h-8 flex items-center justify-center text-xl font-bold z-10 top-0 right-0 rounded-tr-lg rounded-bl-lg"
-              >
-                ×
-              </button>
-              <div className="p-3">
-                <div className="relative w-full h-56">
-                  <Image
-                    src={selectedProject.images[currentImageIndex]}
-                    alt={selectedProject.title}
-                    fill
-                    className="object-cover rounded-lg pointer-events-none"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    quality={100}
-                    priority
-                  />
-                  {/* Left Arrow */}
-                  <button
-                    onClick={handlePreviousImage}
-                    className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-r-lg"
-                  >
-                    ‹
-                  </button>
-                  {/* Right Arrow */}
-                  <button
-                    onClick={handleNextImage}
-                    className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-l-lg"
-                  >
-                    ›
-                  </button>
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-3 mt-4">
-                  {selectedProject.title}
-                </h3>
-                <div className="flex flex-wrap mb-3">
-                  {selectedProject.tags.map((tagKey) => (
-                    <div
-                      key={tagKey}
-                      className="relative inline-block mr-2 mb-2"
-                      onMouseEnter={(e) => handleTagHover(tagKey, e)}
-                      onMouseLeave={() => setHoveredTag(null)}
-                    >
-                      <span
-                        className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded cursor-help`}
-                      >
-                        {TAGS[tagKey].name}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-gray-300 text-sm mb-2">
-                  {selectedProject.description}
-                </p>
-                <p className="text-gray-400 text-sm mb-5">
-                  Created: {selectedProject.createdAt.toLocaleDateString()}
-                </p>
-                <button
-                  onClick={() => handleDownload(selectedProject)}
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg
-                text-sm w-full"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Processing..." : "Download"}
-                </button>
-              </div>
-            </div>
-          )}
+              {TAGS[tagKey].name}
+            </span>
+          </div>
+        ))}
+      </div>
+      <p className="text-gray-300 text-sm mb-2">
+        {selectedProject.description}
+      </p>
+      <p className="text-gray-400 text-sm mb-5">
+        Created: {selectedProject.createdAt.toLocaleDateString()}
+      </p>
+      <button
+        onClick={() => handleDownload(selectedProject)}
+        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg
+      text-sm w-full"
+        disabled={isLoading}
+      >
+        {isLoading ? "Processing..." : "Download"}
+      </button>
+    </div>
+  </div>
+)}
         </div>
       </div>
+
+      {isFullscreen && selectedProject && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
+          <button
+            onClick={handleCloseFullscreen}
+            className="absolute top-4 right-4 text-white bg-red-500 hover:bg-red-600 w-8 h-8 flex items-center justify-center text-xl font-bold rounded-full"
+          >
+            ×
+          </button>
+          <div className="relative w-[75vw] h-[75vh]">
+            <Image
+              src={selectedProject.images[currentImageIndex]}
+              alt={selectedProject.title}
+              fill
+              className="object-contain rounded-lg pointer-events-none"
+              quality={100}
+              priority
+            />
+            {/* Left Arrow */}
+            <button
+              onClick={handlePreviousImage}
+              className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-r-lg hover:bg-gray-700"
+            >
+              ‹
+            </button>
+            {/* Right Arrow */}
+            <button
+              onClick={handleNextImage}
+              className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-l-lg hover:bg-gray-700"
+            >
+              ›
+            </button>
+          </div>
+        </div>
+      )}
+
       {hoveredTag && (
         <div
           ref={tooltipRef}
