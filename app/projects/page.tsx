@@ -124,7 +124,7 @@ const projects: Project[] = [
     createdAt: new Date(),
     relevance: 8,
     repoName: "BADAPPLE",
-    images: Array.from({ length: 2 }, (_, i) => `/imgs/badApple${i}.png`)
+    images: Array.from({ length: 2 }, (_, i) => `/imgs/BADAPPLE${i}.png`)
   },
   {
     id: 2,
