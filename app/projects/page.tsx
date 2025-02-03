@@ -124,7 +124,7 @@ const projects: Project[] = [
     createdAt: new Date(),
     relevance: 8,
     repoName: "BADAPPLE",
-    images: Array.from({ length: 3 }, (_, i) => `/imgs/badApple${i}.png`), // Example images
+    images: Array.from({ length: 2 }, (_, i) => `/imgs/badApple${i}.png`)
   },
   {
     id: 2,
@@ -136,7 +136,7 @@ const projects: Project[] = [
     createdAt: new Date(),
     relevance: 6,
     repoName: "I-am-hungry-and-my-name-is-Gabriel",
-    images: Array.from({ length: 5 }, (_, i) => `/imgs/GabrielIsHungry${i}.png`), // Example images
+    images: Array.from({ length: 6 }, (_, i) => `/imgs/GabrielIsHungry${i}.png`),
   },
   {
     id: 3,
@@ -149,12 +149,7 @@ const projects: Project[] = [
     createdAt: new Date(),
     relevance: 2,
     repoName: "fightJohnCena",
-    images: [
-      "/imgs/jhonny0.png", // Add the paths to the images here
-      "/imgs/jhonny1.png",
-      "/imgs/jhonny2.png",
-      "/imgs/jhonny3.png",
-    ]
+    images: Array.from({ length: 4 }, (_, i) => `/imgs/bingChilling${i}.png`),
   },
   {
     id: 4,
@@ -167,12 +162,7 @@ const projects: Project[] = [
     createdAt: new Date(),
     relevance: 4,
     repoName: "WizardGang",
-    images: [
-      "/imgs/jhonny0.png", // Add the paths to the images here
-      "/imgs/jhonny1.png",
-      "/imgs/jhonny2.png",
-      "/imgs/jhonny3.png",
-    ]
+    images: Array.from({ length: 7 }, (_, i) => `/imgs/WizardGang${i}.png`),
   },
   {
     id: 5,
@@ -185,12 +175,7 @@ const projects: Project[] = [
     createdAt: new Date(),
     relevance: 1,
     repoName: "project-rpg",
-    images: [
-      "/imgs/jhonny0.png", // Add the paths to the images here
-      "/imgs/jhonny1.png",
-      "/imgs/jhonny2.png",
-      "/imgs/jhonny3.png",
-    ]
+    images: Array.from({ length: 4 }, (_, i) => `/imgs/3roomAdventure${i}.png`),
   },
   {
     id: 6,
@@ -202,12 +187,7 @@ const projects: Project[] = [
     createdAt: new Date(),
     relevance: 5,
     repoName: "checkers",
-    images: [
-      "/imgs/jhonny0.png", // Add the paths to the images here
-      "/imgs/jhonny1.png",
-      "/imgs/jhonny2.png",
-      "/imgs/jhonny3.png",
-    ]
+    images: Array.from({ length: 5 }, (_, i) => `/imgs/checkers${i}.png`),
   },
   {
     id: 7,
