@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+import { Maximize2 } from "lucide-react";
 import { combineAndDownload, downloadSingleFile } from "./fileUtils";
 
 interface Tag {
@@ -90,6 +91,7 @@ interface Project {
   relevance: number;
   repoName?: string;
   images: string[]; // Array of image paths for the project
+  videoUrl?: string;
 }
 import jhonnyImg from "/public/imgs/jhonny.png";
 import badAppleImg from "/public/imgs/badApple.png";
@@ -124,7 +126,7 @@ const projects: Project[] = [
     createdAt: new Date(),
     relevance: 8,
     repoName: "BADAPPLE",
-    images: Array.from({ length: 2 }, (_, i) => `/imgs/BADAPPLE${i}.png`)
+    images: Array.from({ length: 2 }, (_, i) => `/imgs/BADAPPLE${i}.png`),
   },
   {
     id: 2,
@@ -136,7 +138,10 @@ const projects: Project[] = [
     createdAt: new Date(),
     relevance: 6,
     repoName: "I-am-hungry-and-my-name-is-Gabriel",
-    images: Array.from({ length: 6 }, (_, i) => `/imgs/GabrielIsHungry${i}.png`),
+    images: Array.from(
+      { length: 6 },
+      (_, i) => `/imgs/GabrielIsHungry${i}.png`
+    ),
   },
   {
     id: 3,
@@ -163,6 +168,7 @@ const projects: Project[] = [
     relevance: 4,
     repoName: "WizardGang",
     images: Array.from({ length: 7 }, (_, i) => `/imgs/WizardGang${i}.png`),
+    videoUrl: "https://www.youtube.com/watch?v=5HtLpXKm7Uc",
   },
   {
     id: 5,
@@ -196,7 +202,7 @@ const projects: Project[] = [
     description:
       "you fight ikeaMan. i recomand you extract the files from the zip file if you wanna use the leveleditor properly",
     downloadUrls: ["ikeaBattle0.zip", "ikeaBattle1.zip"],
-    tags: ["CPP", "SFML","LARGE_FILE"],
+    tags: ["CPP", "SFML", "LARGE_FILE"],
     createdAt: new Date(),
     relevance: 9,
     repoName: "99layers",
@@ -205,7 +211,7 @@ const projects: Project[] = [
       "/imgs/jhonny1.png",
       "/imgs/jhonny2.png",
       "/imgs/jhonny3.png",
-    ]
+    ],
   },
 ];
 type SortOption = "relevance" | "date" | "none";
@@ -232,7 +238,9 @@ async function fetchRepoCreationDate(repoName: string): Promise<Date | null> {
     );
 
     if (!response.ok) {
-      console.error(`Failed to fetch repo data for ${repoName}: ${response.status}`);
+      console.error(
+        `Failed to fetch repo data for ${repoName}: ${response.status}`
+      );
       return null;
     }
 
@@ -246,7 +254,7 @@ async function fetchRepoCreationDate(repoName: string): Promise<Date | null> {
 
 function Projects() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [hoveredTag, setHoveredTag] = useState<keyof typeof TAGS | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({
@@ -262,6 +270,23 @@ function Projects() {
   const detailsPanelRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const navbarHeight = 64;
+
+  // Helper function to get total media count
+  const getTotalMediaCount = (project: Project) => {
+    return project.images.length + (project.videoUrl ? 1 : 0);
+  };
+
+  // Helper function to determine if current media is video
+  const isCurrentMediaVideo = (project: Project, index: number) => {
+    return project.videoUrl && index === 0;
+  };
+
+  // Helper function to get embedded YouTube URL
+  const getEmbeddedYoutubeUrl = (url: string) => {
+    const videoId = url.split("v=")[1];
+    // Add parameters to disable default fullscreen button and other controls
+    return `https://www.youtube-nocookie.com/embed/${videoId}?fs=0&modestbranding=1`;
+  };
 
   // Fetch repository creation dates
   useEffect(() => {
@@ -293,26 +318,26 @@ function Projects() {
     }
   });
 
-  // Handle image cycling
-  const handleNextImage = () => {
+  // Handle media navigation
+  const handleNextMedia = () => {
     if (selectedProject) {
-      setCurrentImageIndex((prevIndex) =>
-        (prevIndex + 1) % selectedProject.images.length
+      const totalCount = getTotalMediaCount(selectedProject);
+      setCurrentMediaIndex((prevIndex) => (prevIndex + 1) % totalCount);
+    }
+  };
+
+  const handlePreviousMedia = () => {
+    if (selectedProject) {
+      const totalCount = getTotalMediaCount(selectedProject);
+      setCurrentMediaIndex((prevIndex) =>
+        prevIndex === 0 ? totalCount - 1 : prevIndex - 1
       );
     }
   };
 
-  const handlePreviousImage = () => {
-    if (selectedProject) {
-      setCurrentImageIndex((prevIndex) =>
-        prevIndex === 0 ? selectedProject.images.length - 1 : prevIndex - 1
-      );
-    }
-  };
-
-  // Reset the image index when a new project is selected
+  // Reset the media index when a new project is selected
   useEffect(() => {
-    setCurrentImageIndex(0);
+    setCurrentMediaIndex(0);
   }, [selectedProject]);
 
   // Handle mobile responsiveness
@@ -357,20 +382,17 @@ function Projects() {
     };
   }, [selectedProject]);
 
-  // Handle project click
   const handleProjectClick = (project: Project) => {
     if (project.id !== selectedProject?.id) {
       setSelectedProject(project);
     }
   };
 
-  // Close project details
   const closeProjectDetails = () => {
     setSelectedProject(null);
     setIsFullscreen(false);
   };
 
-  // Handle download
   const handleDownload = (project: Project) => {
     setIsLoading(true);
     if (project.downloadUrls.length === 1) {
@@ -382,7 +404,6 @@ function Projects() {
     }
   };
 
-  // Handle tag hover
   const handleTagHover = (
     tagKey: keyof typeof TAGS,
     event: React.MouseEvent<HTMLDivElement>
@@ -390,7 +411,6 @@ function Projects() {
     setHoveredTag(tagKey);
     const tagRect = event.currentTarget.getBoundingClientRect();
     const tooltipWidth = 160;
-    const tooltipHeight = 80;
     const windowHeight = window.innerHeight;
 
     let x = tagRect.left;
@@ -409,25 +429,129 @@ function Projects() {
     setTooltipPosition({ x, y, alignTop });
   };
 
-  // Handle sort change
   const handleSortChange = (option: SortOption) => {
     setSortOption(option);
     setSelectedProject(null);
   };
-
-  // Handle image click for fullscreen
-  const handleImageClick = () => {
+  const [videoCurrentTime, setVideoCurrentTime] = useState(0);
+  const [player, setPlayer] = useState<any>(null); // YouTube Player instance
+  const playerRef = useRef<any>(null); // Ref to store the YouTube Player
+  const videoRef = useRef<HTMLIFrameElement>(null);
+  const handleMediaClick = () => {
+    if (player) {
+      setVideoCurrentTime(player.getCurrentTime()); // Save current time
+      player.pauseVideo(); // Pause the original player
+    }
     setIsFullscreen(true);
   };
+  
+  useEffect(() => {
+    const loadYouTubeAPI = () => {
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName("script")[0];
+      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
 
-  // Handle fullscreen close
+      (window as any).onYouTubeIframeAPIReady = () => {
+        // This function will be called when the API is ready
+      };
+    };
+
+    loadYouTubeAPI();
+  }, []);
   const handleCloseFullscreen = () => {
     setIsFullscreen(false);
+    if (playerRef.current) {
+      playerRef.current.destroy(); // Destroy the fullscreen player
+      playerRef.current = null;
+    }
+    if (player) {
+      player.seekTo(videoCurrentTime); // Seek to the saved time
+      player.playVideo(); // Resume the original player
+    }
+  };
+  // Render current media (image or video)
+  const renderMedia = (
+    project: Project,
+    index: number,
+    isFullscreen: boolean = false
+  ) => {
+    const isVideo = isCurrentMediaVideo(project, index);
+    const commonClasses = isFullscreen
+      ? "object-contain rounded-lg max-w-full max-h-full"
+      : "object-cover rounded-lg cursor-pointer";
+  
+    if (isVideo && project.videoUrl) {
+      const videoId = project.videoUrl.split("v=")[1];
+  
+      return (
+        <div className="relative w-full h-full">
+          <div className="relative w-full h-full aspect-video">
+          <iframe
+  id={`youtube-iframe-${project.id}`}
+  src={`https://www.youtube-nocookie.com/embed/${videoId}?fs=0&modestbranding=1&enablejsapi=1&start=${Math.floor(videoCurrentTime)}`}
+  title={project.title}
+  className={`${commonClasses} w-full h-full`}
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen={false}
+  ref={(el) => {
+    if (el && !playerRef.current) {
+      playerRef.current = new (window as any).YT.Player(
+        `youtube-iframe-${project.id}`,
+        {
+          events: {
+            onReady: (event: any) => {
+              setPlayer(event.target);
+              event.target.seekTo(videoCurrentTime);
+              event.target.playVideo();
+            },
+          },
+        }
+      );
+    }
+  }}
+/>
+            {!isFullscreen && (
+              <button
+                onClick={handleMediaClick}
+                className="absolute bottom-2 right-2 bg-black bg-opacity-50 p-2 rounded-lg hover:bg-opacity-70 transition-opacity"
+                title="Enter fullscreen"
+              >
+                <Maximize2 className="w-5 h-5 text-white" />
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    } else {
+      const imageIndex = project.videoUrl ? index - 1 : index;
+      return (
+        <div
+          className={`relative ${
+            isFullscreen ? "w-full h-full" : "w-full h-56"
+          }`}
+        >
+          <Image
+  src={project.images[imageIndex]}
+  alt={project.title}
+  fill
+  className={commonClasses}
+  sizes={isFullscreen ? "100vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
+  quality={isFullscreen ? 100 : 85}
+  priority={isFullscreen}
+  unoptimized={isFullscreen}
+  onClick={!isFullscreen ? handleMediaClick : undefined}
+  crossOrigin="anonymous" // Add this line
+/>
+        </div>
+      );
+    }
   };
 
   return (
     <div className="flex flex-col items-center justify-start min-h-screen p-2 pt-8">
       <div className="w-full max-w-7xl px-4 flex flex-col items-center">
+        {/* Header Section */}
         <header className="text-center mb-8 w-full">
           <h1 className="text-4xl font-bold mb-4 break-words">My Projects</h1>
           <p className="text-lg mb-4 break-words whitespace-pre-wrap max-w-full">
@@ -453,10 +577,12 @@ function Projects() {
           </div>
         </header>
 
+        {/* Main Content */}
         <div
           className="flex justify-between w-full relative"
           ref={projectsContainerRef}
         >
+          {/* Projects Grid */}
           <div
             className={`grid gap-8 ${
               selectedProject && !isMobile ? "w-[70%]" : "w-full"
@@ -469,14 +595,14 @@ function Projects() {
               <div
                 key={project.id}
                 className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer select-none hover:scale-110
-                          ${
-                            selectedProject?.id === project.id
-                              ? "ring-2 ring-blue-500"
-                              : ""
-                          }`}
+                        ${
+                          selectedProject?.id === project.id
+                            ? "ring-2 ring-blue-500"
+                            : ""
+                        }`}
                 onClick={() => handleProjectClick(project)}
                 onDragStart={(e) => e.preventDefault()}
-                style={{ maxHeight: "400px" }} // Added max height for project cards
+                style={{ maxHeight: "400px" }}
               >
                 <div className="relative w-full h-48">
                   <Image
@@ -488,6 +614,7 @@ function Projects() {
                     quality={100}
                     priority
                     loading="eager"
+                    crossOrigin="anonymous"
                   />
                 </div>
                 <div
@@ -518,91 +645,84 @@ function Projects() {
             ))}
           </div>
 
+          {/* Details Panel */}
           {selectedProject && (
-  <div
-    className={`bg-gray-800 shadow-lg overflow-auto ${
-      isMobile ? "fixed inset-0 top-[64px] z-50" : "w-[28%] sticky"
-    }`}
-    ref={detailsPanelRef}
-    style={{
-      top: isMobile ? undefined : `${navbarHeight + 56}px`,
-      height: isMobile
-        ? undefined
-        : `calc(100vh - ${navbarHeight + 40}px)`,
-    }}
-  >
-    <button
-      onClick={closeProjectDetails}
-      className="absolute text-white bg-red-500 hover:bg-red-600 w-8 h-8 flex items-center justify-center text-xl font-bold z-10 top-0 right-0 rounded-tr-lg rounded-bl-lg"
-    >
-      ×
-    </button>
-    <div className="p-3">
-      <div className="relative w-full h-56">
-        <Image
-          src={selectedProject.images[currentImageIndex]}
-          alt={selectedProject.title}
-          fill
-          className="object-cover rounded-lg cursor-pointer" // Removed pointer-events-none
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          quality={100}
-          priority
-          onClick={handleImageClick} // Ensure the click handler is applied
-        />
-        {/* Left Arrow */}
-        <button
-          onClick={handlePreviousImage}
-          className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-r-lg hover:bg-gray-700"
-        >
-          ‹
-        </button>
-        {/* Right Arrow */}
-        <button
-          onClick={handleNextImage}
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-l-lg hover:bg-gray-700"
-        >
-          ›
-        </button>
-      </div>
-      <h3 className="text-xl font-semibold text-white mb-3 mt-4">
-        {selectedProject.title}
-      </h3>
-      <div className="flex flex-wrap mb-3">
-        {selectedProject.tags.map((tagKey) => (
-          <div
-            key={tagKey}
-            className="relative inline-block mr-2 mb-2"
-            onMouseEnter={(e) => handleTagHover(tagKey, e)}
-            onMouseLeave={() => setHoveredTag(null)}
-          >
-            <span
-              className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded cursor-help`}
+            <div
+              className={`bg-gray-800 shadow-lg overflow-auto ${
+                isMobile ? "fixed inset-0 top-[64px] z-50" : "w-[28%] sticky"
+              }`}
+              ref={detailsPanelRef}
+              style={{
+                top: isMobile ? undefined : `${navbarHeight + 56}px`,
+                height: isMobile
+                  ? undefined
+                  : `calc(100vh - ${navbarHeight + 40}px)`,
+              }}
             >
-              {TAGS[tagKey].name}
-            </span>
-          </div>
-        ))}
-      </div>
-      <p className="text-gray-300 text-sm mb-2">
-        {selectedProject.description}
-      </p>
-      <p className="text-gray-400 text-sm mb-5">
-        Created: {selectedProject.createdAt.toLocaleDateString()}
-      </p>
-      <button
-        onClick={() => handleDownload(selectedProject)}
-        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg
-      text-sm w-full"
-        disabled={isLoading}
-      >
-        {isLoading ? "Processing..." : "Download"}
-      </button>
-    </div>
-  </div>
-)}
+              <button
+                onClick={closeProjectDetails}
+                className="absolute text-white bg-red-500 hover:bg-red-600 w-8 h-8 flex items-center justify-center text-xl font-bold z-10 top-0 right-0 rounded-tr-lg rounded-bl-lg"
+              >
+                ×
+              </button>
+              <div className="p-3">
+                {/* Media Section */}
+                <div className="relative w-full h-56">
+                  {renderMedia(selectedProject, currentMediaIndex)}
+                  <button
+                    onClick={handlePreviousMedia}
+                    className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-r-lg hover:bg-gray-700 z-10"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    onClick={handleNextMedia}
+                    className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-l-lg hover:bg-gray-700 z-10"
+                  >
+                    ›
+                  </button>
+                </div>
+
+                {/* Project Details */}
+                <h3 className="text-xl font-semibold text-white mb-3 mt-4">
+                  {selectedProject.title}
+                </h3>
+                <div className="flex flex-wrap mb-3">
+                  {selectedProject.tags.map((tagKey) => (
+                    <div
+                      key={tagKey}
+                      className="relative inline-block mr-2 mb-2"
+                      onMouseEnter={(e) => handleTagHover(tagKey, e)}
+                      onMouseLeave={() => setHoveredTag(null)}
+                    >
+                      <span
+                        className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded cursor-help`}
+                      >
+                        {TAGS[tagKey].name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-gray-300 text-sm mb-2">
+                  {selectedProject.description}
+                </p>
+                <p className="text-gray-400 text-sm mb-5">
+                  Created: {selectedProject.createdAt.toLocaleDateString()}
+                </p>
+                <button
+                  onClick={() => handleDownload(selectedProject)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm w-full"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Processing..." : "Download"}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
+      {/* Fullscreen Mode */}
       {isFullscreen && selectedProject && (
         <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
           <button
@@ -611,26 +731,19 @@ function Projects() {
           >
             ×
           </button>
-          <div className="relative w-[75vw] h-[75vh]">
-            <Image
-              src={selectedProject.images[currentImageIndex]}
-              alt={selectedProject.title}
-              fill
-              className="object-contain rounded-lg pointer-events-none"
-              quality={100}
-              priority
-            />
-            {/* Left Arrow */}
+          <div className="relative w-[90vw] h-[90vh] flex items-center justify-center">
+            <div className="relative w-full h-full flex items-center justify-center">
+              {renderMedia(selectedProject, currentMediaIndex, true)}
+            </div>
             <button
-              onClick={handlePreviousImage}
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-r-lg hover:bg-gray-700"
+              onClick={handlePreviousMedia}
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-4 rounded-r-lg hover:bg-gray-700 z-10 text-2xl"
             >
               ‹
             </button>
-            {/* Right Arrow */}
             <button
-              onClick={handleNextImage}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-l-lg hover:bg-gray-700"
+              onClick={handleNextMedia}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-4 rounded-l-lg hover:bg-gray-700 z-10 text-2xl"
             >
               ›
             </button>
@@ -638,6 +751,7 @@ function Projects() {
         </div>
       )}
 
+      {/* Tooltip */}
       {hoveredTag && (
         <div
           ref={tooltipRef}
