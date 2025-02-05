@@ -13,6 +13,7 @@
     "@vercel/speed-insights": "^1.0.12",
     "intersection-observer": "^0.12.2",
     "jszip": "^3.10.1",
+    "lucide-react": "^0.474.0",
     "next": "14.2.5",
     "react": "^18",
     "react-dom": "^18",
