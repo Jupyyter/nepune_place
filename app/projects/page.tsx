@@ -431,36 +431,47 @@ function Projects() {
   };
 
   const handleMediaClick = async () => {
-  if (player) {
-    try {
-      // Pause the video and wait for it to complete
-      await new Promise<void>((resolve, reject) => {
-        player.pauseVideo(); // Pause the video
-        const checkPause = () => {
-          if (player.getPlayerState() === YT.PlayerState.PAUSED) {
-            resolve(); // Resolve the promise when the video is paused
-          } else {
-            setTimeout(checkPause, 100); // Check again after a short delay
-          }
-        };
-        checkPause();
-      });
-
-      // Save the current time and proceed to fullscreen
-      setVideoCurrentTime(player.getCurrentTime());
-      setIsFullscreen(true);
-    } catch (error) {
-      console.error("Failed to pause the video:", error);
+    if (player) {
+      try {
+        // Pause the video and wait for it to complete
+        await new Promise<void>((resolve, reject) => {
+          player.pauseVideo(); // Pause the video
+  
+          const checkPause = () => {
+            if (player.getPlayerState() === YT.PlayerState.PAUSED) {
+              resolve(); // Resolve the promise when the video is paused
+            } else {
+              setTimeout(checkPause, 100); // Check again after a short delay
+            }
+          };
+  
+          // Set a timeout to reject the promise if the video doesn't pause within a reasonable time
+          const timeout = setTimeout(() => {
+            reject(new Error("Failed to pause the video within the expected time"));
+          }, 2000); // 2 seconds timeout
+  
+          checkPause();
+  
+          // Clear the timeout if the video pauses successfully
+          resolve();
+        });
+  
+        // Save the current time and proceed to fullscreen
+        setVideoCurrentTime(player.getCurrentTime());
+        setIsFullscreen(true);
+      } catch (error) {
+        console.error("Failed to pause the video:", error);
+        // Optionally, you can show a user-friendly message or retry the operation
+      }
+    } else {
+      setIsFullscreen(true); // If there's no video, just proceed to fullscreen
     }
-  } else {
-    setIsFullscreen(true); // If there's no video, just proceed to fullscreen
-  }
-};
+  };
 
 const handleCloseFullscreen = () => {
   if (player && videoCurrentTime > 0) {
     player.seekTo(videoCurrentTime); // Seek to the saved time
-    //player.playVideo(); // Resume playback
+    player.playVideo(); // Resume playback
   }
   setIsFullscreen(false); // Close fullscreen
 };
