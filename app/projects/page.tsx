@@ -266,6 +266,9 @@ function Projects() {
   const [sortOption, setSortOption] = useState<SortOption>("none");
   const [projectsWithDates, setProjectsWithDates] = useState(projects);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [videoCurrentTime, setVideoCurrentTime] = useState(0);
+  const [player, setPlayer] = useState<any>(null); // YouTube Player instance
+  const playerRef = useRef<any>(null); // Ref to store the YouTube Player
   const projectsContainerRef = useRef<HTMLDivElement>(null);
   const detailsPanelRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -279,13 +282,6 @@ function Projects() {
   // Helper function to determine if current media is video
   const isCurrentMediaVideo = (project: Project, index: number) => {
     return project.videoUrl && index === 0;
-  };
-
-  // Helper function to get embedded YouTube URL
-  const getEmbeddedYoutubeUrl = (url: string) => {
-    const videoId = url.split("v=")[1];
-    // Add parameters to disable default fullscreen button and other controls
-    return `https://www.youtube-nocookie.com/embed/${videoId}?fs=0&modestbranding=1`;
   };
 
   // Fetch repository creation dates
@@ -433,35 +429,64 @@ function Projects() {
     setSortOption(option);
     setSelectedProject(null);
   };
-  const [videoCurrentTime, setVideoCurrentTime] = useState(0);
-  const [player, setPlayer] = useState<any>(null); // YouTube Player instance
-  const playerRef = useRef<any>(null); // Ref to store the YouTube Player
-  const videoRef = useRef<HTMLIFrameElement>(null);
- const handleMediaClick = () => {
+
+  const handleMediaClick = async () => {
   if (player) {
-    setVideoCurrentTime(player.getCurrentTime()); // Save current time
-    player.pauseVideo(); // Pause the original player
+    try {
+      // Pause the video and wait for it to complete
+      await new Promise<void>((resolve, reject) => {
+        player.pauseVideo(); // Pause the video
+        const checkPause = () => {
+          if (player.getPlayerState() === YT.PlayerState.PAUSED) {
+            resolve(); // Resolve the promise when the video is paused
+          } else {
+            setTimeout(checkPause, 100); // Check again after a short delay
+          }
+        };
+        checkPause();
+      });
+
+      // Save the current time and proceed to fullscreen
+      setVideoCurrentTime(player.getCurrentTime());
+      setIsFullscreen(true);
+    } catch (error) {
+      console.error("Failed to pause the video:", error);
+    }
+  } else {
+    setIsFullscreen(true); // If there's no video, just proceed to fullscreen
   }
-  setIsFullscreen(true);
 };
 
+const handleCloseFullscreen = () => {
+  if (player && videoCurrentTime > 0) {
+    player.seekTo(videoCurrentTime); // Seek to the saved time
+    //player.playVideo(); // Resume playback
+  }
+  setIsFullscreen(false); // Close fullscreen
+};
+  // Load YouTube API
   useEffect(() => {
     const loadYouTubeAPI = () => {
       const tag = document.createElement("script");
       tag.src = "https://www.youtube.com/iframe_api";
       const firstScriptTag = document.getElementsByTagName("script")[0];
       firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
-
+  
       (window as any).onYouTubeIframeAPIReady = () => {
         // This function will be called when the API is ready
       };
     };
-
+  
     loadYouTubeAPI();
   }, []);
-  const handleCloseFullscreen = () => {
-    setIsFullscreen(false);
-  };
+
+  // Cleanup YouTube player on unmount
+  useEffect(() => {
+    if (isFullscreen && player && videoCurrentTime > 0) {
+      player.seekTo(videoCurrentTime); // Seek to the saved time
+      //player.playVideo(); // Resume playback
+    }
+  }, [isFullscreen, player, videoCurrentTime]);
 
   // Render current media (image or video)
   const renderMedia = (
@@ -473,10 +498,10 @@ function Projects() {
     const commonClasses = isFullscreen
       ? "object-contain rounded-lg max-w-full max-h-full"
       : "object-cover rounded-lg cursor-pointer";
-
+  
     if (isVideo && project.videoUrl) {
       const videoId = project.videoUrl.split("v=")[1];
-
+  
       return (
         <div className="relative w-full h-full">
           <div className="relative w-full h-full aspect-video">
@@ -743,6 +768,7 @@ function Projects() {
           </div>
         </div>
       )}
+
 
       {/* Tooltip */}
       {hoveredTag && (
