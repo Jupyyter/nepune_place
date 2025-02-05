@@ -437,14 +437,14 @@ function Projects() {
   const [player, setPlayer] = useState<any>(null); // YouTube Player instance
   const playerRef = useRef<any>(null); // Ref to store the YouTube Player
   const videoRef = useRef<HTMLIFrameElement>(null);
-  const handleMediaClick = () => {
-    if (player) {
-      setVideoCurrentTime(player.getCurrentTime()); // Save current time
-      player.pauseVideo(); // Pause the original player
-    }
-    setIsFullscreen(true);
-  };
-  
+ const handleMediaClick = () => {
+  if (player) {
+    setVideoCurrentTime(player.getCurrentTime()); // Save current time
+    player.pauseVideo(); // Pause the original player
+  }
+  setIsFullscreen(true);
+};
+
   useEffect(() => {
     const loadYouTubeAPI = () => {
       const tag = document.createElement("script");
@@ -461,15 +461,8 @@ function Projects() {
   }, []);
   const handleCloseFullscreen = () => {
     setIsFullscreen(false);
-    if (playerRef.current) {
-      playerRef.current.destroy(); // Destroy the fullscreen player
-      playerRef.current = null;
-    }
-    if (player) {
-      player.seekTo(videoCurrentTime); // Seek to the saved time
-      player.playVideo(); // Resume the original player
-    }
   };
+
   // Render current media (image or video)
   const renderMedia = (
     project: Project,
@@ -480,37 +473,35 @@ function Projects() {
     const commonClasses = isFullscreen
       ? "object-contain rounded-lg max-w-full max-h-full"
       : "object-cover rounded-lg cursor-pointer";
-  
+
     if (isVideo && project.videoUrl) {
       const videoId = project.videoUrl.split("v=")[1];
-  
+
       return (
         <div className="relative w-full h-full">
           <div className="relative w-full h-full aspect-video">
-          <iframe
-  id={`youtube-iframe-${project.id}`}
-  src={`https://www.youtube-nocookie.com/embed/${videoId}?fs=0&modestbranding=1&enablejsapi=1&start=${Math.floor(videoCurrentTime)}`}
-  title={project.title}
-  className={`${commonClasses} w-full h-full`}
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-  allowFullScreen={false}
-  ref={(el) => {
-    if (el && !playerRef.current) {
-      playerRef.current = new (window as any).YT.Player(
-        `youtube-iframe-${project.id}`,
-        {
-          events: {
-            onReady: (event: any) => {
-              setPlayer(event.target);
-              event.target.seekTo(videoCurrentTime);
-              event.target.playVideo();
-            },
-          },
-        }
-      );
-    }
-  }}
-/>
+            <iframe
+              id={`youtube-iframe-${project.id}`}
+              src={`https://www.youtube-nocookie.com/embed/${videoId}?fs=0&modestbranding=1&enablejsapi=1`}
+              title={project.title}
+              className={`${commonClasses} w-full h-full`}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen={false}
+              ref={(el) => {
+                if (el && !playerRef.current) {
+                  playerRef.current = new (window as any).YT.Player(
+                    `youtube-iframe-${project.id}`,
+                    {
+                      events: {
+                        onReady: (event: any) => {
+                          setPlayer(event.target);
+                        },
+                      },
+                    }
+                  );
+                }
+              }}
+            />
             {!isFullscreen && (
               <button
                 onClick={handleMediaClick}
@@ -532,17 +523,20 @@ function Projects() {
           }`}
         >
           <Image
-  src={project.images[imageIndex]}
-  alt={project.title}
-  fill
-  className={commonClasses}
-  sizes={isFullscreen ? "100vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
-  quality={isFullscreen ? 100 : 85}
-  priority={isFullscreen}
-  unoptimized={isFullscreen}
-  onClick={!isFullscreen ? handleMediaClick : undefined}
-  crossOrigin="anonymous" // Add this line
-/>
+            src={project.images[imageIndex]}
+            alt={project.title}
+            fill
+            className={commonClasses}
+            sizes={
+              isFullscreen
+                ? "100vw"
+                : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            }
+            quality={isFullscreen ? 100 : 85}
+            priority={isFullscreen}
+            unoptimized={isFullscreen}
+            onClick={!isFullscreen ? handleMediaClick : undefined}
+          />
         </div>
       );
     }
@@ -614,7 +608,6 @@ function Projects() {
                     quality={100}
                     priority
                     loading="eager"
-                    crossOrigin="anonymous"
                   />
                 </div>
                 <div
