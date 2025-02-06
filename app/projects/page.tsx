@@ -467,7 +467,7 @@ function Projects() {
       setIsFullscreen(true); // If there's no video, just proceed to fullscreen
     }
   };
-
+//a
 const handleCloseFullscreen = () => {
   if (player && videoCurrentTime > 0) {
     player.seekTo(videoCurrentTime); // Seek to the saved time
