@@ -127,6 +127,7 @@ const projects: Project[] = [
     relevance: 8,
     repoName: "BADAPPLE",
     images: Array.from({ length: 2 }, (_, i) => `/imgs/BADAPPLE${i}.png`),
+    videoUrl: "https://www.youtube.com/watch?v=qeyVAu1uZMM",
   },
   {
     id: 2,
