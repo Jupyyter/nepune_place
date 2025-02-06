@@ -156,6 +156,7 @@ const projects: Project[] = [
     relevance: 2,
     repoName: "fightJohnCena",
     images: Array.from({ length: 4 }, (_, i) => `/imgs/bingChilling${i}.png`),
+    videoUrl: "https://www.youtube.com/watch?v=iry5H_MSQkA",
   },
   {
     id: 4,
