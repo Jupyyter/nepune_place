@@ -471,10 +471,11 @@ function Projects() {
 const handleCloseFullscreen = () => {
   if (player && videoCurrentTime > 0) {
     player.seekTo(videoCurrentTime); // Seek to the saved time
-    player.playVideo(); // Resume playback
+    //player.playVideo(); // Resume playback
   }
   setIsFullscreen(false); // Close fullscreen
 };
+const [playerReady, setPlayerReady] = useState(false);
   // Load YouTube API
   useEffect(() => {
     const loadYouTubeAPI = () => {
@@ -485,12 +486,24 @@ const handleCloseFullscreen = () => {
   
       (window as any).onYouTubeIframeAPIReady = () => {
         // This function will be called when the API is ready
+        setPlayerReady(true); // Set a state to indicate that the API is ready
       };
     };
   
     loadYouTubeAPI();
   }, []);
-
+  useEffect(() => {
+    if (playerReady && selectedProject && selectedProject.videoUrl) {
+      const videoId = selectedProject.videoUrl.split("v=")[1];
+      playerRef.current = new (window as any).YT.Player(`youtube-iframe-${selectedProject.id}`, {
+        events: {
+          onReady: (event: any) => {
+            setPlayer(event.target);
+          },
+        },
+      });
+    }
+  }, [playerReady, selectedProject]);
   // Cleanup YouTube player on unmount
   useEffect(() => {
     if (isFullscreen && player && videoCurrentTime > 0) {
@@ -524,7 +537,7 @@ const handleCloseFullscreen = () => {
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen={false}
               ref={(el) => {
-                if (el && !playerRef.current) {
+                if (el && !playerRef.current && playerReady) {
                   playerRef.current = new (window as any).YT.Player(
                     `youtube-iframe-${project.id}`,
                     {
