@@ -215,6 +215,22 @@ const projects: Project[] = [
       "/imgs/jhonny3.png",
     ],
   },
+  {
+    id: 8,
+    title: "the road",
+    thumbnail: "/imgs/THEROAD.jpg",
+    description:
+      "just a parallax effect",
+    downloadUrls: ['road.zip'],
+    tags: ["GODOT", "GDSCRIPT"],
+    createdAt: new Date(),
+    relevance: 0,
+    //repoName: "99layers",
+    images: [
+      "/imgs/the road0.png",
+      "/imgs/the road1.png",
+    ],
+  },
 ];
 type SortOption = "relevance" | "date" | "none";
 
