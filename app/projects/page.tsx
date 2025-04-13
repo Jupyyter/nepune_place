@@ -1,4 +1,3 @@
-// page.tsx
 "use client";
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
@@ -28,8 +27,7 @@ function Projects() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
   const [playerReady, setPlayerReady] = useState(false);
-  const [resumeTime, setResumeTime] = useState<number | null>(null); // ADD THIS STATE
-  const fullscreenEntryIndexRef = useRef<number | null>(null);
+
   const detailsPlayerRef = useRef<any>(null);
   const fullscreenPlayerRef = useRef<any>(null);
   const projectsContainerRef = useRef<HTMLDivElement>(null);
@@ -68,63 +66,7 @@ function Projects() {
   const createPlayer = (elementId: string, playerRef: React.MutableRefObject<any>, onReadyCallback?: (event: any) => void) => { if (!playerReady || !document.getElementById(elementId)) return; if (playerRef.current?.destroy) { try { playerRef.current.destroy(); } catch (e) { console.error(e); } playerRef.current = null; } playerRef.current = new (window as any).YT.Player(elementId, { events: { 'onReady': (event: any) => { if (onReadyCallback) onReadyCallback(event); }, 'onError': (event: any) => { console.error(`YT Error ${elementId}:`, event.data); }, } }); };
 
   // --- Details Player Init Effect remains the same ---
-  useEffect(() => {
-    // Only proceed if player API is ready, a project is selected,
-    // it's NOT fullscreen, AND the current media item IS the video (index 0).
-    if (playerReady && selectedProject && selectedProject.videoUrl && currentMediaIndex === 0 && !isFullscreen) {
-      const detailsElementId = `youtube-iframe-details-${selectedProject.id}`;
-
-      if (document.getElementById(detailsElementId)) {
-        // Check if player needs creation/recreation
-        if (!detailsPlayerRef.current || detailsPlayerRef.current.getIframe()?.id !== detailsElementId) {
-           console.log(`Creating/Recreating details player for ${selectedProject.title}. Pending resume time: ${resumeTime}`);
-           createPlayer(detailsElementId, detailsPlayerRef, (event) => {
-             // This is the onReady callback passed to createPlayer
-             console.log(`Details player READY for ${selectedProject.title}. Checking resume time: ${resumeTime}`);
-             if (resumeTime !== null) {
-               console.log(`Seeking details player to ${resumeTime} and playing.`);
-               event.target.seekTo(resumeTime, true);
-               event.target.playVideo();
-               // IMPORTANT: Reset resumeTime state after using it to prevent reuse
-               setResumeTime(null);
-             } else {
-               console.log("No resume time set, player ready.");
-               // Optional: Decide if you want to autoplay from start if not resuming
-               // event.target.playVideo();
-             }
-           });
-        } else {
-          // Player exists and matches the element ID.
-          // This might happen on a re-render where the player doesn't need full recreation.
-          // If resumeTime is set, we might need to handle it here too, although
-          // typically the state change should trigger recreation via the outer condition.
-           console.log("Details player already exists and matches ID.");
-           // Safety check: If somehow the player exists but resumeTime is set, handle it.
-           if (resumeTime !== null && detailsPlayerRef.current && typeof detailsPlayerRef.current.seekTo === 'function') {
-                console.log(`Applying resume time (${resumeTime}) to existing player.`);
-                detailsPlayerRef.current.seekTo(resumeTime, true);
-                detailsPlayerRef.current.playVideo();
-                setResumeTime(null); // Reset state
-           }
-        }
-      } else {
-         console.warn(`Details element ${detailsElementId} not found yet for player creation.`);
-      }
-    }
-
-    // Cleanup: Destroy player if conditions are no longer met (project change, media change, going fullscreen)
-    return () => {
-      const shouldDestroy = !selectedProject || currentMediaIndex !== 0 || isFullscreen;
-      if (detailsPlayerRef.current && shouldDestroy) {
-         console.log("Destroying details player due to conditions no longer met.");
-         if (detailsPlayerRef.current?.destroy) {
-             try { detailsPlayerRef.current.destroy(); } catch(e) { console.error("Error destroying details player:", e)}
-         }
-         detailsPlayerRef.current = null;
-      }
-    };
-    // Add resumeTime to the dependency array
-  }, [playerReady, selectedProject, isFullscreen, resumeTime]); // <-- ADD resumeTime HERE
+  useEffect(() => { if (playerReady && selectedProject && selectedProject.videoUrl && currentMediaIndex === 0 && !isFullscreen) { const detailsElementId = `youtube-iframe-details-${selectedProject.id}`; if (document.getElementById(detailsElementId) && (!detailsPlayerRef.current || detailsPlayerRef.current.getIframe()?.id !== detailsElementId)) { createPlayer(detailsElementId, detailsPlayerRef); } } return () => { if (detailsPlayerRef.current && (!selectedProject || currentMediaIndex !== 0)) { if (detailsPlayerRef.current?.destroy) detailsPlayerRef.current.destroy(); detailsPlayerRef.current = null; } }; }, [playerReady, selectedProject, currentMediaIndex, isFullscreen]);
 
   // --- Fullscreen Player Management Effect remains the same ---
   useEffect(() => { if (isFullscreen && playerReady && selectedProject && selectedProject.videoUrl && currentMediaIndex === 0) { const fullscreenElementId = `youtube-iframe-fullscreen-${selectedProject.id}`; const checkAndCreate = () => { if (document.getElementById(fullscreenElementId)) { createPlayer(fullscreenElementId, fullscreenPlayerRef, (event) => { event.target.seekTo(videoCurrentTime, true); event.target.playVideo(); }); } else { setTimeout(checkAndCreate, 100); } }; checkAndCreate(); } return () => { if (fullscreenPlayerRef.current?.destroy) { fullscreenPlayerRef.current.destroy(); fullscreenPlayerRef.current = null; } }; }, [isFullscreen, playerReady, selectedProject, videoCurrentTime]);
@@ -133,59 +75,7 @@ function Projects() {
  const handleMediaClick = () => { if (!selectedProject) return; if (isCurrentMediaVideo(selectedProject, currentMediaIndex)) { const player = detailsPlayerRef.current; if (player && typeof player.getCurrentTime === 'function' && typeof player.pauseVideo === 'function') { const currentTime = player.getCurrentTime(); setVideoCurrentTime(currentTime); player.pauseVideo(); setIsFullscreen(true); } else { setVideoCurrentTime(0); setIsFullscreen(true); } } else { setIsFullscreen(true); } };
 
 // --- handleCloseFullscreen for exiting fullscreen remains the same ---
-const handleCloseFullscreen = () => {
-  let finalTime = 0;
-  // Capture the index being displayed *at the moment of closing*
-  const closingIndex = currentMediaIndex;
-  // Also capture the index we *entered* fullscreen on
-  const entryIndex = fullscreenEntryIndexRef.current;
-
-  // Try to get time from the fullscreen player
-  try {
-      if (fullscreenPlayerRef.current && typeof fullscreenPlayerRef.current.getCurrentTime === 'function') {
-          finalTime = fullscreenPlayerRef.current.getCurrentTime();
-          if (typeof fullscreenPlayerRef.current.pauseVideo === 'function') {
-              fullscreenPlayerRef.current.pauseVideo();
-          }
-           // It's good practice to destroy the fullscreen player instance now
-           if (fullscreenPlayerRef.current?.destroy) {
-               fullscreenPlayerRef.current.destroy();
-           }
-           fullscreenPlayerRef.current = null;
-      } else {
-           console.warn("Fullscreen player not available to get time on close.");
-           // Fallback: Use the time captured *before* entering fullscreen,
-           // but ONLY if we are closing on the *original* video index.
-           if (entryIndex === closingIndex && selectedProject && isCurrentMediaVideo(selectedProject, closingIndex)) {
-                finalTime = videoCurrentTime; // Use the time stored before entering FS
-           }
-      }
-  } catch (e) {
-      console.error("Error getting/pausing fullscreen player time:", e);
-       // Same fallback logic on error
-       if (entryIndex === closingIndex && selectedProject && isCurrentMediaVideo(selectedProject, closingIndex)) {
-           finalTime = videoCurrentTime;
-       }
-  }
-
-  // Set fullscreen state to false FIRST
-  setIsFullscreen(false);
-  fullscreenEntryIndexRef.current = null; // Reset the entry index ref
-
-  // Now, decide if we should set a resume time.
-  // We resume ONLY if the media item being displayed when we clicked close ('closingIndex')
-  // is the video.
-  if (selectedProject && isCurrentMediaVideo(selectedProject, closingIndex)) {
-       console.log(`Setting resume time to: ${finalTime} for index ${closingIndex}`);
-       setResumeTime(finalTime); // Set the state to trigger the effect
-  } else {
-       console.log(`Not setting resume time. Closing index (${closingIndex}) is not the video or no project selected.`);
-       setResumeTime(null); // Ensure it's null if not resuming
-  }
-
-  // REMOVE the setTimeout block that tried to command the details player directly
-  // setTimeout(() => { ... }, 100); // DELETE THIS
-};
+const handleCloseFullscreen = () => { let lastFullscreenTime = videoCurrentTime; if (fullscreenPlayerRef.current && typeof fullscreenPlayerRef.current.getCurrentTime === 'function') { try { lastFullscreenTime = fullscreenPlayerRef.current.getCurrentTime(); if (typeof fullscreenPlayerRef.current.pauseVideo === 'function') { fullscreenPlayerRef.current.pauseVideo(); } } catch (e) { console.error("Error getting/pausing fullscreen player time:", e); } } else { console.warn("Fullscreen player not available to get time on close."); } setVideoCurrentTime(lastFullscreenTime); setIsFullscreen(false); setTimeout(() => { const detailsPlayer = detailsPlayerRef.current; if (detailsPlayer && typeof detailsPlayer.seekTo === 'function' && typeof detailsPlayer.playVideo === 'function' && selectedProject && isCurrentMediaVideo(selectedProject, currentMediaIndex) ) { const detailsElementId = `youtube-iframe-details-${selectedProject.id}`; if(detailsPlayer.getIframe()?.id === detailsElementId) { detailsPlayer.seekTo(lastFullscreenTime, true); detailsPlayer.playVideo(); } else { console.warn("Details player ref mismatch after closing fullscreen."); } } else { console.log("Details player not available or not a video after closing fullscreen, or playVideo not ready."); } }, 100); };
 
 // --- Render Media Function remains the same ---
 const renderMedia = (project: Project, index: number, inFullscreen: boolean = false) => {
