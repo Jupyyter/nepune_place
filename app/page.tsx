@@ -65,6 +65,9 @@ export default function Home() {
           <p className="text-lg py-1">
             i use this site to represent myself on the internet and showcase my projects. nothing much
           </p>
+          <p className="text-lg py-1">
+            -this site doesnt have animations because i hate them
+          </p>
         </main>
       </div>
     </>
