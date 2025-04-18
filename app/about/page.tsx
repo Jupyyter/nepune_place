@@ -220,9 +220,6 @@ const About = () => {
 
                     {/* --- Title and Legend Row --- */}
                     <div className="w-full flex flex-col items-center gap-y-4 mb-5 px-4 relative">
-                        <h2 className="text-3xl font-semibold text-center text-white">
-                            things i use for developing
-                        </h2>
                         <div className="flex flex-col items-center max-w-xs sm:max-w-xl">
                             <div className='text-center mb-1'>
                                 <p className="text-base sm:text-lg font-medium text-gray-200">
@@ -235,6 +232,9 @@ const About = () => {
                                     .map(key => ( <LegendColor key={key} colorKey={key as keyof typeof preferenceColors} /> ))}
                             </div>
                         </div>
+                        <h2 className="text-3xl font-semibold text-center text-white">
+                            things i use for developing
+                        </h2>
                     </div>
 
 
