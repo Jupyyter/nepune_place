@@ -2,10 +2,9 @@
 // pages/about.tsx
 import Image from 'next/image';
 import Head from 'next/head';
-// UPDATED: Added FaJava
 import { FaReact, FaHtml5, FaCss3Alt, FaUnity, FaGitAlt, FaPython, FaJava } from 'react-icons/fa';
 import { SiCplusplus, SiJavascript, SiTypescript, SiSfml, SiNextdotjs, SiGodotengine, SiTailwindcss } from 'react-icons/si';
-import React, { useRef, useLayoutEffect, useEffect, useCallback } from 'react'; // Import React and hooks
+import React, { useRef, useLayoutEffect, useEffect, useCallback } from 'react';
 
 // --- Color Definitions ---
 const preferenceColors = {
@@ -39,13 +38,11 @@ interface Category {
 const BORDER_CLASS = "border-gray-400";
 const BORDER_THICKNESS_CLASS = "border-2";
 const BASE_PADDING = "p-6";
-const EXTRA_PADDING_CLASS_VERTICAL = "py-12";
-const EXTRA_PADDING_CLASS_HORIZONTAL = "px-12";
 
 
 // --- Reusable Components ---
 
-// Tooltip Component (Restored with detailed logging)
+// Tooltip Component (Still with magenta log for addEventListener test)
 const Tooltip = ({ text, parentRef }: { text: string, parentRef: React.RefObject<HTMLElement> }) => {
     const tooltipRef = useRef<HTMLDivElement>(null);
     const isMountedRef = useRef(false);
@@ -53,137 +50,78 @@ const Tooltip = ({ text, parentRef }: { text: string, parentRef: React.RefObject
 
     useEffect(() => {
         isMountedRef.current = true;
-        // This log appears in both dev and prod according to your description
-        console.log(`[${tooltipId} - "${text.substring(0,20)}"] Tooltip MOUNTED`);
+        console.log(`[${tooltipId}] Tooltip MOUNTED. Text: "${text.substring(0,20)}"`);
         return () => {
             isMountedRef.current = false;
-            console.log(`[${tooltipId} - "${text.substring(0,20)}"] Tooltip UNMOUNTED`);
+            // console.log(`[${tooltipId}] Tooltip UNMOUNTED. Text: "${text.substring(0,20)}"`);
         };
     }, [text, tooltipId]);
 
-    const adjustPosition = useCallback(() => {
-        if (!isMountedRef.current) {
-            // console.warn(`[${tooltipId} - "${text.substring(0,20)}"] AdjustPosition: SKIPPING - Component not mounted.`);
-            return;
-        }
-        if (!tooltipRef.current || !parentRef.current) {
-            // console.warn(`[${tooltipId} - "${text.substring(0,20)}"] AdjustPosition: SKIPPING - Refs not ready.`);
-            return;
-        }
-
-        const tooltipEl = tooltipRef.current;
-        const parentEl = parentRef.current;
-
-        // console.log(`%c[${tooltipId} - "${text.substring(0,20)}"] --- AdjustPosition START ---`, 'color: blue; font-weight: bold;');
-        tooltipEl.style.left = '';
-        tooltipEl.style.transform = '';
-        const originalDisplay = tooltipEl.style.display;
-        const originalVisibility = tooltipEl.style.visibility;
-        tooltipEl.style.display = 'block';
-        tooltipEl.style.visibility = 'hidden';
-
-        const preMeasureOffsetWidth = tooltipEl.offsetWidth;
-        const tooltipRect = tooltipEl.getBoundingClientRect();
-        const parentRect = parentEl.getBoundingClientRect();
-
-        tooltipEl.style.display = originalDisplay;
-        tooltipEl.style.visibility = originalVisibility;
-
-        // console.log(`[${tooltipId}] Measurements:`, { /* ... */ });
-
-        if (tooltipRect.width === 0 && preMeasureOffsetWidth === 0) {
-            tooltipEl.style.left = '50%';
-            tooltipEl.style.transform = 'translateX(-50%)';
-            return;
-        }
-        
-        const effectiveTooltipWidth = tooltipRect.width > 0 ? tooltipRect.width : preMeasureOffsetWidth;
-        // console.log(`[${tooltipId}] Effective Tooltip Width: ${effectiveTooltipWidth}`);
-
-        const spaceFromEdge = 10; 
-        let newLeftStyle = '50%';
-        let newTransformStyle = 'translateX(-50%)';
-        const parentViewportCenterX = parentRect.left + parentRect.width / 2;
-        const tooltipHalfWidth = effectiveTooltipWidth / 2;
-
-        // console.log(`[${tooltipId}] Positioning Calcs:`, { /* ... */ });
-
-        if (parentViewportCenterX - tooltipHalfWidth < spaceFromEdge) {
-            newLeftStyle = `${spaceFromEdge - parentRect.left}px`;
-            newTransformStyle = 'translateX(0%)';
-        }
-        else if (parentViewportCenterX + tooltipHalfWidth > window.innerWidth - spaceFromEdge) {
-            newLeftStyle = `${(window.innerWidth - spaceFromEdge - effectiveTooltipWidth) - parentRect.left}px`;
-            newTransformStyle = 'translateX(0%)';
-        }
-
-        tooltipEl.style.left = newLeftStyle;
-        tooltipEl.style.transform = newTransformStyle;
-        // console.log(`[${tooltipId}] Applied styles: left=${tooltipEl.style.left}, transform=${tooltipEl.style.transform}`);
-        // console.log(`%c[${tooltipId}] --- AdjustPosition END ---`, 'color: blue; font-weight: bold;');
-    }, [parentRef, text, tooltipId]);
+    const adjustPosition = useCallback(() => { // STUB - Replace with your full version IF magenta log works
+        console.log(`[${tooltipId}] adjustPosition STUB CALLED for "${text.substring(0,20)}"`);
+        // Your full adjustPosition logic would go here
+        // For example, to test if it's called and visible:
+        // if (tooltipRef.current) {
+        //    tooltipRef.current.style.opacity = '1';
+        //    tooltipRef.current.style.border = '3px dashed lime';
+        // }
+    }, [text, tooltipId]); // Ensure correct dependencies for your real adjustPosition
 
     useLayoutEffect(() => {
-        const parentElement = parentRef.current; // Capture current value for closure
+        const currentParent = parentRef.current;
+        console.log(`[${tooltipId}] useLayoutEffect for Tooltip. Text: "${text.substring(0,20)}". currentParent:`, currentParent);
 
-        if (parentElement) {
-            const handleMouseEnter = (event: MouseEvent) => { // <-- MODIFIED: Added event type
-                // ABSOLUTELY FIRST THING TO LOG IN PRODUCTION ON HOVER
-                console.log(`%c[PROD_HOVER_TEST][${tooltipId}] RAW MOUSE ENTER! Target:`, 'color: red; font-weight: bold;', event.target, 'isMounted:', isMountedRef.current);
+        if (currentParent) {
+            console.log(`[${tooltipId}] Parent Element is TRUTHY. Adding 'mouseenter' listener. Text: "${text.substring(0,20)}"`, currentParent);
 
-                if (!isMountedRef.current) {
-                     console.log(`[PROD_HOVER_TEST][${tooltipId}] MouseEnter, BUT NOT MOUNTED. Skipping.`);
-                    return;
+            const handleMouseEnter = (event: MouseEvent) => {
+                console.log(
+                    `%c[${tooltipId}] AddEventListener HOVER (magenta)!!! Text: "${text.substring(0,20)}", isMounted: ${isMountedRef.current}`,
+                    'color: magenta; font-weight: bold; font-size: 1.2em;'
+                );
+                if (isMountedRef.current) {
+                     console.log(`[${tooltipId} - Magenta Log] isMounted=true. Setting up rAF for adjustPosition.`);
+                     requestAnimationFrame(() => {
+                         requestAnimationFrame(() => {
+                             if (isMountedRef.current && tooltipRef.current && currentParent) {
+                                 console.log(`[${tooltipId} - Magenta Log] rAF x2: Calling adjustPosition.`);
+                                 adjustPosition();
+                             } else {
+                                 console.log(`[${tooltipId} - Magenta Log] rAF x2: Condition not met (mount/refs).`);
+                             }
+                         });
+                     });
                 }
-                // console.log(`[PROD_HOVER_TEST][${tooltipId}] MouseEnter (isMounted=true). Will call adjustPosition.`);
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        if (isMountedRef.current && tooltipRef.current && parentElement) { // Use captured parentElement
-                            // console.log(`[PROD_HOVER_TEST][${tooltipId}] rAF x2: Calling adjustPosition.`);
-                            adjustPosition();
-                        } else {
-                            // console.log(`[PROD_HOVER_TEST][${tooltipId}] rAF x2: Refs/mount lost.`);
-                        }
-                    });
-                });
             };
 
-            parentElement.addEventListener('mouseenter', handleMouseEnter);
-            // This log appears in both dev and prod
-            console.log(`[${tooltipId} - "${text.substring(0,20)}"] Added mouseenter listener to parent:`, parentElement);
-            
+            currentParent.addEventListener('mouseenter', handleMouseEnter);
+
             return () => {
-                if (parentElement) { // Check parentElement still exists for cleanup
-                    parentElement.removeEventListener('mouseenter', handleMouseEnter);
+                // console.log(`[${tooltipId}] CLEANUP: Removing 'mouseenter' listener. Text: "${text.substring(0,20)}"`, currentParent);
+                if (currentParent) { // Check if currentParent still exists
+                    currentParent.removeEventListener('mouseenter', handleMouseEnter);
                 }
-                console.log(`[${tooltipId} - "${text.substring(0,20)}"] Removed mouseenter listener from parent.`);
             };
         } else {
-            console.warn(`[${tooltipId} - "${text.substring(0,20)}"] ParentRef was null in useLayoutEffect for mouseenter.`);
+            console.warn(`[${tooltipId}] ParentRef.current was NULL in useLayoutEffect. Text: "${text.substring(0,20)}"`);
         }
-        // Critical: adjustPosition IS a dependency. parentRef (the ref object itself) is stable.
-        // text and tooltipId are for logging and ensuring adjustPosition is fresh if text changes.
-    }, [parentRef, adjustPosition, text, tooltipId]); 
+    }, [parentRef, text, tooltipId, adjustPosition]);
 
     useEffect(() => {
         const handleResize = () => {
-            if (!isMountedRef.current) return;
-            console.log(`[${tooltipId} - "${text.substring(0,20)}"] Window resize detected.`);
-            if (tooltipRef.current && getComputedStyle(tooltipRef.current).opacity === '1') { // Check if tooltip is visible
-                console.log(`[${tooltipId}] Tooltip visible, calling adjustPosition on resize.`);
+            if (isMountedRef.current && tooltipRef.current && getComputedStyle(tooltipRef.current).opacity === '1') {
+                 console.log(`[${tooltipId}] Window resize, tooltip visible. Calling adjustPosition STUB.`);
                 adjustPosition();
-            } else {
-                console.log(`[${tooltipId}] Tooltip not visible on resize, not adjusting.`);
             }
         };
         window.addEventListener('resize', handleResize);
-        // This log appears in both dev and prod
-        console.log(`[${tooltipId} - "${text.substring(0,20)}"] Added resize listener.`);
+        // console.log(`[${tooltipId}] Added resize listener. Text: "${text.substring(0,20)}"`);
         return () => {
             window.removeEventListener('resize', handleResize);
-            console.log(`[${tooltipId} - "${text.substring(0,20)}"] Removed resize listener.`);
+            // console.log(`[${tooltipId}] Removed resize listener. Text: "${text.substring(0,20)}"`);
         };
     }, [adjustPosition, text, tooltipId]);
+
 
     return (
         <div
@@ -199,10 +137,9 @@ const Tooltip = ({ text, parentRef }: { text: string, parentRef: React.RefObject
     );
 };
 
-
-// Technology Item Component
+// Technology Item Component - MODIFIED FOR Test 1
 const TechnologyItem = ({ tech, isOval = false }: { tech: Technology, isOval?: boolean }) => {
-    const itemRef = useRef<HTMLDivElement>(null); 
+    const itemRef = useRef<HTMLDivElement>(null);
     const colorInfo = preferenceColors[tech.preference];
     const bgColor = colorInfo ? colorInfo.bg : 'bg-gray-500';
     const textColor = ['lightGreen', 'lightBlue', 'white', 'yellow', 'orange'].includes(tech.preference) ? 'text-black' : 'text-white';
@@ -212,8 +149,25 @@ const TechnologyItem = ({ tech, isOval = false }: { tech: Technology, isOval?: b
     const iconSize = isOval ? 'text-2xl' : 'text-3xl sm:text-4xl';
     const textSize = isOval ? 'text-xs' : 'text-xs sm:text-sm';
 
+    const handleDirectReactMouseEnter = () => {
+        console.log(
+            `%c[TechnologyItem: ${tech.name}] Direct React onMouseEnter FIRED (green)! itemRef.current:`,
+            'color: green; font-weight: bold; font-size: 1.2em;',
+            itemRef.current
+        );
+    };
+
+    useEffect(() => {
+        console.log(`[TechnologyItem: ${tech.name}] MOUNTED/UPDATED. itemRef.current:`, itemRef.current);
+    }, [tech.name]);
+
+
     return (
-        <div ref={itemRef} className={`group relative flex flex-col items-center m-1 sm:m-2 transition-colors duration-200 ${bgColor} ${itemClasses}`}>
+        <div
+            ref={itemRef}
+            className={`group relative flex flex-col items-center m-1 sm:m-2 transition-colors duration-200 ${bgColor} ${itemClasses}`}
+            onMouseEnter={handleDirectReactMouseEnter}
+        >
             <Tooltip text={tech.comment} parentRef={itemRef} />
             {tech.icon && (
                  <div className={`flex items-center justify-center ${isOval ? 'h-6 w-6 mb-0.5' : 'h-8 w-8 sm:h-10 sm:w-10 mb-1'} ${preferenceColors[tech.preference]?.text || 'text-white'}`}>
@@ -228,15 +182,29 @@ const TechnologyItem = ({ tech, isOval = false }: { tech: Technology, isOval?: b
     );
 };
 
-// Category Title Component
+// Category Title Component - MODIFIED FOR Test 1
 const CategoryTitleItem = ({ title, comment, preference }: { title: string, comment: string, preference: keyof typeof preferenceColors }) => {
-    const titleRef = useRef<HTMLDivElement>(null); 
+    const titleRef = useRef<HTMLDivElement>(null);
     const colorInfo = preferenceColors[preference];
     const bgColor = colorInfo ? colorInfo.bg : 'bg-gray-500';
     const textColor = ['lightGreen', 'lightBlue', 'white', 'yellow', 'orange'].includes(preference) ? 'text-black' : 'text-white';
 
+    const handleDirectReactMouseEnter = () => {
+        console.log(
+            `%c[CategoryTitleItem: ${title}] Direct React onMouseEnter FIRED (green)! titleRef.current:`,
+            'color: green; font-weight: bold; font-size: 1.2em;',
+            titleRef.current
+        );
+    };
+     useEffect(() => {
+        console.log(`[CategoryTitleItem: ${title}] MOUNTED/UPDATED. titleRef.current:`, titleRef.current);
+    }, [title]);
+
     return (
-        <div ref={titleRef} className="group relative inline-block mb-4">
+        <div ref={titleRef}
+             className="group relative inline-block mb-4"
+             onMouseEnter={handleDirectReactMouseEnter}
+        >
             <div className={`rounded-lg p-2 shadow-md ${bgColor} cursor-default`}>
                 <h3 className={`text-2xl font-medium text-center capitalize ${textColor}`}>{title}</h3>
             </div>
@@ -246,11 +214,10 @@ const CategoryTitleItem = ({ title, comment, preference }: { title: string, comm
 };
 
 
-// Legend Color Square Component
+// Legend Color Square Component (Unchanged)
 const LegendColor = ({ colorKey }: { colorKey: keyof typeof preferenceColors }) => {
     const colorInfo = preferenceColors[colorKey];
     if (!colorInfo) return null;
-
     const SimpleTooltip = ({ text }: { text: string }) => (
         <div className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max max-w-xs hidden group-hover:block bg-purple-700 text-white text-xs sm:text-sm p-2 rounded z-30 shadow-lg pointer-events-none whitespace-normal text-center`}>
             {text}
@@ -263,9 +230,8 @@ const LegendColor = ({ colorKey }: { colorKey: keyof typeof preferenceColors }) 
     );
 }
 
-// --- Main About Page Component ---
+// --- Main About Page Component (Unchanged in its structure) ---
 const About = () => {
-    // --- Data Definitions ---
     const aboutTexts = [
         '- im about 20 years old (more or less im too lazy to update that)',
         '- my current location is Bucharest (the capital city of Romania, a country in Europe)',
@@ -305,11 +271,11 @@ const About = () => {
                 { icon: <FaUnity />, name: 'Unity', comment: 'too much ui for me, but its really powerfull (can do a lot of things with it). besides, its not open source', preference: 'lightBlue' },
                 { icon: <span className="font-mono font-bold">#</span>, name: 'C#', comment: 'The primary language for Unity. It\'s decent, but I prefer C++.', preference: 'lightBlue' },
                 { icon: <FaJava />, name: 'Java', comment: 'I learned the basics by making checkers and some other game in greenfoot. i hate the syntax', preference: 'yellow'},
-                { icon: ( <Image src="/imgs/Greenfoot_Logo.jpg" alt="Greenfoot Logo" width={32} height={32} className="rounded" priority /> ), name: 'Greenfoot', comment: 'a joke of a game engine. the sound system simply doesnt work properly for some reason. worst experience that i ever had using any software.', preference: 'red'},
-                { icon: ( <Image src="/imgs/gdscript.jpg" alt="GDScript" width={32} height={32} className="rounded" priority /> ), name: 'GDScript', comment: 'the language used in godot. its like python but for godot compatibility :)', preference: 'lightBlue' },
-                { icon: ( <Image src="/imgs/godot.png" alt="Godot" width={32} height={32} className="rounded" priority /> ), name: 'Godot', comment: 'great engine. i like it more than unity because its more lightweight and its open source (hooray)', preference: 'darkGreen' },
+                { icon: ( <Image src="/imgs/Greenfoot_Logo.jpg" alt="Greenfoot Logo" width={32} height={32} className="rounded" priority={true} /> ), name: 'Greenfoot', comment: 'a joke of a game engine. the sound system simply doesnt work properly for some reason. worst experience that i ever had using any software.', preference: 'red'},
+                { icon: ( <Image src="/imgs/gdscript.jpg" alt="GDScript" width={32} height={32} className="rounded" priority={true} /> ), name: 'GDScript', comment: 'the language used in godot. its like python but for godot compatibility :)', preference: 'lightBlue' },
+                { icon: ( <Image src="/imgs/godot.png" alt="Godot" width={32} height={32} className="rounded" priority={true} /> ), name: 'Godot', comment: 'great engine. i like it more than unity because its more lightweight and its open source (hooray)', preference: 'darkGreen' },
                 { icon: <SiSfml />, name: 'SFML', comment: 'practical graphics library when you want to make things appear on the screen. i choose it over sdl2 altho thats just because its more simple', preference: 'lightGreen' },
-                { icon: ( <Image src="/imgs/sdl.svg" alt="SDL2" width={32} height={32} className="rounded filter invert" priority /> ), name: 'SDL2', comment: 'its ok. i had a good experience with sdl2, but i would only use it over sfml when developing android or ios apps. i dont really know why, but i think i simply dont like how the code looks', preference: 'lightBlue' },
+                { icon: ( <Image src="/imgs/sdl.svg" alt="SDL2" width={32} height={32} className="rounded filter invert" priority={true} /> ), name: 'SDL2', comment: 'its ok. i had a good experience with sdl2, but i would only use it over sfml when developing android or ios apps. i dont really know why, but i think i simply dont like how the code looks', preference: 'lightBlue' },
            ]
         },
         {
@@ -322,7 +288,6 @@ const About = () => {
         }
     ];
 
-    // --- Sorting Logic ---
     const preferenceOrder: (keyof typeof preferenceColors)[] = [
         'darkGreen', 'lightGreen', 'lightBlue', 'white', 'yellow', 'orange', 'red', 'gray'
     ];
@@ -338,10 +303,7 @@ const About = () => {
             return orderA - orderB;
         });
     });
-    // --- End Sorting Logic ---
 
-
-    // --- Render Logic ---
     return (
         <div className="flex flex-col items-center justify-start pt-6 text-gray-200 w-full">
             <Head>
@@ -353,7 +315,6 @@ const About = () => {
             </Head>
 
             <main className="p-4 w-full flex flex-col items-center">
-                {/* --- About Me Text --- */}
                 <div className="w-full max-w-[60%] mx-auto mb-8 text-left">
                     <h1 className="text-4xl font-bold mb-6 text-center text-white">
                         things about me:
@@ -363,10 +324,7 @@ const About = () => {
                     ))}
                 </div>
 
-                {/* --- Development Tools Section --- */}
                 <div className='w-full flex flex-col items-center'>
-
-                    {/* --- Title and Legend Row --- */}
                     <div className="w-full flex flex-col items-center gap-y-4 mb-5 px-4 relative">
                         <div className="flex flex-col items-center max-w-xs sm:max-w-xl">
                             <div className='text-center mb-1'>
@@ -385,23 +343,18 @@ const About = () => {
                         </h2>
                     </div>
 
-
-                    {/* --- Technology Categories Container --- */}
                     <div className={`w-full border-t ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS} relative`}>
                         <div className="flex flex-col lg:flex-row justify-center">
                             {categorizedTechnologies.map((category, catIndex) => {
                                 const isGamesCategory = category.title === "Games";
                                 const isOtherAppsCategory = category.title === "Other Windows Apps";
                                 const isLastCategory = catIndex === categorizedTechnologies.length - 1;
-
                                 let paddingClasses = BASE_PADDING;
-
                                 if (isGamesCategory) {
                                     paddingClasses += ` pb-16 lg:pb-6 lg:pr-16`;
                                 } else if (isOtherAppsCategory) {
                                     paddingClasses += ` pt-16 lg:pt-6 lg:pl-16`;
                                 }
-
                                 return (
                                     <div
                                         key={category.title}
@@ -423,7 +376,6 @@ const About = () => {
                                                 ))}
                                             </div>
                                         </div>
-
                                         {isOtherAppsCategory && (
                                             <div className={`absolute left-1/2 top-0 transform -translate-x-1/2 -translate-y-1/2 lg:hidden z-10 border ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS} rounded-full bg-black p-0.5`}>
                                                 <TechnologyItem tech={CppTech} isOval={true} />
@@ -438,7 +390,6 @@ const About = () => {
                         </div>
                     </div>
 
-                    {/* --- Git Text --- */}
                     <div className="mt-5 mb-0 flex items-center justify-center gap-2">
                         <span className="text-lg text-gray-400">i obviously use</span>
                         <TechnologyItem tech={GitTech} />
