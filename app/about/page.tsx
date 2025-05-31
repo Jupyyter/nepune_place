@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Head from 'next/head';
 import { FaReact, FaHtml5, FaCss3Alt, FaUnity, FaGitAlt, FaPython, FaJava } from 'react-icons/fa';
 import { SiCplusplus, SiJavascript, SiTypescript, SiSfml, SiNextdotjs, SiGodotengine, SiTailwindcss } from 'react-icons/si';
-import React, { useRef, useLayoutEffect, useEffect, useCallback } from 'react';
+import React, { useRef, useLayoutEffect, useEffect, useCallback, useState } from 'react'; // Added useState
 
 // --- Color Definitions ---
 const preferenceColors = {
@@ -42,86 +42,127 @@ const BASE_PADDING = "p-6";
 
 // --- Reusable Components ---
 
-// Tooltip Component (Still with magenta log for addEventListener test)
-const Tooltip = ({ text, parentRef }: { text: string, parentRef: React.RefObject<HTMLElement> }) => {
+// Tooltip Component - MODIFIED to accept isParentHovered prop
+const Tooltip = ({ text, parentRef, isParentHovered }: { text: string, parentRef: React.RefObject<HTMLElement>, isParentHovered: boolean }) => {
     const tooltipRef = useRef<HTMLDivElement>(null);
     const isMountedRef = useRef(false);
     const tooltipId = useRef(`tt-${Math.random().toString(16).slice(2,7)}`).current;
 
     useEffect(() => {
         isMountedRef.current = true;
-        console.log(`[${tooltipId}] Tooltip MOUNTED. Text: "${text.substring(0,20)}"`);
+        // console.log(`[${tooltipId}] Tooltip MOUNTED. Text: "${text.substring(0,20)}"`);
         return () => {
             isMountedRef.current = false;
             // console.log(`[${tooltipId}] Tooltip UNMOUNTED. Text: "${text.substring(0,20)}"`);
         };
     }, [text, tooltipId]);
 
-    const adjustPosition = useCallback(() => { // STUB - Replace with your full version IF magenta log works
-        console.log(`[${tooltipId}] adjustPosition STUB CALLED for "${text.substring(0,20)}"`);
-        // Your full adjustPosition logic would go here
-        // For example, to test if it's called and visible:
-        // if (tooltipRef.current) {
-        //    tooltipRef.current.style.opacity = '1';
-        //    tooltipRef.current.style.border = '3px dashed lime';
-        // }
-    }, [text, tooltipId]); // Ensure correct dependencies for your real adjustPosition
-
-    useLayoutEffect(() => {
-        const currentParent = parentRef.current;
-        console.log(`[${tooltipId}] useLayoutEffect for Tooltip. Text: "${text.substring(0,20)}". currentParent:`, currentParent);
-
-        if (currentParent) {
-            console.log(`[${tooltipId}] Parent Element is TRUTHY. Adding 'mouseenter' listener. Text: "${text.substring(0,20)}"`, currentParent);
-
-            const handleMouseEnter = (event: MouseEvent) => {
-                console.log(
-                    `%c[${tooltipId}] AddEventListener HOVER (magenta)!!! Text: "${text.substring(0,20)}", isMounted: ${isMountedRef.current}`,
-                    'color: magenta; font-weight: bold; font-size: 1.2em;'
-                );
-                if (isMountedRef.current) {
-                     console.log(`[${tooltipId} - Magenta Log] isMounted=true. Setting up rAF for adjustPosition.`);
-                     requestAnimationFrame(() => {
-                         requestAnimationFrame(() => {
-                             if (isMountedRef.current && tooltipRef.current && currentParent) {
-                                 console.log(`[${tooltipId} - Magenta Log] rAF x2: Calling adjustPosition.`);
-                                 adjustPosition();
-                             } else {
-                                 console.log(`[${tooltipId} - Magenta Log] rAF x2: Condition not met (mount/refs).`);
-                             }
-                         });
-                     });
-                }
-            };
-
-            currentParent.addEventListener('mouseenter', handleMouseEnter);
-
-            return () => {
-                // console.log(`[${tooltipId}] CLEANUP: Removing 'mouseenter' listener. Text: "${text.substring(0,20)}"`, currentParent);
-                if (currentParent) { // Check if currentParent still exists
-                    currentParent.removeEventListener('mouseenter', handleMouseEnter);
-                }
-            };
-        } else {
-            console.warn(`[${tooltipId}] ParentRef.current was NULL in useLayoutEffect. Text: "${text.substring(0,20)}"`);
+    const adjustPosition = useCallback(() => {
+        if (!isMountedRef.current) {
+            console.warn(`[${tooltipId}] AdjustPos: SKIPPING - Not mounted. Text: "${text.substring(0,20)}"`);
+            return;
         }
-    }, [parentRef, text, tooltipId, adjustPosition]);
+        if (!tooltipRef.current || !parentRef.current) {
+            console.warn(`[${tooltipId}] AdjustPos: SKIPPING - Refs not ready. Text: "${text.substring(0,20)}"`, {
+                tooltipRef: !!tooltipRef.current,
+                parentRef: !!parentRef.current,
+            });
+            return;
+        }
 
+        const tooltipEl = tooltipRef.current;
+        const parentEl = parentRef.current;
+
+        console.log(`%c[${tooltipId}] --- AdjustPosition START --- Text: "${text.substring(0,20)}"`, 'color: blue; font-weight: bold;');
+
+        tooltipEl.style.left = '';
+        tooltipEl.style.transform = '';
+        const originalDisplay = tooltipEl.style.display;
+        const originalVisibility = tooltipEl.style.visibility;
+        tooltipEl.style.display = 'block';
+        tooltipEl.style.visibility = 'hidden';
+
+        const preMeasureOffsetWidth = tooltipEl.offsetWidth;
+        const tooltipRect = tooltipEl.getBoundingClientRect();
+        const parentRect = parentEl.getBoundingClientRect();
+
+        tooltipEl.style.display = originalDisplay;
+        tooltipEl.style.visibility = originalVisibility;
+
+        console.log(`[${tooltipId}] Measurements:`, {
+            tooltipOffsetW: preMeasureOffsetWidth, tooltipGBCRw: tooltipRect.width,
+            parentGBCRl: parentRect.left, parentGBCRw: parentRect.width, windowInnerW: window.innerWidth
+        });
+
+        if (tooltipRect.width === 0 && preMeasureOffsetWidth === 0) {
+            console.warn(`[${tooltipId}] Tooltip width is 0. Fallback to center.`);
+            tooltipEl.style.left = '50%';
+            tooltipEl.style.transform = 'translateX(-50%)';
+            console.log(`%c[${tooltipId}] --- AdjustPosition END (width 0 fallback) ---`, 'color: blue; font-weight: bold;');
+            return;
+        }
+        
+        const effectiveTooltipWidth = tooltipRect.width > 0 ? tooltipRect.width : preMeasureOffsetWidth;
+        console.log(`[${tooltipId}] Effective Tooltip Width: ${effectiveTooltipWidth}`);
+
+        const spaceFromEdge = 10; 
+        let newLeftStyle = '50%';
+        let newTransformStyle = 'translateX(-50%)';
+        const parentViewportCenterX = parentRect.left + parentRect.width / 2;
+        const tooltipHalfWidth = effectiveTooltipWidth / 2;
+
+        console.log(`[${tooltipId}] Positioning Calcs:`, {
+            parentViewportCenterX, tooltipHalfWidth,
+            leftEdgeCandidate: parentViewportCenterX - tooltipHalfWidth,
+            rightEdgeCandidate: parentViewportCenterX + tooltipHalfWidth,
+        });
+
+        if (parentViewportCenterX - tooltipHalfWidth < spaceFromEdge) {
+            newLeftStyle = `${spaceFromEdge - parentRect.left}px`;
+            newTransformStyle = 'translateX(0%)';
+            console.log(`[${tooltipId}] Overflow LEFT. New style: left=${newLeftStyle}, transform=${newTransformStyle}`);
+        }
+        else if (parentViewportCenterX + tooltipHalfWidth > window.innerWidth - spaceFromEdge) {
+            newLeftStyle = `${(window.innerWidth - spaceFromEdge - effectiveTooltipWidth) - parentRect.left}px`;
+            newTransformStyle = 'translateX(0%)';
+            console.log(`[${tooltipId}] Overflow RIGHT. New style: left=${newLeftStyle}, transform=${newTransformStyle}`);
+        } else {
+            console.log(`[${tooltipId}] No overflow. Default centering.`);
+        }
+
+        tooltipEl.style.left = newLeftStyle;
+        tooltipEl.style.transform = newTransformStyle;
+        console.log(`[${tooltipId}] Applied styles: left=${tooltipEl.style.left}, transform=${tooltipEl.style.transform}`);
+        console.log(`%c[${tooltipId}] --- AdjustPosition END ---`, 'color: blue; font-weight: bold;');
+    }, [parentRef, text, tooltipId]); // Kept text and tooltipId for logging context
+
+    // Effect to call adjustPosition when isParentHovered becomes true
+    useEffect(() => {
+        if (isParentHovered) {
+            console.log(`[${tooltipId}] Parent is Hovered (prop). Calling adjustPosition via rAF x2. Text: "${text.substring(0,20)}"`);
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    if (isMountedRef.current && tooltipRef.current && parentRef.current) {
+                        adjustPosition();
+                    }
+                });
+            });
+        }
+    }, [isParentHovered, adjustPosition, parentRef, text, tooltipId]); // Added dependencies
+
+    // Effect for resize handling (remains similar, calls the same adjustPosition)
     useEffect(() => {
         const handleResize = () => {
-            if (isMountedRef.current && tooltipRef.current && getComputedStyle(tooltipRef.current).opacity === '1') {
-                 console.log(`[${tooltipId}] Window resize, tooltip visible. Calling adjustPosition STUB.`);
+            if (isMountedRef.current && isParentHovered && tooltipRef.current && getComputedStyle(tooltipRef.current).opacity === '1') {
+                 console.log(`[${tooltipId}] Window resize, tooltip visible. Calling adjustPosition.`);
                 adjustPosition();
             }
         };
         window.addEventListener('resize', handleResize);
-        // console.log(`[${tooltipId}] Added resize listener. Text: "${text.substring(0,20)}"`);
         return () => {
             window.removeEventListener('resize', handleResize);
-            // console.log(`[${tooltipId}] Removed resize listener. Text: "${text.substring(0,20)}"`);
         };
-    }, [adjustPosition, text, tooltipId]);
-
+    }, [isParentHovered, adjustPosition, text, tooltipId]); // Added isParentHovered
 
     return (
         <div
@@ -129,17 +170,20 @@ const Tooltip = ({ text, parentRef }: { text: string, parentRef: React.RefObject
             className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max max-w-xs
                         bg-purple-700 text-white text-xs sm:text-sm p-2 rounded z-30 shadow-lg
                         whitespace-normal text-center
-                        opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto
+                        ${isParentHovered ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
                         transition-opacity duration-150`}
+            // Tailwind 'group-hover:opacity-100' is replaced by direct opacity control via isParentHovered prop
         >
             {text}
         </div>
     );
 };
 
-// Technology Item Component - MODIFIED FOR Test 1
+// Technology Item Component - MODIFIED to manage hover state
 const TechnologyItem = ({ tech, isOval = false }: { tech: Technology, isOval?: boolean }) => {
     const itemRef = useRef<HTMLDivElement>(null);
+    const [isHovered, setIsHovered] = useState(false); // <--- Manage hover state
+
     const colorInfo = preferenceColors[tech.preference];
     const bgColor = colorInfo ? colorInfo.bg : 'bg-gray-500';
     const textColor = ['lightGreen', 'lightBlue', 'white', 'yellow', 'orange'].includes(tech.preference) ? 'text-black' : 'text-white';
@@ -149,26 +193,21 @@ const TechnologyItem = ({ tech, isOval = false }: { tech: Technology, isOval?: b
     const iconSize = isOval ? 'text-2xl' : 'text-3xl sm:text-4xl';
     const textSize = isOval ? 'text-xs' : 'text-xs sm:text-sm';
 
-    const handleDirectReactMouseEnter = () => {
-        console.log(
-            `%c[TechnologyItem: ${tech.name}] Direct React onMouseEnter FIRED (green)! itemRef.current:`,
-            'color: green; font-weight: bold; font-size: 1.2em;',
-            itemRef.current
-        );
-    };
-
-    useEffect(() => {
-        console.log(`[TechnologyItem: ${tech.name}] MOUNTED/UPDATED. itemRef.current:`, itemRef.current);
-    }, [tech.name]);
-
-
     return (
         <div
             ref={itemRef}
-            className={`group relative flex flex-col items-center m-1 sm:m-2 transition-colors duration-200 ${bgColor} ${itemClasses}`}
-            onMouseEnter={handleDirectReactMouseEnter}
+            className={`relative flex flex-col items-center m-1 sm:m-2 transition-colors duration-200 ${bgColor} ${itemClasses}`}
+            // No 'group' class needed here anymore if Tooltip visibility is controlled by prop
+            onMouseEnter={() => {
+                console.log(`%c[TechItem: ${tech.name}] React onMouseEnter. Setting isHovered=true`, 'color: darkcyan;');
+                setIsHovered(true);
+            }}
+            onMouseLeave={() => {
+                console.log(`%c[TechItem: ${tech.name}] React onMouseLeave. Setting isHovered=false`, 'color: darkcyan;');
+                setIsHovered(false);
+            }}
         >
-            <Tooltip text={tech.comment} parentRef={itemRef} />
+            <Tooltip text={tech.comment} parentRef={itemRef} isParentHovered={isHovered} />
             {tech.icon && (
                  <div className={`flex items-center justify-center ${isOval ? 'h-6 w-6 mb-0.5' : 'h-8 w-8 sm:h-10 sm:w-10 mb-1'} ${preferenceColors[tech.preference]?.text || 'text-white'}`}>
                     {React.isValidElement(tech.icon) && typeof tech.icon !== 'string'
@@ -182,33 +221,31 @@ const TechnologyItem = ({ tech, isOval = false }: { tech: Technology, isOval?: b
     );
 };
 
-// Category Title Component - MODIFIED FOR Test 1
+// Category Title Component - MODIFIED to manage hover state
 const CategoryTitleItem = ({ title, comment, preference }: { title: string, comment: string, preference: keyof typeof preferenceColors }) => {
     const titleRef = useRef<HTMLDivElement>(null);
+    const [isHovered, setIsHovered] = useState(false); // <--- Manage hover state
+
     const colorInfo = preferenceColors[preference];
     const bgColor = colorInfo ? colorInfo.bg : 'bg-gray-500';
     const textColor = ['lightGreen', 'lightBlue', 'white', 'yellow', 'orange'].includes(preference) ? 'text-black' : 'text-white';
 
-    const handleDirectReactMouseEnter = () => {
-        console.log(
-            `%c[CategoryTitleItem: ${title}] Direct React onMouseEnter FIRED (green)! titleRef.current:`,
-            'color: green; font-weight: bold; font-size: 1.2em;',
-            titleRef.current
-        );
-    };
-     useEffect(() => {
-        console.log(`[CategoryTitleItem: ${title}] MOUNTED/UPDATED. titleRef.current:`, titleRef.current);
-    }, [title]);
-
     return (
         <div ref={titleRef}
-             className="group relative inline-block mb-4"
-             onMouseEnter={handleDirectReactMouseEnter}
+             className="relative inline-block mb-4" // No 'group' class
+             onMouseEnter={() => {
+                console.log(`%c[CatTitle: ${title}] React onMouseEnter. Setting isHovered=true`, 'color: darkgoldenrod;');
+                setIsHovered(true);
+             }}
+             onMouseLeave={() => {
+                console.log(`%c[CatTitle: ${title}] React onMouseLeave. Setting isHovered=false`, 'color: darkgoldenrod;');
+                setIsHovered(false);
+             }}
         >
             <div className={`rounded-lg p-2 shadow-md ${bgColor} cursor-default`}>
                 <h3 className={`text-2xl font-medium text-center capitalize ${textColor}`}>{title}</h3>
             </div>
-            <Tooltip text={comment} parentRef={titleRef} />
+            <Tooltip text={comment} parentRef={titleRef} isParentHovered={isHovered} />
         </div>
     );
 };
@@ -230,7 +267,7 @@ const LegendColor = ({ colorKey }: { colorKey: keyof typeof preferenceColors }) 
     );
 }
 
-// --- Main About Page Component (Unchanged in its structure) ---
+// --- Main About Page Component ---
 const About = () => {
     const aboutTexts = [
         '- im about 20 years old (more or less im too lazy to update that)',
