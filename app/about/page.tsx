@@ -167,10 +167,13 @@ const Tooltip = ({ text, parentRef }: { text: string, parentRef: React.RefObject
 
     useEffect(() => {
         const handleResize = () => {
-            // ... (resize handling logic)
             if (!isMountedRef.current) return;
-            if (tooltipRef.current && getComputedStyle(tooltipRef.current).opacity === '1') {
+            console.log(`[${tooltipId} - "${text.substring(0,20)}"] Window resize detected.`);
+            if (tooltipRef.current && getComputedStyle(tooltipRef.current).opacity === '1') { // Check if tooltip is visible
+                console.log(`[${tooltipId}] Tooltip visible, calling adjustPosition on resize.`);
                 adjustPosition();
+            } else {
+                console.log(`[${tooltipId}] Tooltip not visible on resize, not adjusting.`);
             }
         };
         window.addEventListener('resize', handleResize);
