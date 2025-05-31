@@ -296,14 +296,16 @@ const About = () => {
             </Head>
 
             <main className="p-4 w-full flex flex-col items-center">
-                <div className="w-full max-w-[60%] mx-auto mb-8 text-left">
-                    <h1 className="text-4xl font-bold mb-6 text-center text-white">
-                        things about me:
-                    </h1>
-                    {aboutTexts.map((text, index) => (
-                         <p key={index} className="text-xl text-gray-300 py-1">{text}</p>
-                    ))}
-                </div>
+                <div className="w-full flex justify-center mb-10">
+    <div className="w-max">
+        <h1 className="text-4xl font-bold mb-6 text-center text-white">
+            things about me:
+        </h1>
+        {aboutTexts.map((text, index) => (
+            <p key={index} className="text-xl text-gray-300 py-1">{text}</p>
+        ))}
+    </div>
+</div>
 
                 <div className='w-full flex flex-col items-center'>
                     <div className="w-full flex flex-col items-center gap-y-4 mb-5 px-4 relative">
