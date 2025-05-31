@@ -46,156 +46,187 @@ const EXTRA_PADDING_CLASS_HORIZONTAL = "px-12";
 // --- Reusable Components ---
 
 // Tooltip Component
-// --- Reusable Components ---
-
-// Tooltip Component
 const Tooltip = ({ text, parentRef }: { text: string, parentRef: React.RefObject<HTMLElement> }) => {
     const tooltipRef = useRef<HTMLDivElement>(null);
-    const isMountedRef = useRef(false); // To help avoid state updates on unmounted component
+    const isMountedRef = useRef(false);
 
     useEffect(() => {
         isMountedRef.current = true;
-        console.log(`[${text}] Tooltip MOUNTED`);
         return () => {
             isMountedRef.current = false;
-            console.log(`[${text}] Tooltip UNMOUNTED`);
         };
-    }, [text]);
-
+    }, []);
 
     const adjustPosition = useCallback(() => {
         if (!tooltipRef.current || !parentRef.current || !isMountedRef.current) {
-            console.warn(`[${text}] AdjustPosition: Refs or mount status not ready.`, {
-                tooltipRef: !!tooltipRef.current,
-                parentRef: !!parentRef.current,
-                isMounted: isMountedRef.current
-            });
+            // console.warn(`[${text.substring(0,10)}...] AdjustPosition: Refs or mount not ready.`);
             return;
         }
 
         const tooltipEl = tooltipRef.current;
         const parentEl = parentRef.current;
 
-        console.log(`[${text}] --- AdjustPosition START ---`);
+        // console.log(`[${text.substring(0,10)}...] --- AdjustPosition START ---`);
 
-        // Reset styles to allow natural measurement based on Tailwind classes
+        // 1. Reset any previously applied JS positioning to allow CSS to take initial effect
+        //    and to prepare for clean measurement.
         tooltipEl.style.left = '';
         tooltipEl.style.transform = '';
-        // Temporarily ensure it's laid out for measurement, even if opacity is 0
-        // We're relying on opacity for visibility, so display should be as per normal flow
-        const originalDisplay = tooltipEl.style.display;
-        tooltipEl.style.display = 'block'; // Ensure it's considered for layout
         tooltipEl.style.visibility = 'hidden'; // Keep it hidden during measurement
+        tooltipEl.style.opacity = '0'; // Ensure it's not visible if opacity transition is slow
 
-        // Force browser to recalculate layout - reading offsetWidth can help
-        const preMeasureOffsetWidth = tooltipEl.offsetWidth;
-        console.log(`[${text}] Pre-measure offsetWidth: ${preMeasureOffsetWidth}`);
+        // 2. Force a reflow to ensure styles like `w-max` are computed.
+        //    Reading offsetWidth is a common way to trigger this.
+        //    Temporarily apply styles that allow for natural width calculation.
+        const originalDisplay = tooltipEl.style.display;
+        tooltipEl.style.display = 'block'; // Or 'inline-block', 'flex' if more appropriate for w-max
+        
+        // Crucially, ensure 'left' and 'transform' are not percentage-based during measurement
+        // as that would depend on the width we are trying to measure.
+        const tempLeft = tooltipEl.style.left;
+        const tempTransform = tooltipEl.style.transform;
+        tooltipEl.style.left = '0px'; // Neutralize for width measurement
+        tooltipEl.style.transform = 'none'; // Neutralize for width measurement
 
-        const tooltipRect = tooltipEl.getBoundingClientRect();
-        const parentRect = parentEl.getBoundingClientRect();
+        // Ensure it's in the DOM flow to be measurable
+        // (Tailwind's `absolute` already does this, but good to be mindful)
+        
+        const tooltipWidth = tooltipEl.offsetWidth; // Get the computed width
 
-        // Restore original display style if we changed it, and make visible if it was hidden by JS
-        tooltipEl.style.display = originalDisplay;
-        tooltipEl.style.visibility = '';
+        // Restore original/temporary styles before final positioning
+        tooltipEl.style.left = tempLeft;
+        tooltipEl.style.transform = tempTransform;
+        tooltipEl.style.display = originalDisplay; // Restore original display
+        // Visibility and opacity will be controlled by CSS classes on hover
 
+        // console.log(`[${text.substring(0,10)}...] Measured tooltipWidth: ${tooltipWidth}`);
 
-        console.log(`[${text}] TooltipRect:`, { width: tooltipRect.width, height: tooltipRect.height, left: tooltipRect.left, right: tooltipRect.right });
-        console.log(`[${text}] ParentRect:`, { width: parentRect.width, height: parentRect.height, left: parentRect.left, right: parentRect.right });
-        console.log(`[${text}] Window.innerWidth:`, window.innerWidth);
-
-        if (tooltipRect.width === 0 && preMeasureOffsetWidth === 0) {
-            console.warn(`[${text}] Tooltip width is 0 (both getBoundingClientRect and offsetWidth). Cannot adjust accurately. Content: "${text}"`);
-            // If width is 0, it's pointless to proceed with adjustment based on it.
-            // Set to default centered position as a fallback.
+        if (tooltipWidth === 0) {
+            // console.warn(`[${text.substring(0,10)}...] Tooltip width is 0. Cannot adjust accurately. Content: "${text}"`);
+            // Fallback to default centering provided by Tailwind classes if width is somehow 0
             tooltipEl.style.left = '50%';
             tooltipEl.style.transform = 'translateX(-50%)';
-            console.log(`[${text}] --- AdjustPosition END (width 0, fallback to center) ---`);
+            tooltipEl.style.visibility = ''; // Let CSS control this
+            tooltipEl.style.opacity = '';   // Let CSS control this
             return;
         }
-        // Use offsetWidth if getBoundingClientRect().width is 0 but offsetWidth isn't
-        const effectiveTooltipWidth = tooltipRect.width > 0 ? tooltipRect.width : preMeasureOffsetWidth;
-        if (tooltipRect.width === 0 && preMeasureOffsetWidth > 0) {
-            console.log(`[${text}] Using offsetWidth (${preMeasureOffsetWidth}) as tooltipRect.width was 0.`);
-        }
 
+        const parentRect = parentEl.getBoundingClientRect();
+        // console.log(`[${text.substring(0,10)}...] ParentRect:`, { left: parentRect.left, width: parentRect.width });
+        // console.log(`[${text.substring(0,10)}...] Window.innerWidth:`, window.innerWidth);
 
-        const spaceFromEdge = 10; // Increased slightly
-        let newLeftStyle = '50%';
-        let newTransformStyle = 'translateX(-50%)';
+        const spaceFromEdge = 10; // Minimum space from viewport edge
 
-        const parentViewportCenterX = parentRect.left + parentRect.width / 2;
-        const tooltipHalfWidth = effectiveTooltipWidth / 2;
+        // Calculate the ideal center position of the tooltip relative to the viewport
+        const idealTooltipCenterViewportX = parentRect.left + parentRect.width / 2;
 
-        console.log(`[${text}] effectiveTooltipWidth: ${effectiveTooltipWidth}, parentViewportCenterX: ${parentViewportCenterX}, tooltipHalfWidth: ${tooltipHalfWidth}`);
+        // Calculate the tooltip's left and right edges if it were perfectly centered
+        let tooltipLeftEdge = idealTooltipCenterViewportX - tooltipWidth / 2;
+        let tooltipRightEdge = idealTooltipCenterViewportX + tooltipWidth / 2;
+
+        let newLeftStyleValue = parentRect.width / 2 - tooltipWidth / 2; // Default: center relative to parent
 
         // Check left overflow
-        if (parentViewportCenterX - tooltipHalfWidth < spaceFromEdge) {
-            newLeftStyle = `${spaceFromEdge - parentRect.left}px`;
-            newTransformStyle = 'translateX(0%)';
-            console.log(`[${text}] Overflow LEFT. New style: left=${newLeftStyle}, transform=${newTransformStyle}`);
+        if (tooltipLeftEdge < spaceFromEdge) {
+            // console.log(`[${text.substring(0,10)}...] Overflow LEFT`);
+            // Adjust so the tooltip's left edge is at spaceFromEdge
+            newLeftStyleValue = spaceFromEdge - parentRect.left;
         }
         // Check right overflow
-        else if (parentViewportCenterX + tooltipHalfWidth > window.innerWidth - spaceFromEdge) {
-            newLeftStyle = `${(window.innerWidth - spaceFromEdge - effectiveTooltipWidth) - parentRect.left}px`;
-            newTransformStyle = 'translateX(0%)';
-            console.log(`[${text}] Overflow RIGHT. New style: left=${newLeftStyle}, transform=${newTransformStyle}`);
-        } else {
-            console.log(`[${text}] No overflow. Using default centering.`);
+        else if (tooltipRightEdge > window.innerWidth - spaceFromEdge) {
+            // console.log(`[${text.substring(0,10)}...] Overflow RIGHT`);
+            // Adjust so the tooltip's right edge is at window.innerWidth - spaceFromEdge
+            newLeftStyleValue = (window.innerWidth - spaceFromEdge - tooltipWidth) - parentRect.left;
         }
 
-        tooltipEl.style.left = newLeftStyle;
-        tooltipEl.style.transform = newTransformStyle;
+        tooltipEl.style.left = `${newLeftStyleValue}px`;
+        // The `transform -translate-x-1/2` is initially applied by Tailwind.
+        // If we set `left` directly in pixels relative to the parent, we no longer need the translateX.
+        // However, our `newLeftStyleValue` is calculated to be the *start* of the tooltip.
+        // The CSS `left-1/2 transform -translate-x-1/2` centers it.
+        // If we directly set `left` like this, we need to remove the transform or adjust.
+        // Let's stick to making `newLeftStyleValue` compatible with no transform.
+        tooltipEl.style.transform = 'none'; // Override Tailwind's translateX
 
-        console.log(`[${text}] Applied styles: left=${tooltipEl.style.left}, transform=${tooltipEl.style.transform}`);
-        console.log(`[${text}] --- AdjustPosition END ---`);
+        // console.log(`[${text.substring(0,10)}...] Applied styles: left=${tooltipEl.style.left}, transform=${tooltipEl.style.transform}`);
+        
+        // Make it visible again (opacity will be handled by group-hover)
+        tooltipEl.style.visibility = '';
+        tooltipEl.style.opacity = ''; // Allow CSS to take over opacity
 
-    }, [parentRef, text]); // Include `text` if used in logs or logic directly
+        // console.log(`[${text.substring(0,10)}...] --- AdjustPosition END ---`);
+
+    }, [parentRef, text]); // text dependency for logging if uncommented
 
     useLayoutEffect(() => {
+        // This effect runs after DOM mutations but before the browser paints.
+        // Good for measurements that need to happen after render but before visibility.
         if (parentRef.current) {
             const parentElement = parentRef.current;
             const handleMouseEnter = () => {
-                if (!isMountedRef.current) return;
-                console.log(`[${text}] MouseEnter on parent. Will call adjustPosition via rAF.`);
+                if (!isMountedRef.current || !tooltipRef.current) return;
+                
+                // Make tooltip initially invisible and off-screen for measurement
+                // to avoid flicker, though CSS opacity handles visual appearance.
+                // The crucial part is that it IS in the DOM to be measured.
+                // Tailwind classes `opacity-0 group-hover:opacity-100` handle the visual.
+                // Our adjustPosition will fine-tune `left` and `transform`.
+
+                // We need to ensure that `adjustPosition` runs *after* the browser
+                // has had a chance to apply styles and compute layout for the tooltip
+                // being potentially "active" due to hover.
                 requestAnimationFrame(() => {
-                    // Double check mount status due to async nature of rAF
-                    if (isMountedRef.current && tooltipRef.current && parentRef.current) {
-                         console.log(`[${text}] rAF callback: Calling adjustPosition.`);
+                    if (isMountedRef.current && parentRef.current && tooltipRef.current) { // Double check
+                        // console.log(`[${text.substring(0,10)}...] rAF: Calling adjustPosition`);
                         adjustPosition();
-                    } else {
-                        console.log(`[${text}] rAF callback: Component unmounted or refs lost before adjustPosition could be called.`);
                     }
                 });
             };
+
             parentElement.addEventListener('mouseenter', handleMouseEnter);
-            console.log(`[${text}] Added mouseenter listener to parent.`);
+            // console.log(`[${text.substring(0,10)}...] Added mouseenter listener.`);
             return () => {
                 parentElement.removeEventListener('mouseenter', handleMouseEnter);
-                console.log(`[${text}] Removed mouseenter listener from parent.`);
+                // console.log(`[${text.substring(0,10)}...] Removed mouseenter listener.`);
+                // Optionally reset tooltip style if it was manipulated directly
+                if (tooltipRef.current) {
+                    tooltipRef.current.style.left = '';
+                    tooltipRef.current.style.transform = '';
+                    tooltipRef.current.style.visibility = '';
+                    tooltipRef.current.style.opacity = '';
+                }
             };
-        } else {
-            console.warn(`[${text}] ParentRef not current in useLayoutEffect for mouseenter.`);
         }
-    }, [parentRef, adjustPosition, text]); // Add text if used in logs
+    }, [parentRef, adjustPosition, text]); // text dependency for logging
 
     useEffect(() => {
+        // Standard effect for resize listener
         const handleResize = () => {
-            if (!isMountedRef.current) return;
-            console.log(`[${text}] Window resize detected.`);
+            if (!isMountedRef.current || !tooltipRef.current || !parentRef.current) return;
+            // Only adjust if the tooltip is currently supposed to be visible
+            // Check parent's hover state or tooltip's opacity might be too complex.
+            // A simpler check: if the parent element is still hovered.
+            // However, we don't have direct access to that here easily.
+            // Let's assume if resize happens, and it was visible, recalculate.
+            // The opacity CSS class will handle actual visibility.
+            // Check if tooltip is opaque (visible)
             if (tooltipRef.current && getComputedStyle(tooltipRef.current).opacity === '1') {
-                console.log(`[${text}] Tooltip visible, calling adjustPosition on resize.`);
-                adjustPosition();
-            } else {
-                console.log(`[${text}] Tooltip not visible on resize, not adjusting.`);
+                // console.log(`[${text.substring(0,10)}...] Resize: Tooltip visible, calling adjustPosition.`);
+                 requestAnimationFrame(() => { // Also use rAF on resize
+                    if (isMountedRef.current && parentRef.current && tooltipRef.current) {
+                        adjustPosition();
+                    }
+                });
             }
         };
+
         window.addEventListener('resize', handleResize);
-        console.log(`[${text}] Added resize listener.`);
+        // console.log(`[${text.substring(0,10)}...] Added resize listener.`);
         return () => {
             window.removeEventListener('resize', handleResize);
-            console.log(`[${text}] Removed resize listener.`);
+            // console.log(`[${text.substring(0,10)}...] Removed resize listener.`);
         };
-    }, [adjustPosition, text]); // Add text if used in logs
+    }, [adjustPosition, text]); // text dependency for logging
 
     return (
         <div
@@ -205,6 +236,8 @@ const Tooltip = ({ text, parentRef }: { text: string, parentRef: React.RefObject
                         whitespace-normal text-center
                         opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto
                         transition-opacity duration-150`}
+            // The `left-1/2 transform -translate-x-1/2` provides the default centering.
+            // Our JS will override `left` and `transform` if adjustments are needed.
         >
             {text}
         </div>
@@ -262,9 +295,7 @@ const CategoryTitleItem = ({ title, comment, preference }: { title: string, comm
 const LegendColor = ({ colorKey }: { colorKey: keyof typeof preferenceColors }) => {
     const colorInfo = preferenceColors[colorKey];
     if (!colorInfo) return null;
-    // For LegendColor, we'll use the original simple tooltip if needed, or assume it doesn't need edge detection
-    // as it's small and centrally located. If it does, it would need similar ref passing.
-    // For simplicity, keeping its original tooltip structure:
+
     const SimpleTooltip = ({ text }: { text: string }) => (
         <div className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max max-w-xs hidden group-hover:block bg-purple-700 text-white text-xs sm:text-sm p-2 rounded z-30 shadow-lg pointer-events-none whitespace-normal text-center`}>
             {text}
@@ -357,7 +388,7 @@ const About = () => {
 
     // --- Render Logic ---
     return (
-        <div className="flex flex-col items-center justify-start pt-6 text-gray-200 w-full">
+        <div className="flex flex-col items-center justify-start pt-6 text-gray-200 w-full min-h-screen bg-black">
             <Head>
                 <title>About Me</title>
                 <link rel="preload" href="/imgs/sdl.svg" as="image" />
@@ -390,7 +421,7 @@ const About = () => {
                             </div>
                             <div className="flex flex-wrap justify-center">
                                 {Object.keys(preferenceColors)
-                                    .filter(key => key !== 'gray' || GitTech.preference === 'gray')
+                                    .filter(key => key !== 'gray' || GitTech.preference === 'gray') 
                                     .map(key => ( <LegendColor key={key} colorKey={key as keyof typeof preferenceColors} /> ))}
                             </div>
                         </div>
@@ -410,11 +441,12 @@ const About = () => {
 
                                 let paddingClasses = BASE_PADDING;
 
-                                if (isGamesCategory) {
+                                if (isGamesCategory) { 
                                     paddingClasses += ` pb-16 lg:pb-6 lg:pr-16`;
-                                } else if (isOtherAppsCategory) {
+                                } else if (isOtherAppsCategory) { 
                                     paddingClasses += ` pt-16 lg:pt-6 lg:pl-16`;
                                 }
+
 
                                 return (
                                     <div
