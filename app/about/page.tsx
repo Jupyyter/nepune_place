@@ -5,7 +5,7 @@ import Head from 'next/head';
 // UPDATED: Added FaJava
 import { FaReact, FaHtml5, FaCss3Alt, FaUnity, FaGitAlt, FaPython, FaJava } from 'react-icons/fa';
 import { SiCplusplus, SiJavascript, SiTypescript, SiSfml, SiNextdotjs, SiGodotengine, SiTailwindcss } from 'react-icons/si';
-import React from 'react'; // Import React
+import React, { useRef, useLayoutEffect, useEffect, useCallback } from 'react'; // Import React and hooks
 
 // --- Color Definitions ---
 const preferenceColors = {
@@ -16,48 +16,134 @@ const preferenceColors = {
     yellow:     { bg: 'bg-yellow-400', text: 'text-black', tooltip: 'Use when needed' },
     orange:     { bg: 'bg-orange-500', text: 'text-black', tooltip: 'Used, but with reservations' },
     red:        { bg: 'bg-red-600',    text: 'text-white', tooltip: 'Disliked / Avoid if possible' },
-    gray:       { bg: 'bg-gray-600',   text: 'text-white', tooltip: 'Version Control'} // Kept for potential future use, though Git is now darkGreen
+    gray:       { bg: 'bg-gray-600',   text: 'text-white', tooltip: 'Version Control'}
 };
 
 // --- Types ---
 interface Technology {
-    icon: React.ReactNode | null; // Allow null for title "technologies"
+    icon: React.ReactNode | null;
     name: string;
     comment: string;
     preference: keyof typeof preferenceColors;
-    isTitle?: boolean; // Flag to identify category titles if needed later
+    isTitle?: boolean;
 }
 
 interface Category {
     title: string;
-    titleComment: string; // Add comment specific to the category title
-    titlePreference: keyof typeof preferenceColors; // Add preference for the category title background
+    titleComment: string;
+    titlePreference: keyof typeof preferenceColors;
     technologies: Technology[];
 }
 
 // --- Constants ---
 const BORDER_CLASS = "border-gray-400";
 const BORDER_THICKNESS_CLASS = "border-2";
-// const HORIZONTAL_PADDING_VALUE = "24"; // No longer needed for direct class construction
-// const VERTICAL_PADDING_VALUE = "24"; // No longer needed for direct class construction
-const BASE_PADDING = "p-6"; // Standard padding around content
-// Define extra padding amount to push content away from the C/C++ oval
-const EXTRA_PADDING_CLASS_VERTICAL = "py-12"; // Extra top/bottom padding for small screens (adjust value as needed)
-const EXTRA_PADDING_CLASS_HORIZONTAL = "px-12"; // Extra left/right padding for large screens (adjust value as needed)
+const BASE_PADDING = "p-6";
+const EXTRA_PADDING_CLASS_VERTICAL = "py-12";
+const EXTRA_PADDING_CLASS_HORIZONTAL = "px-12";
 
 
 // --- Reusable Components ---
 
 // Tooltip Component
-const Tooltip = ({ text }: { text: string }) => (
-    <div className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max max-w-xs hidden group-hover:block bg-purple-700 text-white text-xs sm:text-sm p-2 rounded z-30 shadow-lg pointer-events-none whitespace-normal text-center`}>
-        {text}
-    </div>
-);
+const Tooltip = ({ text, parentRef }: { text: string, parentRef: React.RefObject<HTMLElement> }) => {
+    const tooltipRef = useRef<HTMLDivElement>(null);
+
+    const adjustPosition = useCallback(() => {
+        if (!tooltipRef.current || !parentRef.current) return;
+
+        const tooltipEl = tooltipRef.current;
+        const parentEl = parentRef.current;
+
+        // Reset to default Tailwind classes for measurement if JS styles were applied
+        // The initial classes `left-1/2 transform -translate-x-1/2` set the base
+        tooltipEl.style.left = ''; // Reset JS override
+        tooltipEl.style.transform = ''; // Reset JS override
+
+        const tooltipRect = tooltipEl.getBoundingClientRect();
+        const parentRect = parentEl.getBoundingClientRect();
+
+        // If tooltip has no width (e.g., display: none, or content not loaded fully), bail
+        if (tooltipRect.width === 0 && tooltipEl.offsetWidth === 0) {
+            return;
+        }
+
+        const spaceFromEdge = 8; // 8px minimum space from window edge
+        let newLeftStyle = '50%'; // Default from Tailwind: left-1/2
+        let newTransformStyle = 'translateX(-50%)'; // Default from Tailwind: -translate-x-1/2
+
+        const parentViewportCenterX = parentRect.left + parentRect.width / 2;
+        const tooltipHalfWidth = tooltipRect.width / 2;
+
+        // Check left overflow
+        if (parentViewportCenterX - tooltipHalfWidth < spaceFromEdge) {
+            // Align left edge of tooltip with `spaceFromEdge` (viewport coordinates)
+            // `parentRect.left` (parent's left in viewport) + newLeftPx (applied to tooltip's style.left) = `spaceFromEdge`
+            newLeftStyle = `${spaceFromEdge - parentRect.left}px`;
+            newTransformStyle = 'translateX(0%)'; // No horizontal translation needed since left is absolute
+        }
+        // Check right overflow
+        else if (parentViewportCenterX + tooltipHalfWidth > window.innerWidth - spaceFromEdge) {
+            // Align right edge of tooltip with `window.innerWidth - spaceFromEdge` (viewport coordinates)
+            // `parentRect.left` + newLeftPx + `tooltipRect.width` = `window.innerWidth - spaceFromEdge`
+            newLeftStyle = `${window.innerWidth - spaceFromEdge - tooltipRect.width - parentRect.left}px`;
+            newTransformStyle = 'translateX(0%)';
+        }
+
+        tooltipEl.style.left = newLeftStyle;
+        tooltipEl.style.transform = newTransformStyle;
+
+    }, [parentRef]); // text is not needed here as width is read via getBoundingClientRect
+
+    // Effect for mouseenter on parent
+    useLayoutEffect(() => {
+        if (parentRef.current) {
+            const parentElement = parentRef.current;
+            const handleMouseEnter = () => {
+                // Delay slightly with requestAnimationFrame to ensure CSS transitions/layout updates have occurred
+                requestAnimationFrame(adjustPosition);
+            };
+            parentElement.addEventListener('mouseenter', handleMouseEnter);
+            return () => {
+                parentElement.removeEventListener('mouseenter', handleMouseEnter);
+            };
+        }
+    }, [parentRef, adjustPosition]);
+
+    // Effect for window resize
+    useEffect(() => {
+        const handleResize = () => {
+            // Only adjust if the tooltip is currently "visible" (opacity is 1)
+            if (tooltipRef.current && getComputedStyle(tooltipRef.current).opacity === '1') {
+                adjustPosition();
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, [adjustPosition]);
+
+    return (
+        <div
+            ref={tooltipRef}
+            className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max max-w-xs
+                        bg-purple-700 text-white text-xs sm:text-sm p-2 rounded z-30 shadow-lg
+                        whitespace-normal text-center
+                        opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto
+                        transition-opacity duration-150`}
+            // Initial Tailwind classes `left-1/2 transform -translate-x-1/2` provide the default.
+            // JS will override `style.left` and `style.transform` if needed.
+        >
+            {text}
+        </div>
+    );
+};
 
 
 // Technology Item Component
 const TechnologyItem = ({ tech, isOval = false }: { tech: Technology, isOval?: boolean }) => {
+    const itemRef = useRef<HTMLDivElement>(null); // Ref for the parent div of the tooltip
     const colorInfo = preferenceColors[tech.preference];
     const bgColor = colorInfo ? colorInfo.bg : 'bg-gray-500';
     const textColor = ['lightGreen', 'lightBlue', 'white', 'yellow', 'orange'].includes(tech.preference) ? 'text-black' : 'text-white';
@@ -68,8 +154,8 @@ const TechnologyItem = ({ tech, isOval = false }: { tech: Technology, isOval?: b
     const textSize = isOval ? 'text-xs' : 'text-xs sm:text-sm';
 
     return (
-        <div className={`group relative flex flex-col items-center m-1 sm:m-2 transition-colors duration-200 ${bgColor} ${itemClasses}`}>
-            <Tooltip text={tech.comment} />
+        <div ref={itemRef} className={`group relative flex flex-col items-center m-1 sm:m-2 transition-colors duration-200 ${bgColor} ${itemClasses}`}>
+            <Tooltip text={tech.comment} parentRef={itemRef} />
             {tech.icon && (
                  <div className={`flex items-center justify-center ${isOval ? 'h-6 w-6 mb-0.5' : 'h-8 w-8 sm:h-10 sm:w-10 mb-1'} ${preferenceColors[tech.preference]?.text || 'text-white'}`}>
                     {React.isValidElement(tech.icon) && typeof tech.icon !== 'string'
@@ -85,16 +171,17 @@ const TechnologyItem = ({ tech, isOval = false }: { tech: Technology, isOval?: b
 
 // Category Title Component
 const CategoryTitleItem = ({ title, comment, preference }: { title: string, comment: string, preference: keyof typeof preferenceColors }) => {
+    const titleRef = useRef<HTMLDivElement>(null); // Ref for the parent div of the tooltip
     const colorInfo = preferenceColors[preference];
     const bgColor = colorInfo ? colorInfo.bg : 'bg-gray-500';
     const textColor = ['lightGreen', 'lightBlue', 'white', 'yellow', 'orange'].includes(preference) ? 'text-black' : 'text-white';
 
     return (
-        <div className="group relative inline-block mb-4">
+        <div ref={titleRef} className="group relative inline-block mb-4">
             <div className={`rounded-lg p-2 shadow-md ${bgColor} cursor-default`}>
                 <h3 className={`text-2xl font-medium text-center capitalize ${textColor}`}>{title}</h3>
             </div>
-            <Tooltip text={comment} />
+            <Tooltip text={comment} parentRef={titleRef} />
         </div>
     );
 };
@@ -104,9 +191,17 @@ const CategoryTitleItem = ({ title, comment, preference }: { title: string, comm
 const LegendColor = ({ colorKey }: { colorKey: keyof typeof preferenceColors }) => {
     const colorInfo = preferenceColors[colorKey];
     if (!colorInfo) return null;
+    // For LegendColor, we'll use the original simple tooltip if needed, or assume it doesn't need edge detection
+    // as it's small and centrally located. If it does, it would need similar ref passing.
+    // For simplicity, keeping its original tooltip structure:
+    const SimpleTooltip = ({ text }: { text: string }) => (
+        <div className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max max-w-xs hidden group-hover:block bg-purple-700 text-white text-xs sm:text-sm p-2 rounded z-30 shadow-lg pointer-events-none whitespace-normal text-center`}>
+            {text}
+        </div>
+    );
     return (
         <div className={`group relative w-5 h-5 sm:w-6 sm:h-6 m-0.5 cursor-default ${colorInfo.bg} border border-gray-700 flex-shrink-0`}>
-            <Tooltip text={colorInfo.tooltip} />
+            <SimpleTooltip text={colorInfo.tooltip} />
         </div>
     );
 }
@@ -117,7 +212,6 @@ const About = () => {
     const aboutTexts = [
         '- im about 20 years old (more or less im too lazy to update that)',
         '- my current location is Bucharest (the capital city of Romania, a country in Europe)',
-        '- i hate humans if you are a human i hate you you better be a carpet or a bed i like beds (the ones which also have a pillow and a blanket so i can use it to hide from the humans)',
     ];
 
     const CppTech: Technology = {
@@ -128,7 +222,7 @@ const About = () => {
     const GitTech: Technology = {
         icon: <FaGitAlt />, name: 'Git',
         comment: 'i like typing commands instead of using an ui for managing my projects with github',
-        preference: 'darkGreen' // Based on previous update
+        preference: 'darkGreen'
     };
 
     let categorizedTechnologies: Category[] = [
@@ -137,7 +231,6 @@ const About = () => {
             titleComment: "this is the only site i have ever coded :) (i dont really like web developement)",
             titlePreference: 'yellow',
             technologies: [
-                // Technologies will be sorted below
                 { icon: <FaCss3Alt />, name: 'CSS', comment: ':)', preference: 'white' },
                 { icon: <FaHtml5 />, name: 'HTML', comment: ':)', preference: 'white' },
                 { icon: <FaReact />, name: 'React', comment: 'i used nextjs which uses react for this site, so react=yes=i do indeed like it over the other site-making-software', preference: 'lightGreen' },
@@ -152,7 +245,6 @@ const About = () => {
             titleComment: "i like games. i wanna make games",
             titlePreference: 'darkGreen',
             technologies: [
-                 // Technologies will be sorted below
                 { icon: <FaUnity />, name: 'Unity', comment: 'too much ui for me, but its really powerfull (can do a lot of things with it). besides, its not open source', preference: 'lightBlue' },
                 { icon: <span className="font-mono font-bold">#</span>, name: 'C#', comment: 'The primary language for Unity. It\'s decent, but I prefer C++.', preference: 'lightBlue' },
                 { icon: <FaJava />, name: 'Java', comment: 'I learned the basics by making checkers and some other game in greenfoot. i hate the syntax', preference: 'yellow'},
@@ -168,7 +260,6 @@ const About = () => {
             titleComment: "i use windows (fear of change)",
             titlePreference: 'lightBlue',
             technologies: [
-                 // Technologies will be sorted below
                 { icon: <FaPython />, name: 'Python', comment: 'the best choice for any non-performance oriented project', preference: 'lightGreen' },
             ]
         }
@@ -246,23 +337,13 @@ const About = () => {
                                 const isOtherAppsCategory = category.title === "Other Windows Apps";
                                 const isLastCategory = catIndex === categorizedTechnologies.length - 1;
 
-                                // --- START PADDING LOGIC MODIFICATION ---
-                                let paddingClasses = BASE_PADDING; // Start with base padding for all
+                                let paddingClasses = BASE_PADDING;
 
                                 if (isGamesCategory) {
-                                    // Add extra bottom padding for small screens (vertical layout)
-                                    // Add extra right padding for large screens (horizontal layout)
-                                    // Reset the other axis padding to base padding's default on large screens
-                                    paddingClasses += ` pb-16 lg:pb-6 lg:pr-16`; // Adjust 16 as needed
+                                    paddingClasses += ` pb-16 lg:pb-6 lg:pr-16`;
                                 } else if (isOtherAppsCategory) {
-                                    // Add extra top padding for small screens (vertical layout)
-                                    // Add extra left padding for large screens (horizontal layout)
-                                    // Reset the other axis padding to base padding's default on large screens
-                                    paddingClasses += ` pt-16 lg:pt-6 lg:pl-16`; // Adjust 16 as needed
+                                    paddingClasses += ` pt-16 lg:pt-6 lg:pl-16`;
                                 }
-                                // 'Sites' category just gets BASE_PADDING
-                                // --- END PADDING LOGIC MODIFICATION ---
-
 
                                 return (
                                     <div
@@ -273,7 +354,6 @@ const About = () => {
                                             !isLastCategory ? `border-b lg:border-b-0 ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS}` : ''
                                         }`}
                                     >
-                                        {/* Apply calculated paddingClasses here */}
                                         <div className={`flex flex-col items-center ${paddingClasses}`}>
                                             <CategoryTitleItem
                                                 title={category.title}
@@ -287,7 +367,6 @@ const About = () => {
                                             </div>
                                         </div>
 
-                                        {/* Small Screen C/C++ Placement (Positioned relative to this container) */}
                                         {isOtherAppsCategory && (
                                             <div className={`absolute left-1/2 top-0 transform -translate-x-1/2 -translate-y-1/2 lg:hidden z-10 border ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS} rounded-full bg-black p-0.5`}>
                                                 <TechnologyItem tech={CppTech} isOval={true} />
@@ -297,8 +376,6 @@ const About = () => {
                                 );
                             })}
                         </div>
-                        {/* Large Screen C/C++ Placement (Positioned relative to the main container) */}
-                        {/* Note: This is positioned relative to the parent `w-full border-t` div */}
                         <div className={`hidden lg:block absolute top-1/2 left-2/3 transform -translate-x-1/2 -translate-y-1/2 z-10 border ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS} rounded-full bg-black p-0.5`}>
                              <TechnologyItem tech={CppTech} isOval={true} />
                         </div>
