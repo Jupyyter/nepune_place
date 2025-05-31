@@ -163,7 +163,10 @@ const renderMedia = (project: Project, index: number, inFullscreen: boolean = fa
               ref={detailsPanelRef}
               style={{
                 top: isMobile ? undefined : `${navbarHeight + 20}px`,
-                height: isMobile ? `calc(100vh - ${navbarHeight}px)` : `calc(100vh - ${navbarHeight + 40}px)`,
+                ...(isMobile
+                  ? { height: `calc(100vh - ${navbarHeight}px)` } // For mobile, keep existing height behavior
+                  : { maxHeight: `calc(100vh - ${navbarHeight + 40}px)` } // For desktop, use maxHeight
+                )
               }}
             >
               <button
