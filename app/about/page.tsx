@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Head from 'next/head';
 import { FaReact, FaHtml5, FaCss3Alt, FaUnity, FaGitAlt, FaPython, FaJava } from 'react-icons/fa';
 import { SiCplusplus, SiJavascript, SiTypescript, SiSfml, SiNextdotjs, SiGodotengine, SiTailwindcss } from 'react-icons/si';
-import React, { useRef, useLayoutEffect, useEffect, useCallback, useState } from 'react'; // Added useState
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 
 // --- Color Definitions ---
 const preferenceColors = {
@@ -36,44 +36,30 @@ interface Category {
 
 // --- Constants ---
 const BORDER_CLASS = "border-gray-400";
-const BORDER_THICKNESS_CLASS = "border-2";
-const BASE_PADDING = "p-6";
+const BORDER_THICKNESS_CLASS = "0px";
+const BASE_PADDING = "p-6"; // Padding for each cell in the 2x3 grid
 
 
 // --- Reusable Components ---
 
-// Tooltip Component - MODIFIED to accept isParentHovered prop
 const Tooltip = ({ text, parentRef, isParentHovered }: { text: string, parentRef: React.RefObject<HTMLElement>, isParentHovered: boolean }) => {
     const tooltipRef = useRef<HTMLDivElement>(null);
     const isMountedRef = useRef(false);
-    const tooltipId = useRef(`tt-${Math.random().toString(16).slice(2,7)}`).current;
 
     useEffect(() => {
         isMountedRef.current = true;
-        // console.log(`[${tooltipId}] Tooltip MOUNTED. Text: "${text.substring(0,20)}"`);
         return () => {
             isMountedRef.current = false;
-            // console.log(`[${tooltipId}] Tooltip UNMOUNTED. Text: "${text.substring(0,20)}"`);
         };
-    }, [text, tooltipId]);
+    }, []);
 
     const adjustPosition = useCallback(() => {
-        if (!isMountedRef.current) {
-            console.warn(`[${tooltipId}] AdjustPos: SKIPPING - Not mounted. Text: "${text.substring(0,20)}"`);
-            return;
-        }
-        if (!tooltipRef.current || !parentRef.current) {
-            console.warn(`[${tooltipId}] AdjustPos: SKIPPING - Refs not ready. Text: "${text.substring(0,20)}"`, {
-                tooltipRef: !!tooltipRef.current,
-                parentRef: !!parentRef.current,
-            });
+        if (!isMountedRef.current || !tooltipRef.current || !parentRef.current) {
             return;
         }
 
         const tooltipEl = tooltipRef.current;
         const parentEl = parentRef.current;
-
-        console.log(`%c[${tooltipId}] --- AdjustPosition START --- Text: "${text.substring(0,20)}"`, 'color: blue; font-weight: bold;');
 
         tooltipEl.style.left = '';
         tooltipEl.style.transform = '';
@@ -89,21 +75,13 @@ const Tooltip = ({ text, parentRef, isParentHovered }: { text: string, parentRef
         tooltipEl.style.display = originalDisplay;
         tooltipEl.style.visibility = originalVisibility;
 
-        console.log(`[${tooltipId}] Measurements:`, {
-            tooltipOffsetW: preMeasureOffsetWidth, tooltipGBCRw: tooltipRect.width,
-            parentGBCRl: parentRect.left, parentGBCRw: parentRect.width, windowInnerW: window.innerWidth
-        });
-
         if (tooltipRect.width === 0 && preMeasureOffsetWidth === 0) {
-            console.warn(`[${tooltipId}] Tooltip width is 0. Fallback to center.`);
             tooltipEl.style.left = '50%';
             tooltipEl.style.transform = 'translateX(-50%)';
-            console.log(`%c[${tooltipId}] --- AdjustPosition END (width 0 fallback) ---`, 'color: blue; font-weight: bold;');
             return;
         }
         
         const effectiveTooltipWidth = tooltipRect.width > 0 ? tooltipRect.width : preMeasureOffsetWidth;
-        console.log(`[${tooltipId}] Effective Tooltip Width: ${effectiveTooltipWidth}`);
 
         const spaceFromEdge = 10; 
         let newLeftStyle = '50%';
@@ -111,35 +89,21 @@ const Tooltip = ({ text, parentRef, isParentHovered }: { text: string, parentRef
         const parentViewportCenterX = parentRect.left + parentRect.width / 2;
         const tooltipHalfWidth = effectiveTooltipWidth / 2;
 
-        console.log(`[${tooltipId}] Positioning Calcs:`, {
-            parentViewportCenterX, tooltipHalfWidth,
-            leftEdgeCandidate: parentViewportCenterX - tooltipHalfWidth,
-            rightEdgeCandidate: parentViewportCenterX + tooltipHalfWidth,
-        });
-
         if (parentViewportCenterX - tooltipHalfWidth < spaceFromEdge) {
             newLeftStyle = `${spaceFromEdge - parentRect.left}px`;
             newTransformStyle = 'translateX(0%)';
-            console.log(`[${tooltipId}] Overflow LEFT. New style: left=${newLeftStyle}, transform=${newTransformStyle}`);
         }
         else if (parentViewportCenterX + tooltipHalfWidth > window.innerWidth - spaceFromEdge) {
             newLeftStyle = `${(window.innerWidth - spaceFromEdge - effectiveTooltipWidth) - parentRect.left}px`;
             newTransformStyle = 'translateX(0%)';
-            console.log(`[${tooltipId}] Overflow RIGHT. New style: left=${newLeftStyle}, transform=${newTransformStyle}`);
-        } else {
-            console.log(`[${tooltipId}] No overflow. Default centering.`);
         }
 
         tooltipEl.style.left = newLeftStyle;
         tooltipEl.style.transform = newTransformStyle;
-        console.log(`[${tooltipId}] Applied styles: left=${tooltipEl.style.left}, transform=${tooltipEl.style.transform}`);
-        console.log(`%c[${tooltipId}] --- AdjustPosition END ---`, 'color: blue; font-weight: bold;');
-    }, [parentRef, text, tooltipId]); // Kept text and tooltipId for logging context
+    }, [parentRef]); 
 
-    // Effect to call adjustPosition when isParentHovered becomes true
     useEffect(() => {
         if (isParentHovered) {
-            console.log(`[${tooltipId}] Parent is Hovered (prop). Calling adjustPosition via rAF x2. Text: "${text.substring(0,20)}"`);
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     if (isMountedRef.current && tooltipRef.current && parentRef.current) {
@@ -148,13 +112,11 @@ const Tooltip = ({ text, parentRef, isParentHovered }: { text: string, parentRef
                 });
             });
         }
-    }, [isParentHovered, adjustPosition, parentRef, text, tooltipId]); // Added dependencies
+    }, [isParentHovered, adjustPosition, parentRef]); 
 
-    // Effect for resize handling (remains similar, calls the same adjustPosition)
     useEffect(() => {
         const handleResize = () => {
             if (isMountedRef.current && isParentHovered && tooltipRef.current && getComputedStyle(tooltipRef.current).opacity === '1') {
-                 console.log(`[${tooltipId}] Window resize, tooltip visible. Calling adjustPosition.`);
                 adjustPosition();
             }
         };
@@ -162,7 +124,7 @@ const Tooltip = ({ text, parentRef, isParentHovered }: { text: string, parentRef
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    }, [isParentHovered, adjustPosition, text, tooltipId]); // Added isParentHovered
+    }, [isParentHovered, adjustPosition]);
 
     return (
         <div
@@ -172,17 +134,15 @@ const Tooltip = ({ text, parentRef, isParentHovered }: { text: string, parentRef
                         whitespace-normal text-center
                         ${isParentHovered ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
                         transition-opacity duration-150`}
-            // Tailwind 'group-hover:opacity-100' is replaced by direct opacity control via isParentHovered prop
         >
             {text}
         </div>
     );
 };
 
-// Technology Item Component - MODIFIED to manage hover state
 const TechnologyItem = ({ tech, isOval = false }: { tech: Technology, isOval?: boolean }) => {
     const itemRef = useRef<HTMLDivElement>(null);
-    const [isHovered, setIsHovered] = useState(false); // <--- Manage hover state
+    const [isHovered, setIsHovered] = useState(false); 
 
     const colorInfo = preferenceColors[tech.preference];
     const bgColor = colorInfo ? colorInfo.bg : 'bg-gray-500';
@@ -197,15 +157,8 @@ const TechnologyItem = ({ tech, isOval = false }: { tech: Technology, isOval?: b
         <div
             ref={itemRef}
             className={`relative flex flex-col items-center m-1 sm:m-2 transition-colors duration-200 ${bgColor} ${itemClasses}`}
-            // No 'group' class needed here anymore if Tooltip visibility is controlled by prop
-            onMouseEnter={() => {
-                console.log(`%c[TechItem: ${tech.name}] React onMouseEnter. Setting isHovered=true`, 'color: darkcyan;');
-                setIsHovered(true);
-            }}
-            onMouseLeave={() => {
-                console.log(`%c[TechItem: ${tech.name}] React onMouseLeave. Setting isHovered=false`, 'color: darkcyan;');
-                setIsHovered(false);
-            }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
         >
             <Tooltip text={tech.comment} parentRef={itemRef} isParentHovered={isHovered} />
             {tech.icon && (
@@ -221,10 +174,9 @@ const TechnologyItem = ({ tech, isOval = false }: { tech: Technology, isOval?: b
     );
 };
 
-// Category Title Component - MODIFIED to manage hover state
 const CategoryTitleItem = ({ title, comment, preference }: { title: string, comment: string, preference: keyof typeof preferenceColors }) => {
     const titleRef = useRef<HTMLDivElement>(null);
-    const [isHovered, setIsHovered] = useState(false); // <--- Manage hover state
+    const [isHovered, setIsHovered] = useState(false); 
 
     const colorInfo = preferenceColors[preference];
     const bgColor = colorInfo ? colorInfo.bg : 'bg-gray-500';
@@ -232,15 +184,9 @@ const CategoryTitleItem = ({ title, comment, preference }: { title: string, comm
 
     return (
         <div ref={titleRef}
-             className="relative inline-block mb-4" // No 'group' class
-             onMouseEnter={() => {
-                console.log(`%c[CatTitle: ${title}] React onMouseEnter. Setting isHovered=true`, 'color: darkgoldenrod;');
-                setIsHovered(true);
-             }}
-             onMouseLeave={() => {
-                console.log(`%c[CatTitle: ${title}] React onMouseLeave. Setting isHovered=false`, 'color: darkgoldenrod;');
-                setIsHovered(false);
-             }}
+             className="relative inline-block" 
+             onMouseEnter={() => setIsHovered(true)}
+             onMouseLeave={() => setIsHovered(false)}
         >
             <div className={`rounded-lg p-2 shadow-md ${bgColor} cursor-default`}>
                 <h3 className={`text-2xl font-medium text-center capitalize ${textColor}`}>{title}</h3>
@@ -251,7 +197,6 @@ const CategoryTitleItem = ({ title, comment, preference }: { title: string, comm
 };
 
 
-// Legend Color Square Component (Unchanged)
 const LegendColor = ({ colorKey }: { colorKey: keyof typeof preferenceColors }) => {
     const colorInfo = preferenceColors[colorKey];
     if (!colorInfo) return null;
@@ -267,7 +212,6 @@ const LegendColor = ({ colorKey }: { colorKey: keyof typeof preferenceColors }) 
     );
 }
 
-// --- Main About Page Component ---
 const About = () => {
     const aboutTexts = [
         '- im about 20 years old (more or less im too lazy to update that)',
@@ -291,13 +235,13 @@ const About = () => {
             titleComment: "this is the only site i have ever coded :) (i dont really like web developement)",
             titlePreference: 'yellow',
             technologies: [
+                { icon: <SiNextdotjs />, name: 'Next.js', comment: 'used it to make this site. its great for making websites with react', preference: 'darkGreen' },
+                { icon: <FaReact />, name: 'React', comment: 'i used nextjs which uses react for this site, so react=yes=i do indeed like it over the other site-making-software', preference: 'lightGreen' },
+                { icon: <SiTailwindcss />, name: 'Tailwind', comment: 'Great utility-first CSS framework. Used for this site.', preference: 'lightBlue' },
                 { icon: <FaCss3Alt />, name: 'CSS', comment: ':)', preference: 'white' },
                 { icon: <FaHtml5 />, name: 'HTML', comment: ':)', preference: 'white' },
-                { icon: <FaReact />, name: 'React', comment: 'i used nextjs which uses react for this site, so react=yes=i do indeed like it over the other site-making-software', preference: 'lightGreen' },
-                { icon: <SiNextdotjs />, name: 'Next.js', comment: 'used it to make this site. its great for making websites with react', preference: 'darkGreen' },
-                { icon: <SiJavascript />, name: 'JavaScript', comment: '0 == [] (true); 0 == "0" (true); "0" == [] (false); do I need to say anything else?', preference: 'orange' },
                 { icon: <SiTypescript />, name: 'TypeScript', comment: 'JavaScript but better. I used it to make this site', preference: 'white' },
-                { icon: <SiTailwindcss />, name: 'Tailwind', comment: 'Great utility-first CSS framework. Used for this site.', preference: 'lightBlue' },
+                { icon: <SiJavascript />, name: 'JavaScript', comment: '0 == [] (true); 0 == "0" (true); "0" == [] (false); do I need to say anything else?', preference: 'orange' },
             ]
         },
         {
@@ -305,14 +249,14 @@ const About = () => {
             titleComment: "i like games. i wanna make games",
             titlePreference: 'darkGreen',
             technologies: [
-                { icon: <FaUnity />, name: 'Unity', comment: 'too much ui for me, but its really powerfull (can do a lot of things with it). besides, its not open source', preference: 'lightBlue' },
-                { icon: <span className="font-mono font-bold">#</span>, name: 'C#', comment: 'The primary language for Unity. It\'s decent, but I prefer C++.', preference: 'lightBlue' },
-                { icon: <FaJava />, name: 'Java', comment: 'I learned the basics by making checkers and some other game in greenfoot. i hate the syntax', preference: 'yellow'},
-                { icon: ( <Image src="/imgs/Greenfoot_Logo.jpg" alt="Greenfoot Logo" width={32} height={32} className="rounded" priority={true} /> ), name: 'Greenfoot', comment: 'a joke of a game engine. the sound system simply doesnt work properly for some reason. worst experience that i ever had using any software.', preference: 'red'},
-                { icon: ( <Image src="/imgs/gdscript.jpg" alt="GDScript" width={32} height={32} className="rounded" priority={true} /> ), name: 'GDScript', comment: 'the language used in godot. its like python but for godot compatibility :)', preference: 'lightBlue' },
                 { icon: ( <Image src="/imgs/godot.png" alt="Godot" width={32} height={32} className="rounded" priority={true} /> ), name: 'Godot', comment: 'great engine. i like it more than unity because its more lightweight and its open source (hooray)', preference: 'darkGreen' },
                 { icon: <SiSfml />, name: 'SFML', comment: 'practical graphics library when you want to make things appear on the screen. i choose it over sdl2 altho thats just because its more simple', preference: 'lightGreen' },
+                { icon: <FaUnity />, name: 'Unity', comment: 'too much ui for me, but its really powerfull (can do a lot of things with it). besides, its not open source', preference: 'lightBlue' },
+                { icon: <span className="font-mono font-bold">#</span>, name: 'C#', comment: 'The primary language for Unity. It\'s decent, but I prefer C++.', preference: 'lightBlue' },
+                { icon: ( <Image src="/imgs/gdscript.jpg" alt="GDScript" width={32} height={32} className="rounded" priority={true} /> ), name: 'GDScript', comment: 'the language used in godot. its like python but for godot compatibility :)', preference: 'lightBlue' },
                 { icon: ( <Image src="/imgs/sdl.svg" alt="SDL2" width={32} height={32} className="rounded filter invert" priority={true} /> ), name: 'SDL2', comment: 'its ok. i had a good experience with sdl2, but i would only use it over sfml when developing android or ios apps. i dont really know why, but i think i simply dont like how the code looks', preference: 'lightBlue' },
+                { icon: <FaJava />, name: 'Java', comment: 'I learned the basics by making checkers and some other game in greenfoot. i hate the syntax', preference: 'yellow'},
+                { icon: ( <Image src="/imgs/Greenfoot_Logo.jpg" alt="Greenfoot Logo" width={32} height={32} className="rounded" priority={true} /> ), name: 'Greenfoot', comment: 'a joke of a game engine. the sound system simply doesnt work properly for some reason. worst experience that i ever had using any software.', preference: 'red'},
            ]
         },
         {
@@ -378,43 +322,54 @@ const About = () => {
                         <h2 className="text-3xl font-semibold text-center text-white">
                             things i use for developing
                         </h2>
-                    </div>
+                    </div> {/* This div's mb-5 creates space above the main top border */}
 
-                    <div className={`w-full border-t ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS} relative`}>
-                        <div className="flex flex-col lg:flex-row justify-center">
+                    {/* Container for the two-row grid system. 
+                        px-5 provides approx 20px L/R "margin" for the block. Adjust as needed.
+                    */}
+                    <div className=""> 
+                        {/* Row 1: Titles */}
+                        {/* This row has a visible bottom border. Inner cells (2nd and 3rd) have left borders. */}
+                        <div className={`flex border-b ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS}`}>
+                            {categorizedTechnologies.map((category, catIndex) => (
+                                <div
+                                    key={`${category.title}-title-cell`}
+                                    className={`flex-1 ${BASE_PADDING} flex flex-col items-center justify-center
+                                                ${catIndex > 0 ? `border-l ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS}` : ''}`}
+                                >
+                                    <CategoryTitleItem
+                                        title={category.title}
+                                        comment={category.titleComment}
+                                        preference={category.titlePreference}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Row 2: Content */}
+                        {/* This row has no top or bottom border. Inner cells (2nd and 3rd) have left borders. */}
+                        <div className="flex">
                             {categorizedTechnologies.map((category, catIndex) => {
-                                const isGamesCategory = category.title === "Games";
-                                const isOtherAppsCategory = category.title === "Other Windows Apps";
-                                const isLastCategory = catIndex === categorizedTechnologies.length - 1;
-                                let paddingClasses = BASE_PADDING;
-                                if (isGamesCategory) {
-                                    paddingClasses += ` pb-16 lg:pb-6 lg:pr-16`;
-                                } else if (isOtherAppsCategory) {
-                                    paddingClasses += ` pt-16 lg:pt-6 lg:pl-16`;
-                                }
+                                // The CppTech icon will be positioned relative to the 3rd content cell ("Other Windows Apps")
+                                const isThirdColumn = catIndex === 2; 
                                 return (
                                     <div
-                                        key={category.title}
-                                        className={`flex-1 relative ${
-                                            catIndex > 0 ? `lg:border-l ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS}` : ''
-                                        } ${
-                                            !isLastCategory ? `border-b lg:border-b-0 ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS}` : ''
-                                        }`}
+                                        key={`${category.title}-content-cell`}
+                                        className={`flex-1 ${BASE_PADDING} relative  /* Added relative for CppIcon positioning */
+                                                    ${catIndex > 0 ? `border-l ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS}` : ''}`}
                                     >
-                                        <div className={`flex flex-col items-center ${paddingClasses}`}>
-                                            <CategoryTitleItem
-                                                title={category.title}
-                                                comment={category.titleComment}
-                                                preference={category.titlePreference}
-                                            />
-                                            <div className="flex flex-wrap justify-center items-start gap-1 sm:gap-2 min-h-[50px] w-full">
-                                                {category.technologies.map((tech) => (
-                                                    <TechnologyItem key={tech.name} tech={tech} />
-                                                ))}
-                                            </div>
+                                        <div className="flex flex-wrap justify-center items-start gap-1 sm:gap-2 min-h-[50px] w-full">
+                                            {category.technologies.map((tech) => (
+                                                <TechnologyItem key={tech.name} tech={tech} />
+                                            ))}
                                         </div>
-                                        {isOtherAppsCategory && (
-                                            <div className={`absolute left-1/2 top-0 transform -translate-x-1/2 -translate-y-1/2 lg:hidden z-10 border ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS} rounded-full bg-black p-0.5`}>
+
+                                        {/* CppTech Icon: Positioned at the top-left corner (border intersection) of this content cell */}
+                                        {isThirdColumn && (
+                                            <div
+                                                className={`absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 z-10 
+                                                            border ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS} rounded-full bg-black p-0.5`}
+                                            >
                                                 <TechnologyItem tech={CppTech} isOval={true} />
                                             </div>
                                         )}
@@ -422,12 +377,9 @@ const About = () => {
                                 );
                             })}
                         </div>
-                        <div className={`hidden lg:block absolute top-1/2 left-2/3 transform -translate-x-1/2 -translate-y-1/2 z-10 border ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS} rounded-full bg-black p-0.5`}>
-                             <TechnologyItem tech={CppTech} isOval={true} />
-                        </div>
                     </div>
 
-                    <div className="mt-5 mb-0 flex items-center justify-center gap-2">
+                    <div className="mt-8 mb-0 flex items-center justify-center gap-2"> {/* Added margin-top for spacing */}
                         <span className="text-lg text-gray-400">i obviously use</span>
                         <TechnologyItem tech={GitTech} />
                         <span className="text-lg text-gray-400">with alll my projects (duh)</span>
