@@ -210,7 +210,7 @@ const LegendColor = ({ colorKey }: { colorKey: keyof typeof preferenceColors }) 
 const About = () => {
     // --- Data Definitions ---
     const aboutTexts = [
-        '- im about 20 years old (more or less im too lazy to update that)',
+        '- im about 20 years old (more or less im too lazy to update that 7777)',
         '- my current location is Bucharest (the capital city of Romania, a country in Europe)',
     ];
 
