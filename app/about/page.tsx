@@ -49,10 +49,11 @@ const EXTRA_PADDING_CLASS_HORIZONTAL = "px-12";
 const Tooltip = ({ text, parentRef }: { text: string, parentRef: React.RefObject<HTMLElement> }) => {
     const tooltipRef = useRef<HTMLDivElement>(null);
     const isMountedRef = useRef(false);
-    const tooltipId = useRef(`tt-${Math.random().toString(16).slice(2,7)}`).current; // Unique ID for logs
+    const tooltipId = useRef(`tt-${Math.random().toString(16).slice(2,7)}`).current;
 
     useEffect(() => {
         isMountedRef.current = true;
+        // This log appears in both dev and prod according to your description
         console.log(`[${tooltipId} - "${text.substring(0,20)}"] Tooltip MOUNTED`);
         return () => {
             isMountedRef.current = false;
@@ -60,161 +61,120 @@ const Tooltip = ({ text, parentRef }: { text: string, parentRef: React.RefObject
         };
     }, [text, tooltipId]);
 
-
     const adjustPosition = useCallback(() => {
         if (!isMountedRef.current) {
-            console.warn(`[${tooltipId} - "${text.substring(0,20)}"] AdjustPosition: SKIPPING - Component not mounted.`);
+            // console.warn(`[${tooltipId} - "${text.substring(0,20)}"] AdjustPosition: SKIPPING - Component not mounted.`);
             return;
         }
         if (!tooltipRef.current || !parentRef.current) {
-            console.warn(`[${tooltipId} - "${text.substring(0,20)}"] AdjustPosition: SKIPPING - Refs not ready.`, {
-                tooltipRef: !!tooltipRef.current,
-                parentRef: !!parentRef.current,
-            });
+            // console.warn(`[${tooltipId} - "${text.substring(0,20)}"] AdjustPosition: SKIPPING - Refs not ready.`);
             return;
         }
 
         const tooltipEl = tooltipRef.current;
         const parentEl = parentRef.current;
 
-        console.log(`%c[${tooltipId} - "${text.substring(0,20)}"] --- AdjustPosition START ---`, 'color: blue; font-weight: bold;');
-
-        // Reset styles for measurement
+        // console.log(`%c[${tooltipId} - "${text.substring(0,20)}"] --- AdjustPosition START ---`, 'color: blue; font-weight: bold;');
         tooltipEl.style.left = '';
         tooltipEl.style.transform = '';
         const originalDisplay = tooltipEl.style.display;
         const originalVisibility = tooltipEl.style.visibility;
-        tooltipEl.style.display = 'block'; // Ensure layout
-        tooltipEl.style.visibility = 'hidden'; // Hide during measurement
+        tooltipEl.style.display = 'block';
+        tooltipEl.style.visibility = 'hidden';
 
-        // Measure
         const preMeasureOffsetWidth = tooltipEl.offsetWidth;
         const tooltipRect = tooltipEl.getBoundingClientRect();
         const parentRect = parentEl.getBoundingClientRect();
 
-        // Restore original styles (will be overridden by positioning logic or CSS transitions)
         tooltipEl.style.display = originalDisplay;
         tooltipEl.style.visibility = originalVisibility;
 
-        console.log(`[${tooltipId}] Measurements:`, {
-            tooltipOffsetW: preMeasureOffsetWidth,
-            tooltipGBCRw: tooltipRect.width,
-            tooltipGBCRh: tooltipRect.height,
-            parentGBCRl: parentRect.left,
-            parentGBCRw: parentRect.width,
-            windowInnerW: window.innerWidth
-        });
+        // console.log(`[${tooltipId}] Measurements:`, { /* ... */ });
 
         if (tooltipRect.width === 0 && preMeasureOffsetWidth === 0) {
-            console.warn(`[${tooltipId}] Tooltip width is 0 (gBCR & offsetWidth). Fallback to center.`);
             tooltipEl.style.left = '50%';
             tooltipEl.style.transform = 'translateX(-50%)';
-            console.log(`%c[${tooltipId}] --- AdjustPosition END (width 0 fallback) ---`, 'color: blue; font-weight: bold;');
             return;
         }
         
         const effectiveTooltipWidth = tooltipRect.width > 0 ? tooltipRect.width : preMeasureOffsetWidth;
-        if (tooltipRect.width === 0 && preMeasureOffsetWidth > 0) {
-            console.log(`[${tooltipId}] Using offsetWidth (${preMeasureOffsetWidth}) as gBCR.width was 0.`);
-        }
-        console.log(`[${tooltipId}] Effective Tooltip Width: ${effectiveTooltipWidth}`);
+        // console.log(`[${tooltipId}] Effective Tooltip Width: ${effectiveTooltipWidth}`);
 
         const spaceFromEdge = 10; 
-        let newLeftStyle = '50%'; // Default: center relative to parent
-        let newTransformStyle = 'translateX(-50%)'; // Default: center transform
-
-        // Calculations for overflow detection are relative to the VIEWPORT
+        let newLeftStyle = '50%';
+        let newTransformStyle = 'translateX(-50%)';
         const parentViewportCenterX = parentRect.left + parentRect.width / 2;
         const tooltipHalfWidth = effectiveTooltipWidth / 2;
 
-        console.log(`[${tooltipId}] Positioning Calcs:`, {
-            parentViewportCenterX,
-            tooltipHalfWidth,
-            leftEdgeCandidate: parentViewportCenterX - tooltipHalfWidth,
-            rightEdgeCandidate: parentViewportCenterX + tooltipHalfWidth,
-            windowRightBoundary: window.innerWidth - spaceFromEdge
-        });
+        // console.log(`[${tooltipId}] Positioning Calcs:`, { /* ... */ });
 
-        // Check left overflow
         if (parentViewportCenterX - tooltipHalfWidth < spaceFromEdge) {
-            // Tooltip's `left` CSS is relative to its offset parent (the `group` div).
-            // We want the tooltip's viewport left edge to be at `spaceFromEdge`.
-            // So, its `left` style should be `spaceFromEdge` (viewport) minus `parentRect.left` (parent's viewport offset).
             newLeftStyle = `${spaceFromEdge - parentRect.left}px`;
-            newTransformStyle = 'translateX(0%)'; // No X-transform needed if anchored left
-            console.log(`[${tooltipId}] Overflow LEFT. New style: left=${newLeftStyle}, transform=${newTransformStyle}`);
+            newTransformStyle = 'translateX(0%)';
         }
-        // Check right overflow
         else if (parentViewportCenterX + tooltipHalfWidth > window.innerWidth - spaceFromEdge) {
-            // We want the tooltip's viewport right edge to be at `window.innerWidth - spaceFromEdge`.
-            // So its viewport left edge = `(window.innerWidth - spaceFromEdge) - effectiveTooltipWidth`.
-            // Convert this viewport-left to parent-relative `left` style.
             newLeftStyle = `${(window.innerWidth - spaceFromEdge - effectiveTooltipWidth) - parentRect.left}px`;
-            newTransformStyle = 'translateX(0%)'; // No X-transform needed if anchored right
-            console.log(`[${tooltipId}] Overflow RIGHT. New style: left=${newLeftStyle}, transform=${newTransformStyle}`);
-        } else {
-            console.log(`[${tooltipId}] No overflow. Using default centering.`);
+            newTransformStyle = 'translateX(0%)';
         }
 
         tooltipEl.style.left = newLeftStyle;
         tooltipEl.style.transform = newTransformStyle;
-
-        console.log(`[${tooltipId}] Applied styles: left=${tooltipEl.style.left}, transform=${tooltipEl.style.transform}`);
-        
-        // Log final position after styles are applied and browser has a chance to render
-        requestAnimationFrame(() => {
-            if (tooltipRef.current) {
-                const finalRect = tooltipRef.current.getBoundingClientRect();
-                console.log(`[${tooltipId}] Final Tooltip gBCR after adjustment: left=${finalRect.left}, right=${finalRect.right}, width=${finalRect.width}`);
-            }
-        });
-        console.log(`%c[${tooltipId}] --- AdjustPosition END ---`, 'color: blue; font-weight: bold;');
-
+        // console.log(`[${tooltipId}] Applied styles: left=${tooltipEl.style.left}, transform=${tooltipEl.style.transform}`);
+        // console.log(`%c[${tooltipId}] --- AdjustPosition END ---`, 'color: blue; font-weight: bold;');
     }, [parentRef, text, tooltipId]);
 
     useLayoutEffect(() => {
-        if (parentRef.current) {
-            const parentElement = parentRef.current;
-            const handleMouseEnter = () => {
+        const parentElement = parentRef.current; // Capture current value for closure
+
+        if (parentElement) {
+            const handleMouseEnter = (event: MouseEvent) => { // <-- MODIFIED: Added event type
+                // ABSOLUTELY FIRST THING TO LOG IN PRODUCTION ON HOVER
+                console.log(`%c[PROD_HOVER_TEST][${tooltipId}] RAW MOUSE ENTER! Target:`, 'color: red; font-weight: bold;', event.target, 'isMounted:', isMountedRef.current);
+
                 if (!isMountedRef.current) {
-                     console.log(`[${tooltipId} - "${text.substring(0,20)}"] MouseEnter on parent, BUT NOT MOUNTED. Skipping adjustPosition.`);
+                     console.log(`[PROD_HOVER_TEST][${tooltipId}] MouseEnter, BUT NOT MOUNTED. Skipping.`);
                     return;
                 }
-                console.log(`[${tooltipId} - "${text.substring(0,20)}"] MouseEnter on parent. Will call adjustPosition via double rAF.`);
+                // console.log(`[PROD_HOVER_TEST][${tooltipId}] MouseEnter (isMounted=true). Will call adjustPosition.`);
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
-                        if (isMountedRef.current && tooltipRef.current && parentRef.current) {
-                             console.log(`[${tooltipId} - "${text.substring(0,20)}"] rAF x2 callback: Calling adjustPosition.`);
+                        if (isMountedRef.current && tooltipRef.current && parentElement) { // Use captured parentElement
+                            // console.log(`[PROD_HOVER_TEST][${tooltipId}] rAF x2: Calling adjustPosition.`);
                             adjustPosition();
                         } else {
-                            console.log(`[${tooltipId} - "${text.substring(0,20)}"] rAF x2 callback: Component unmounted or refs lost before adjustPosition could be called.`);
+                            // console.log(`[PROD_HOVER_TEST][${tooltipId}] rAF x2: Refs/mount lost.`);
                         }
                     });
                 });
             };
+
             parentElement.addEventListener('mouseenter', handleMouseEnter);
-            console.log(`[${tooltipId} - "${text.substring(0,20)}"] Added mouseenter listener to parent.`);
+            // This log appears in both dev and prod
+            console.log(`[${tooltipId} - "${text.substring(0,20)}"] Added mouseenter listener to parent:`, parentElement);
+            
             return () => {
-                parentElement.removeEventListener('mouseenter', handleMouseEnter);
+                if (parentElement) { // Check parentElement still exists for cleanup
+                    parentElement.removeEventListener('mouseenter', handleMouseEnter);
+                }
                 console.log(`[${tooltipId} - "${text.substring(0,20)}"] Removed mouseenter listener from parent.`);
             };
         } else {
-            console.warn(`[${tooltipId} - "${text.substring(0,20)}"] ParentRef not current in useLayoutEffect for mouseenter.`);
+            console.warn(`[${tooltipId} - "${text.substring(0,20)}"] ParentRef was null in useLayoutEffect for mouseenter.`);
         }
-    }, [parentRef, adjustPosition, text, tooltipId]);
+        // Critical: adjustPosition IS a dependency. parentRef (the ref object itself) is stable.
+        // text and tooltipId are for logging and ensuring adjustPosition is fresh if text changes.
+    }, [parentRef, adjustPosition, text, tooltipId]); 
 
     useEffect(() => {
         const handleResize = () => {
+            // ... (resize handling logic)
             if (!isMountedRef.current) return;
-            console.log(`[${tooltipId} - "${text.substring(0,20)}"] Window resize detected.`);
-            if (tooltipRef.current && getComputedStyle(tooltipRef.current).opacity === '1') { // Check if tooltip is visible
-                console.log(`[${tooltipId}] Tooltip visible, calling adjustPosition on resize.`);
+            if (tooltipRef.current && getComputedStyle(tooltipRef.current).opacity === '1') {
                 adjustPosition();
-            } else {
-                console.log(`[${tooltipId}] Tooltip not visible on resize, not adjusting.`);
             }
         };
         window.addEventListener('resize', handleResize);
+        // This log appears in both dev and prod
         console.log(`[${tooltipId} - "${text.substring(0,20)}"] Added resize listener.`);
         return () => {
             window.removeEventListener('resize', handleResize);
