@@ -5,18 +5,18 @@ import Head from 'next/head';
 
 const ContactItem = ({ icon, text, link }: { icon: string, text: string, link?: string }) => (
   <div className="flex items-stretch mb-4">
-    <div 
-      className="flex-shrink-0 w-12 h-12 mr-4 relative" 
-      style={{ userSelect: 'none' }} 
+    <div
+      className="flex-shrink-0 w-12 h-12 mr-4 relative"
+      style={{ userSelect: 'none' }}
       draggable="false"
     >
-      <Image 
-        src={icon} 
-        alt="" 
-        width={50} 
-        height={50} 
-        priority // Prioritize this image
-        draggable="false" 
+      <Image
+        src={icon}
+        alt="" // Consider adding meaningful alt text, e.g., "Email icon"
+        width={50}
+        height={50}
+        priority // Correctly prioritizing this image
+        draggable="false"
       />
     </div>
     <div className="flex-grow flex items-center min-h-[3rem]">
@@ -35,9 +35,9 @@ export default function Contact() {
   return (
     <div className="flex-grow flex items-center justify-center">
       <Head>
-        {/* Preload all images */}
-        <link rel="preload" href="/imgs/mail.jpg" as="image" />
-        <link rel="preload" href="/imgs/github.jpg" as="image" />
+        {/* Preload all images with type attribute */}
+        <link rel="preload" href="/imgs/mail.jpg" as="image" type="image/jpeg" />
+        <link rel="preload" href="/imgs/github.jpg" as="image" type="image/jpeg" />
       </Head>
       <main className="text-center p-4">
         <h1 className="text-4xl font-bold mb-4">contacts</h1>

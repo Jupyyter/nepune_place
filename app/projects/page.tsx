@@ -140,7 +140,7 @@ Yes, this can now be done by an average AI, but I developed this project when AI
     title: "gabriel the hungry",
     thumbnail: "/imgs/GabrielIsHungry.png",
     description: `This is the story of gabriel.
-It's a short tale, but full of adventure!`,
+It's a short tale full of adventure :)`,
     downloadUrls: [`gabrielIsHungry.zip`, "gabrielIsHungry0.zip"],
     tags: ["GODOT", "GDSCRIPT", "LARGE_FILE"],
     createdAt: new Date(),
@@ -156,8 +156,7 @@ It's a short tale, but full of adventure!`,
     title: "fight Jhon Cena",
     thumbnail: bingChillingImg.src,
     description: `I like Undertale.
-Because of that, I made a game in which you fight john cena in an undertale-style fight.
-Prepare for an epic battle!`,
+Because of that, I made a game in which you fight john cena in an undertale-style fight.`,
     downloadUrls: [`bingChilling.zip`],
     tags: ["UNITY", "C#"],
     createdAt: new Date(),
@@ -213,7 +212,7 @@ A classic game implemented in Java.`,
     thumbnail: endi.src,
     description: `You fight ikeaMan.
 I recommend you extract the files from the zip file if you wanna use the leveleditor properly.
-The level editor allows for custom map creation!`,
+The level editor allows for custom map creation (obviously)`,
     downloadUrls: ["ikeaBattle0.zip", "ikeaBattle1.zip"],
     tags: ["CPP", "SFML", "LARGE_FILE"],
     createdAt: new Date(),
@@ -231,7 +230,7 @@ The level editor allows for custom map creation!`,
     title: "the road",
     thumbnail: "/imgs/THEROAD.jpg",
     description: `Just a parallax effect.
-It creates a sense of depth as you scroll.`,
+"a sense of depth"`,
     downloadUrls: ["road.zip"],
     tags: ["GODOT", "GDSCRIPT"],
     createdAt: new Date(),
