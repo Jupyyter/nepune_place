@@ -218,7 +218,7 @@ The level editor allows for custom map creation (obviously)`,
     createdAt: new Date(),
     relevance: 9,
     repoName: "99layers",
-    images: [ // Note: These image paths seem to be for 'jhonny', you might want to correct them for this project.
+    images: [
       "/imgs/jhonny0.png",
       "/imgs/jhonny1.png",
       "/imgs/jhonny2.png",
