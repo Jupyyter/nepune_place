@@ -177,7 +177,7 @@ The creation date shown here is wrong (the github api shows the date on which th
     createdAt: new Date(),
     relevance: 4,
     repoName: "WizardGang",
-    images: Array.from({ length: 7 }, (_, i) => `/imgs/WizardGang${i}.png`),
+    images: Array.from({ length: 6 }, (_, i) => `/imgs/WizardGang${i}.png`),
     videoUrl: "https://www.youtube.com/watch?v=5HtLpXKm7Uc",
   },
   {
@@ -213,7 +213,7 @@ A classic game implemented in Java.`,
     description: `You fight ikeaMan.
 I recommend you extract the files from the zip file if you wanna use the leveleditor properly.
 The level editor allows for custom map creation (obviously)`,
-    downloadUrls: ["ikeaBattle0.zip", "ikeaBattle1.zip"],
+    downloadUrls: ["ikeaBattle.zip"],
     tags: ["CPP", "SFML", "LARGE_FILE"],
     createdAt: new Date(),
     relevance: 9,
