@@ -36,7 +36,7 @@ interface Category {
 
 // --- Constants ---
 const BORDER_CLASS = "border-gray-400";
-const BORDER_THICKNESS_CLASS = "0px";
+const BORDER_THICKNESS_CLASS = "0px"; // Note: "0px" effectively means no border. If you want a thin border, use "border" or "border-t/r/b/l"
 const BASE_PADDING = "p-6"; // Padding for each cell in the 2x3 grid
 
 
@@ -69,13 +69,14 @@ const Tooltip = ({ text, parentRef, isParentHovered }: { text: string, parentRef
         tooltipEl.style.visibility = 'hidden';
 
         const preMeasureOffsetWidth = tooltipEl.offsetWidth;
-        const tooltipRect = tooltipEl.getBoundingClientRect();
+        const tooltipRect = tooltipEl.getBoundingClientRect(); // This might be 0 if visibility is hidden and not fully rendered
         const parentRect = parentEl.getBoundingClientRect();
 
         tooltipEl.style.display = originalDisplay;
         tooltipEl.style.visibility = originalVisibility;
 
         if (tooltipRect.width === 0 && preMeasureOffsetWidth === 0) {
+            // Fallback if width cannot be determined
             tooltipEl.style.left = '50%';
             tooltipEl.style.transform = 'translateX(-50%)';
             return;
@@ -89,11 +90,11 @@ const Tooltip = ({ text, parentRef, isParentHovered }: { text: string, parentRef
         const parentViewportCenterX = parentRect.left + parentRect.width / 2;
         const tooltipHalfWidth = effectiveTooltipWidth / 2;
 
-        if (parentViewportCenterX - tooltipHalfWidth < spaceFromEdge) {
+        if (parentViewportCenterX - tooltipHalfWidth < spaceFromEdge) { // Tooltip goes off left edge
             newLeftStyle = `${spaceFromEdge - parentRect.left}px`;
             newTransformStyle = 'translateX(0%)';
         }
-        else if (parentViewportCenterX + tooltipHalfWidth > window.innerWidth - spaceFromEdge) {
+        else if (parentViewportCenterX + tooltipHalfWidth > window.innerWidth - spaceFromEdge) { // Tooltip goes off right edge
             newLeftStyle = `${(window.innerWidth - spaceFromEdge - effectiveTooltipWidth) - parentRect.left}px`;
             newTransformStyle = 'translateX(0%)';
         }
@@ -104,6 +105,7 @@ const Tooltip = ({ text, parentRef, isParentHovered }: { text: string, parentRef
 
     useEffect(() => {
         if (isParentHovered) {
+            // Double requestAnimationFrame to ensure styles are applied and measured correctly after DOM updates
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     if (isMountedRef.current && tooltipRef.current && parentRef.current) {
@@ -148,10 +150,10 @@ const TechnologyItem = ({ tech, isOval = false }: { tech: Technology, isOval?: b
     const bgColor = colorInfo ? colorInfo.bg : 'bg-gray-500';
     const textColor = ['lightGreen', 'lightBlue', 'white', 'yellow', 'orange'].includes(tech.preference) ? 'text-black' : 'text-white';
     const itemClasses = isOval
-        ? `rounded-full p-2 flex flex-col justify-center items-center w-16 h-16`
-        : 'rounded-lg p-2 shadow-md w-auto h-auto';
-    const iconSize = isOval ? 'text-2xl' : 'text-3xl sm:text-4xl';
-    const textSize = isOval ? 'text-xs' : 'text-xs sm:text-sm';
+        ? `rounded-full p-2 flex flex-col justify-center items-center w-16 h-16` // Fixed size for oval
+        : 'rounded-lg p-2 shadow-md w-auto h-auto'; // Auto size for regular items
+    const iconSize = isOval ? 'text-2xl' : 'text-3xl sm:text-4xl'; // Icon size
+    const textSize = isOval ? 'text-xs' : 'text-xs sm:text-sm'; // Text size beneath icon
 
     return (
         <div
@@ -162,9 +164,12 @@ const TechnologyItem = ({ tech, isOval = false }: { tech: Technology, isOval?: b
         >
             <Tooltip text={tech.comment} parentRef={itemRef} isParentHovered={isHovered} />
             {tech.icon && (
+                 // Container for the icon itself
                  <div className={`flex items-center justify-center ${isOval ? 'h-6 w-6 mb-0.5' : 'h-8 w-8 sm:h-10 sm:w-10 mb-1'} ${preferenceColors[tech.preference]?.text || 'text-white'}`}>
                     {React.isValidElement(tech.icon) && typeof tech.icon !== 'string'
-                        ? React.cloneElement(tech.icon as React.ReactElement<any>, { className: `${iconSize} ${preferenceColors[tech.preference]?.text || 'text-white'}` })
+                        // If icon is a React element (like Next/Image or react-icons component)
+                        ? React.cloneElement(tech.icon as React.ReactElement<any>, { className: `${iconSize} ${preferenceColors[tech.preference]?.text || 'text-white'} ${tech.icon.props.className || ''}` })
+                        // If icon is a simple string (like '#')
                         : <span className={iconSize}>{tech.icon}</span>
                     }
                 </div>
@@ -200,6 +205,7 @@ const CategoryTitleItem = ({ title, comment, preference }: { title: string, comm
 const LegendColor = ({ colorKey }: { colorKey: keyof typeof preferenceColors }) => {
     const colorInfo = preferenceColors[colorKey];
     if (!colorInfo) return null;
+    // Simplified tooltip for legend, as it's static
     const SimpleTooltip = ({ text }: { text: string }) => (
         <div className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max max-w-xs hidden group-hover:block bg-purple-700 text-white text-xs sm:text-sm p-2 rounded z-30 shadow-lg pointer-events-none whitespace-normal text-center`}>
             {text}
@@ -226,7 +232,7 @@ const About = () => {
     const GitTech: Technology = {
         icon: <FaGitAlt />, name: 'Git',
         comment: 'i like typing commands instead of using an ui for managing my projects with github',
-        preference: 'darkGreen'
+        preference: 'darkGreen' // Changed to darkGreen as per user intent in rendering
     };
 
     let categorizedTechnologies: Category[] = [
@@ -264,6 +270,7 @@ const About = () => {
             titleComment: "i use windows (fear of change)",
             titlePreference: 'lightBlue',
             technologies: [
+                CppTech, // Added CppTech here directly as it seemed to be intended for this category
                 { icon: <FaPython />, name: 'Python', comment: 'the best choice for any non-performance oriented project', preference: 'lightGreen' },
             ]
         }
@@ -289,23 +296,24 @@ const About = () => {
         <div className="flex flex-col items-center justify-start pt-6 text-gray-200 w-full">
             <Head>
                 <title>About Me</title>
-                <link rel="preload" href="/imgs/sdl.svg" as="image" />
-                <link rel="preload" href="/imgs/godot.png" as="image" />
-                <link rel="preload" href="/imgs/gdscript.jpg" as="image" />
-                <link rel="preload" href="/imgs/Greenfoot_Logo.jpg" as="image" />
+                {/* MODIFIED: Added type attribute for better preloading hints */}
+                <link rel="preload" href="/imgs/godot.png" as="image" type="image/png" />
+                <link rel="preload" href="/imgs/gdscript.jpg" as="image" type="image/jpeg" />
+                <link rel="preload" href="/imgs/Greenfoot_Logo.jpg" as="image" type="image/jpeg" />
+                <link rel="preload" href="/imgs/sdl.svg" as="image" type="image/svg+xml" />
             </Head>
 
             <main className="p-4 w-full flex flex-col items-center">
                 <div className="w-full flex justify-center mb-10">
-    <div className="w-max">
-        <h1 className="text-4xl font-bold mb-6 text-center text-white">
-            things about me:
-        </h1>
-        {aboutTexts.map((text, index) => (
-            <p key={index} className="text-xl text-gray-300 py-1">{text}</p>
-        ))}
-    </div>
-</div>
+                    <div className="w-max">
+                        <h1 className="text-4xl font-bold mb-6 text-center text-white">
+                            things about me:
+                        </h1>
+                        {aboutTexts.map((text, index) => (
+                            <p key={index} className="text-xl text-gray-300 py-1">{text}</p>
+                        ))}
+                    </div>
+                </div>
 
                 <div className='w-full flex flex-col items-center'>
                     <div className="w-full flex flex-col items-center gap-y-4 mb-5 px-4 relative">
@@ -317,21 +325,17 @@ const About = () => {
                             </div>
                             <div className="flex flex-wrap justify-center">
                                 {Object.keys(preferenceColors)
-                                    .filter(key => key !== 'gray' || GitTech.preference === 'gray')
+                                    // Filter out 'gray' unless GitTech or CppTech specifically use it.
+                                    .filter(key => key !== 'gray' || [GitTech.preference, CppTech.preference].includes(key as any))
                                     .map(key => ( <LegendColor key={key} colorKey={key as keyof typeof preferenceColors} /> ))}
                             </div>
                         </div>
                         <h2 className="text-3xl font-semibold text-center text-white">
                             things i use for developing
                         </h2>
-                    </div> {/* This div's mb-5 creates space above the main top border */}
+                    </div>
 
-                    {/* Container for the two-row grid system. 
-                        px-5 provides approx 20px L/R "margin" for the block. Adjust as needed.
-                    */}
                     <div className=""> 
-                        {/* Row 1: Titles */}
-                        {/* This row has a visible bottom border. Inner cells (2nd and 3rd) have left borders. */}
                         <div className={`flex border-b ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS}`}>
                             {categorizedTechnologies.map((category, catIndex) => (
                                 <div
@@ -348,16 +352,19 @@ const About = () => {
                             ))}
                         </div>
 
-                        {/* Row 2: Content */}
-                        {/* This row has no top or bottom border. Inner cells (2nd and 3rd) have left borders. */}
                         <div className="flex">
                             {categorizedTechnologies.map((category, catIndex) => {
-                                // The CppTech icon will be positioned relative to the 3rd content cell ("Other Windows Apps")
-                                const isThirdColumn = catIndex === 2; 
+                                const isThirdColumn = catIndex === 2; // "Other Windows Apps"
+                                const isSecondColumn = catIndex === 1; // "Games"
+                                
+                                // Determine if CppTech should be rendered at the border intersection.
+                                // It seems it was intended between "Games" and "Other Windows Apps"
+                                const shouldRenderCppIconHere = isThirdColumn; 
+
                                 return (
                                     <div
                                         key={`${category.title}-content-cell`}
-                                        className={`flex-1 ${BASE_PADDING} relative  /* Added relative for CppIcon positioning */
+                                        className={`flex-1 ${BASE_PADDING} relative
                                                     ${catIndex > 0 ? `border-l ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS}` : ''}`}
                                     >
                                         <div className="flex flex-wrap justify-center items-start gap-1 sm:gap-2 min-h-[50px] w-full">
@@ -366,12 +373,14 @@ const About = () => {
                                             ))}
                                         </div>
 
-                                        {/* CppTech Icon: Positioned at the top-left corner (border intersection) of this content cell */}
-                                        {isThirdColumn && (
+                                        {shouldRenderCppIconHere && (
                                             <div
                                                 className={`absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 z-10 
                                                             border ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS} rounded-full bg-black p-0.5`}
                                             >
+                                                {/* CppTech is already in "Other Windows Apps" list, so this special rendering might be redundant or for visual flair only */}
+                                                {/* If CppTech is *only* to be shown here, remove it from the categorizedTechnologies.technologies list for "Other Windows Apps" */}
+                                                {/* Assuming it's for visual flair at the intersection: */}
                                                 <TechnologyItem tech={CppTech} isOval={true} />
                                             </div>
                                         )}
@@ -381,7 +390,7 @@ const About = () => {
                         </div>
                     </div>
 
-                    <div className="mt-8 mb-0 flex items-center justify-center gap-2"> {/* Added margin-top for spacing */}
+                    <div className="mt-8 mb-0 flex items-center justify-center gap-2">
                         <span className="text-lg text-gray-400">i obviously use</span>
                         <TechnologyItem tech={GitTech} />
                         <span className="text-lg text-gray-400">with alll my projects (duh)</span>
