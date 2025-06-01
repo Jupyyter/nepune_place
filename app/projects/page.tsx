@@ -140,7 +140,7 @@ Yes, this can now be done by an average AI, but I developed this project when AI
     title: "gabriel the hungry",
     thumbnail: "/imgs/GabrielIsHungry.png",
     description: `This is the story of gabriel.
-It's a short tale, but full of adventure!`, 
+It's a short tale, but full of adventure!`,
     downloadUrls: [`gabrielIsHungry.zip`, "gabrielIsHungry0.zip"],
     tags: ["GODOT", "GDSCRIPT", "LARGE_FILE"],
     createdAt: new Date(),
@@ -219,7 +219,7 @@ The level editor allows for custom map creation!`,
     createdAt: new Date(),
     relevance: 9,
     repoName: "99layers",
-    images: [
+    images: [ // Note: These image paths seem to be for 'jhonny', you might want to correct them for this project.
       "/imgs/jhonny0.png",
       "/imgs/jhonny1.png",
       "/imgs/jhonny2.png",
@@ -449,7 +449,7 @@ function Projects() {
   ) => {
     setHoveredTag(tagKey);
     const tagRect = event.currentTarget.getBoundingClientRect();
-    const tooltipWidth = 160; 
+    const tooltipWidth = 160;
     const windowHeight = window.innerHeight;
     let x = tagRect.left;
     let y = tagRect.bottom + 5;
@@ -460,15 +460,15 @@ function Projects() {
         tooltipElement.style.opacity = '0';
         tooltipElement.style.display = 'block';
         const tooltipHeight = tooltipElement.offsetHeight;
-        tooltipElement.style.opacity = ''; 
-        tooltipElement.style.display = ''; 
+        tooltipElement.style.opacity = '';
+        tooltipElement.style.display = '';
 
         if (y + tooltipHeight > windowHeight && tagRect.top - tooltipHeight - 5 > 0) {
             y = tagRect.top - 5;
             alignTop = true;
-        } else if (y + tooltipHeight > windowHeight) { 
-            y = windowHeight - tooltipHeight - 5; 
-            alignTop = false; 
+        } else if (y + tooltipHeight > windowHeight) {
+            y = windowHeight - tooltipHeight - 5;
+            alignTop = false;
         }
     }
 
@@ -759,11 +759,11 @@ function Projects() {
         return <div>Error: Image not found</div>;
       }
       const imageUrl = project.images[imageIndex];
-      const shouldPrioritize: boolean = !!(
-        inFullscreen ||
-        (index === 0 && !project.videoUrl) ||
-        (index > 0 && project.videoUrl)
-      );
+      // MODIFIED: If this image is being rendered as the main media (either in details or fullscreen),
+      // it's considered high priority for display. The useEffect for selectedProject.images preloads it
+      // into the browser cache. Setting priority={true} here ensures Next/Image uses loading="eager",
+      // minimizing delays.
+      const currentImageIsPriority = true;
       return (
         <div
           className={`relative w-full h-full ${
@@ -784,7 +784,7 @@ function Projects() {
                 : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             }
             quality={inFullscreen ? 90 : 85}
-            priority={shouldPrioritize} 
+            priority={currentImageIsPriority} // MODIFIED: Use the new simplified priority
             unoptimized={false}
           />
         </div>
