@@ -116,7 +116,7 @@ I made it possible for a multiplayer game, but since I don't have servers for th
 I also don't recommend shooting until all the players are connected :)`,
     downloadUrls: ["jhonnyGang.zip"],
     tags: ["UNITY", "C#"],
-    createdAt: new Date(),
+    createdAt: new Date(), // This will be overridden if repoName exists
     relevance: 7,
     repoName: "jhonny",
     videoUrl: "https://www.youtube.com/watch?v=pMxjJBKdl3Y&feature=youtu.be",
@@ -130,7 +130,7 @@ I also don't recommend shooting until all the players are connected :)`,
 Yes, this can now be done by an average AI, but I developed this project when AI's coding capabilities were rudimentary, so I consider this a decent achievement.`,
     downloadUrls: ["asciiVideo.zip", "badApple.zip"],
     tags: ["CPP", "LARGE_FILE"],
-    createdAt: new Date(),
+    createdAt: new Date(), // This will be overridden
     relevance: 8,
     repoName: "BADAPPLE",
     images: Array.from({ length: 2 }, (_, i) => `/imgs/BADAPPLE${i}.png`),
@@ -144,7 +144,7 @@ Yes, this can now be done by an average AI, but I developed this project when AI
 It's a short tale full of adventure :)`,
     downloadUrls: [`gabrielIsHungry.zip`, "gabrielIsHungry0.zip"],
     tags: ["GODOT", "GDSCRIPT", "LARGE_FILE"],
-    createdAt: new Date(),
+    createdAt: new Date(), // This will be overridden
     relevance: 6,
     repoName: "I-am-hungry-and-my-name-is-Gabriel",
     images: Array.from(
@@ -160,7 +160,7 @@ It's a short tale full of adventure :)`,
 Because of that, I made a game in which you fight john cena in an undertale-style fight.`,
     downloadUrls: [`bingChilling.zip`],
     tags: ["UNITY", "C#"],
-    createdAt: new Date(),
+    createdAt: new Date(), // This will be overridden
     relevance: 2,
     repoName: "fightJohnCena",
     images: Array.from({ length: 4 }, (_, i) => `/imgs/bingChilling${i}.png`),
@@ -175,7 +175,7 @@ Unfortunately the contest required the usage of 'greenfoot'.
 The creation date shown here is wrong (the github api shows the date on which the repository was created, and i had to fork this project from my classmate for the api to work, so it shows the date on which i forked the project, true date: i dont remember, but it was 2024 :) )`,
     downloadUrls: [`shadowGang.zip`],
     tags: ["GREENFOOT", "JAVA"],
-    createdAt: new Date(),
+    createdAt: new Date(), // This will be overridden
     relevance: 4,
     repoName: "WizardGang",
     images: Array.from({ length: 6 }, (_, i) => `/imgs/WizardGang${i}.png`),
@@ -189,7 +189,7 @@ The creation date shown here is wrong (the github api shows the date on which th
 It features three distinct rooms to explore.`,
     downloadUrls: [`cppGame2.zip`, "cppGame3.zip"],
     tags: ["CPP", "SDL2", "LARGE_FILE"],
-    createdAt: new Date(),
+    createdAt: new Date(), // This will be overridden
     relevance: 1,
     repoName: "project-rpg",
     images: Array.from({ length: 4 }, (_, i) => `/imgs/3roomAdventure${i}.png`),
@@ -202,7 +202,7 @@ It features three distinct rooms to explore.`,
 A classic game implemented in Java.`,
     downloadUrls: [`worldOfTanks.jar`],
     tags: ["JAVA", "JAR"],
-    createdAt: new Date(),
+    createdAt: new Date(), // This will be overridden
     relevance: 5,
     repoName: "checkers",
     images: Array.from({ length: 5 }, (_, i) => `/imgs/checkers${i}.png`),
@@ -216,7 +216,7 @@ I recommend you extract the files from the zip file if you wanna use the leveled
 The level editor allows for custom map creation (obviously)`,
     downloadUrls: ["ikeaBattle.zip"],
     tags: ["CPP", "SFML", "LARGE_FILE"],
-    createdAt: new Date(),
+    createdAt: new Date(), // This will be overridden
     relevance: 9,
     repoName: "99layers",
     videoUrl: "https://www.youtube.com/watch?v=MGMpnPsCnlM&feature=youtu.be",
@@ -230,7 +230,7 @@ The level editor allows for custom map creation (obviously)`,
 "a sense of depth"`,
     downloadUrls: ["road.zip"],
     tags: ["GODOT", "GDSCRIPT"],
-    createdAt: new Date(),
+    createdAt: new Date(), // No repoName, so this date will be used.
     relevance: 0,
     /*repoName: "99layers",*/ images: [
       "/imgs/the road0.png",
@@ -287,7 +287,9 @@ function Projects() {
   });
   const [isMobile, setIsMobile] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>("relevance");
-  const [projectsWithDates, setProjectsWithDates] = useState(projects);
+  const [projectsWithDates, setProjectsWithDates] = useState<Project[]>( // Initialize with an empty array or structured projects
+    projects.map(p => ({ ...p, createdAt: p.repoName ? new Date(0) : p.createdAt })) // Initialize with placeholder for API or actual date
+  );
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
   const [playerReady, setPlayerReady] = useState(false);
@@ -307,30 +309,46 @@ function Projects() {
   const isCurrentMediaVideo = (project: Project | null, index: number) =>
     project?.videoUrl && index === 0;
 
+  // --- CORRECTED useEffect for fetching dates ---
   useEffect(() => {
-    const fetchAllDates = async () => {
-      const updatedProjects = await Promise.all(
-        projects.map(async (project) => {
-          if (
-            project.repoName &&
-            project.createdAt.getTime() === new Date(0).getTime()
-          ) {
-            const createdAt = await fetchRepoCreationDate(project.repoName);
-            return createdAt ? { ...project, createdAt } : project;
+    // 1. Create a version of projects with placeholders for dates to be fetched.
+    //    We use the initial `projects` definition here.
+    const initialProjectsWithPlaceholders = projects.map((p) => ({
+      ...p,
+      // If repoName exists, set createdAt to new Date(0) as a placeholder.
+      // Otherwise, use the createdAt from the initial `projects` definition.
+      createdAt: p.repoName ? new Date(0) : p.createdAt,
+    }));
+    // Set this initial version to state. UI might briefly show epoch dates or "Loading date..."
+    // or the `new Date()` from hardcoded data for non-repo projects.
+    setProjectsWithDates(initialProjectsWithPlaceholders);
+
+    // 2. Define an async function to fetch dates.
+    const fetchAndSetAllDates = async () => {
+      // IMPORTANT: Map over `initialProjectsWithPlaceholders` (which has the new Date(0) placeholders for repo projects)
+      // NOT the original `projects` constant or the current `projectsWithDates` state directly in the map.
+      const projectsWithFetchedDates = await Promise.all(
+        initialProjectsWithPlaceholders.map(async (project) => {
+          // Check if this project has a repoName AND its createdAt is the placeholder new Date(0).
+          if (project.repoName && project.createdAt.getTime() === new Date(0).getTime()) {
+            const fetchedDate = await fetchRepoCreationDate(project.repoName);
+            // If a date is fetched, update the project. Otherwise, keep the placeholder.
+            return fetchedDate ? { ...project, createdAt: fetchedDate } : project;
           }
+          // If no repoName or date wasn't a placeholder, return the project as is.
           return project;
         })
       );
-      setProjectsWithDates(updatedProjects);
+      // Update the state with the accurately fetched dates (or placeholders if fetching failed).
+      setProjectsWithDates(projectsWithFetchedDates);
     };
 
-    const initialProjects = projects.map((p) => ({
-      ...p,
-      createdAt: p.repoName ? new Date(0) : p.createdAt,
-    }));
-    setProjectsWithDates(initialProjects);
-    fetchAllDates();
+    // 3. Call the fetching function.
+    fetchAndSetAllDates();
+
+    // The empty dependency array ensures this effect runs only once on component mount.
   }, []);
+  // --- END CORRECTED useEffect ---
 
   const sortedProjects = [...projectsWithDates].sort((a, b) => {
     const timeA = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
@@ -829,7 +847,7 @@ function Projects() {
                   </div>
                   <div className="text-sm text-gray-400 mt-1">
                     Created:{" "}
-                    {project.createdAt instanceof Date
+                    {project.createdAt instanceof Date && project.createdAt.getTime() !== new Date(0).getTime()
                       ? project.createdAt.toLocaleDateString()
                       : "Loading date..."}
                   </div>
@@ -929,7 +947,7 @@ function Projects() {
                   ))}
                 </div>
                 <p className="text-gray-400 text-sm mb-5">
-                  Created: {selectedProject.createdAt instanceof Date ? selectedProject.createdAt.toLocaleDateString() : "Loading date..."}
+                  Created: {selectedProject.createdAt instanceof Date && selectedProject.createdAt.getTime() !== new Date(0).getTime() ? selectedProject.createdAt.toLocaleDateString() : "Loading date..."}
                 </p>
                 <button
                   onClick={() => handleDownload(selectedProject)}
