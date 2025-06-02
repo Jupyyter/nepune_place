@@ -349,7 +349,11 @@ function Projects() {
   useEffect(() => {
     setCurrentMediaIndex(0);
     setVideoCurrentTime(0);
-    setIsVideoPlaying(false);
+    if (selectedProject && selectedProject.videoUrl && currentMediaIndex === 0) { // Check currentMediaIndex too
+      setIsVideoPlaying(true);
+    } else {
+      setIsVideoPlaying(false);
+    }
 
     if (selectedProject && mediaThumbnailsContainerRef.current) {
       requestAnimationFrame(() => {
@@ -358,7 +362,7 @@ function Projects() {
         }
       });
     }
-  }, [selectedProject]);
+  }, [selectedProject]); // currentMediaIndex is implicitly handled as it's reset above
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -399,7 +403,7 @@ function Projects() {
 
   const handleProjectClick = (project: Project) => {
     if (project.id !== selectedProject?.id) {
-      setSelectedProject(project);
+      setSelectedProject(project); // This will trigger the useEffect above to set isVideoPlaying
       setIsFullscreen(false);
     }
   };
@@ -523,7 +527,7 @@ function Projects() {
 
   // --- Player Lifecycle & State Sync useEffects ---
 
-  // Details Player Lifecycle
+  // Details Player Lifecycle & State
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null;
     const shouldPlayerExist = playerReady && selectedProject && selectedProject.videoUrl && currentMediaIndex === 0 && !isFullscreen;
@@ -549,28 +553,10 @@ function Projects() {
       }
       detailsPlayerRef.current = null;
     };
-  }, [playerReady, selectedProject?.id, currentMediaIndex, isFullscreen]); // Only existence deps
-
-  // Details Player State Sync
-  useEffect(() => {
-    if (!isFullscreen && detailsPlayerRef.current && selectedProject && currentMediaIndex === 0) {
-        const player = detailsPlayerRef.current;
-        try {
-            if (typeof player.seekTo === 'function' && Math.abs(player.getCurrentTime() - videoCurrentTime) > 0.5) {
-                player.seekTo(videoCurrentTime, true);
-            }
-            const playerState = player.getPlayerState();
-            if (isVideoPlaying && typeof player.playVideo === 'function' && playerState !== 1 && playerState !== 3) {
-                player.playVideo();
-            } else if (!isVideoPlaying && typeof player.pauseVideo === 'function' && playerState === 1) {
-                player.pauseVideo();
-            }
-        } catch (e) { console.warn("Error syncing details player state:", e); }
-    }
-  }, [videoCurrentTime, isVideoPlaying, isFullscreen, currentMediaIndex, selectedProject?.id]); // Include selectedProject.id for safety
+  }, [playerReady, selectedProject?.id, currentMediaIndex, isFullscreen, videoCurrentTime, isVideoPlaying]);
 
 
-  // Fullscreen Player Lifecycle
+  // Fullscreen Player Lifecycle & State
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null;
     const shouldPlayerExist = isFullscreen && playerReady && selectedProject && selectedProject.videoUrl && currentMediaIndex === 0;
@@ -596,60 +582,47 @@ function Projects() {
       }
       fullscreenPlayerRef.current = null;
     };
-  }, [isFullscreen, playerReady, selectedProject?.id, currentMediaIndex]); // Only existence deps
-
-  // Fullscreen Player State Sync
-  useEffect(() => {
-    if (isFullscreen && fullscreenPlayerRef.current && selectedProject && currentMediaIndex === 0) {
-        const player = fullscreenPlayerRef.current;
-         try {
-            if (typeof player.seekTo === 'function' && Math.abs(player.getCurrentTime() - videoCurrentTime) > 0.5) {
-                player.seekTo(videoCurrentTime, true);
-            }
-            const playerState = player.getPlayerState();
-            if (isVideoPlaying && typeof player.playVideo === 'function' && playerState !== 1 && playerState !== 3) {
-                player.playVideo();
-            } else if (!isVideoPlaying && typeof player.pauseVideo === 'function' && playerState === 1) {
-                player.pauseVideo();
-            }
-        } catch (e) { console.warn("Error syncing fullscreen player state:", e); }
-    }
-  }, [videoCurrentTime, isVideoPlaying, isFullscreen, currentMediaIndex, selectedProject?.id]); // Include selectedProject.id
+  }, [isFullscreen, playerReady, selectedProject?.id, currentMediaIndex, videoCurrentTime, isVideoPlaying]);
 
 
   // --- Event Handlers ---
-  const handleMediaClick = () => {
+  const handleMediaClick = () => { // From details to fullscreen
     if (!selectedProject) return;
     if (isCurrentMediaVideo(selectedProject, currentMediaIndex)) {
       const player = detailsPlayerRef.current;
       let currentTime = 0;
-      let playing = false;
+      let playing = false; // Default to false if player not ready
 
       if (player?.getCurrentTime && player?.getPlayerState) {
         try {
           currentTime = player.getCurrentTime();
-          playing = player.getPlayerState() === 1;
+          const state = player.getPlayerState();
+          // Consider playing if state is PLAYING (1) or BUFFERING (3)
+          playing = (state === 1 || state === 3);
         } catch (e) { console.error("Error getting details player state/time for fullscreen:", e); }
+      } else {
+        // If player isn't there/ready, but we are transitioning a video, assume it should play
+        playing = isVideoPlaying; // Use the current state
       }
       setVideoCurrentTime(currentTime);
       setIsVideoPlaying(playing);
       setIsFullscreen(true);
-    } else {
+    } else { // Image
       setIsFullscreen(true);
     }
   };
 
   const handleCloseFullscreen = () => {
     let lastKnownTime = videoCurrentTime;
-    let wasPlayingInFullscreen = isVideoPlaying;
+    let wasPlayingInFullscreen = isVideoPlaying; // Default to current state
 
     if (fullscreenPlayerRef.current?.getCurrentTime && fullscreenPlayerRef.current?.getPlayerState) {
       try {
         lastKnownTime = fullscreenPlayerRef.current.getCurrentTime();
-        wasPlayingInFullscreen = fullscreenPlayerRef.current.getPlayerState() === 1;
+        const state = fullscreenPlayerRef.current.getPlayerState();
+        wasPlayingInFullscreen = (state === 1 || state === 3);
       } catch (e) { console.error("Error getting fullscreen player state/time on close:", e); }
     }
-
     setVideoCurrentTime(lastKnownTime);
     setIsVideoPlaying(wasPlayingInFullscreen);
     setIsFullscreen(false);
@@ -660,7 +633,11 @@ function Projects() {
 
     if (isCurrentMediaVideo(selectedProject, index)) {
       setVideoCurrentTime(0);
-      setIsVideoPlaying(false);
+      setIsVideoPlaying(true);
+    } else {
+        // If switching from video to image, preserve current video playing state
+        // but it won't apply until video is shown again.
+        // isVideoPlaying remains as it was.
     }
     setCurrentMediaIndex(index);
 
@@ -689,12 +666,11 @@ function Projects() {
     inFullscreen: boolean = false
   ) => {
     const isVideo = isCurrentMediaVideo(project, index);
-    const imageIndex = project.videoUrl ? index - 1 : index; // Calculate imageIndex for key
+    const imageIndex = project.videoUrl ? index - 1 : index;
 
-    // Key changes when media type (video/image) or specific image changes, forcing unmount/remount
     const mediaKey = isVideo
-      ? `media-video-${project.id}-${inFullscreen}`
-      : `media-image-${project.id}-${imageIndex}-${inFullscreen}`;
+      ? `media-video-${project.id}-${inFullscreen ? 'fs' : 'dt'}`
+      : `media-image-${project.id}-${imageIndex}-${inFullscreen ? 'fs' : 'dt'}`;
 
     if (isVideo && project.videoUrl) {
       const playerContainerId = inFullscreen
@@ -703,10 +679,9 @@ function Projects() {
       return (
         <div key={mediaKey} className={`relative w-full h-full ${!inFullscreen ? "aspect-video" : ""}`}>
           <div
-            id={playerContainerId} // ID for YT API to target
+            id={playerContainerId}
             className="w-full h-full"
           >
-            {/* YouTube player iframe injected here */}
           </div>
           {!inFullscreen && (
             <button
@@ -721,7 +696,7 @@ function Projects() {
       );
     } else { 
       if (imageIndex < 0 || imageIndex >= project.images.length) {
-        return <div key={mediaKey}>Error: Image not found</div>; // Ensure key is present even for error
+        return <div key={mediaKey}>Error: Image not found</div>;
       }
       const imageUrl = project.images[imageIndex];
       const commonImageClasses = inFullscreen ? "object-contain rounded-lg" : "object-cover rounded-lg";
@@ -903,10 +878,8 @@ function Projects() {
                             currentMediaIndex === 0 ? "ring-2 ring-blue-500" : "ring-1 ring-gray-700 hover:ring-gray-500"
                           }`}
                           onClick={() => {
-                            if (currentMediaIndex !== 0) {
-                                setVideoCurrentTime(0);
-                                setIsVideoPlaying(false);
-                            }
+                            setVideoCurrentTime(0);
+                            setIsVideoPlaying(true);
                             setCurrentMediaIndex(0);
                           }}
                           title={selectedProject.title + " - Video"}
