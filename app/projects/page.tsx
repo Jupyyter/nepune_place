@@ -291,6 +291,7 @@ function Projects() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
   const [playerReady, setPlayerReady] = useState(false);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
   const detailsPlayerRef = useRef<any>(null);
   const fullscreenPlayerRef = useRef<any>(null);
@@ -303,8 +304,8 @@ function Projects() {
 
   const getTotalMediaCount = (project: Project) =>
     project.images.length + (project.videoUrl ? 1 : 0);
-  const isCurrentMediaVideo = (project: Project, index: number) =>
-    project.videoUrl && index === 0;
+  const isCurrentMediaVideo = (project: Project | null, index: number) =>
+    project?.videoUrl && index === 0;
 
   useEffect(() => {
     const fetchAllDates = async () => {
@@ -347,6 +348,9 @@ function Projects() {
 
   useEffect(() => {
     setCurrentMediaIndex(0);
+    setVideoCurrentTime(0);
+    setIsVideoPlaying(false);
+
     if (selectedProject && mediaThumbnailsContainerRef.current) {
       requestAnimationFrame(() => {
         if (mediaThumbnailsContainerRef.current) {
@@ -354,34 +358,7 @@ function Projects() {
         }
       });
     }
-
-    if (detailsPlayerRef.current?.destroy) {
-      try {
-        detailsPlayerRef.current.destroy();
-      } catch (e) {
-        console.error("Error destroying details player on project change:", e);
-      }
-      detailsPlayerRef.current = null;
-    }
-    if (fullscreenPlayerRef.current?.destroy) {
-      try {
-        fullscreenPlayerRef.current.destroy();
-      } catch (e) {
-        console.error(
-          "Error destroying fullscreen player on project change:",
-          e
-        );
-      }
-      fullscreenPlayerRef.current = null;
-    }
-
-    if (playerReady && selectedProject && selectedProject.videoUrl) {
-      createPlayer(
-        `youtube-iframe-details-${selectedProject.id}`,
-        detailsPlayerRef
-      );
-    }
-  }, [selectedProject, playerReady]);
+  }, [selectedProject]);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -398,6 +375,7 @@ function Projects() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
   useEffect(() => {
     const detailsPanel = detailsPanelRef.current;
     if (!detailsPanel) return;
@@ -499,199 +477,203 @@ function Projects() {
     };
   }, []);
 
-  const createPlayer = (
+  const createPlayerInstance = (
     elementId: string,
     playerRef: React.MutableRefObject<any>,
-    onReadyCallback?: (event: any) => void
+    projectForPlayer: Project,
+    initialTime: number,
+    initialPlaying: boolean
   ) => {
-    if (!playerReady || !document.getElementById(elementId)) return;
-    if (playerRef.current?.destroy) {
-      try {
-        playerRef.current.destroy();
-      } catch (e) {
-        console.error("Error destroying player in createPlayer:", e);
-      }
-      playerRef.current = null;
+    if (!playerReady || !document.getElementById(elementId) || !projectForPlayer.videoUrl) return;
+
+    if (playerRef.current && typeof playerRef.current.destroy === 'function') {
+      try { playerRef.current.destroy(); }
+      catch (e) { console.warn(`Error destroying existing player on ref for ${elementId}:`, e); }
     }
+    playerRef.current = null;
+    
+    const videoId = projectForPlayer.videoUrl.split("v=")[1]?.split("&")[0];
+    if (!videoId) {
+        console.error("Invalid videoId for player:", projectForPlayer.title);
+        return;
+    }
+
     playerRef.current = new (window as any).YT.Player(elementId, {
+      videoId: videoId,
+      playerVars: {
+        modestbranding: 1, fs: 0,
+        origin: typeof window !== "undefined" ? window.location.origin : "",
+        autoplay: 0, controls: 1,
+      },
       events: {
         onReady: (event: any) => {
-          if (onReadyCallback) onReadyCallback(event);
+          event.target.seekTo(initialTime, true);
+          if (initialPlaying) {
+            event.target.playVideo();
+          } else {
+            event.target.pauseVideo();
+          }
         },
         onError: (event: any) => {
-          console.error(`YT Error ${elementId}:`, event.data);
+          console.error(`YT Error for ${elementId} (Video: ${projectForPlayer.title}):`, event.data);
         },
       },
     });
   };
 
-  useEffect(() => {
-    if (
-      playerReady &&
-      selectedProject &&
-      selectedProject.videoUrl &&
-      currentMediaIndex === 0 &&
-      !isFullscreen
-    ) {
-      const detailsElementId = `youtube-iframe-details-${selectedProject.id}`;
-      if (
-        document.getElementById(detailsElementId) &&
-        (!detailsPlayerRef.current ||
-          detailsPlayerRef.current.getIframe()?.id !== detailsElementId)
-      ) {
-        createPlayer(detailsElementId, detailsPlayerRef);
-      }
-    }
-    return () => {
-      if (
-        detailsPlayerRef.current &&
-        (!selectedProject || currentMediaIndex !== 0)
-      ) {
-        if (detailsPlayerRef.current?.destroy) {
-          try {
-            detailsPlayerRef.current.destroy();
-          } catch (e) {
-            console.error("Error destroying details player in cleanup:", e);
-          }
-        }
-        detailsPlayerRef.current = null;
-      }
-    };
-  }, [playerReady, selectedProject, currentMediaIndex, isFullscreen]);
+  // --- Player Lifecycle & State Sync useEffects ---
 
+  // Details Player Lifecycle
   useEffect(() => {
-    if (
-      isFullscreen &&
-      playerReady &&
-      selectedProject &&
-      selectedProject.videoUrl &&
-      currentMediaIndex === 0
-    ) {
-      const fullscreenElementId = `youtube-iframe-fullscreen-${selectedProject.id}`;
-      const checkAndCreate = () => {
-        if (document.getElementById(fullscreenElementId)) {
-          createPlayer(fullscreenElementId, fullscreenPlayerRef, (event) => {
-            event.target.seekTo(videoCurrentTime, true);
-            event.target.playVideo();
-          });
-        } else {
-          setTimeout(checkAndCreate, 100);
-        }
-      };
-      checkAndCreate();
+    let timeoutId: NodeJS.Timeout | null = null;
+    const shouldPlayerExist = playerReady && selectedProject && selectedProject.videoUrl && currentMediaIndex === 0 && !isFullscreen;
+
+    if (shouldPlayerExist) {
+      const detailsContainerId = `youtube-player-container-details-${selectedProject!.id}`;
+      if (document.getElementById(detailsContainerId)) {
+         createPlayerInstance(detailsContainerId, detailsPlayerRef, selectedProject!, videoCurrentTime, isVideoPlaying);
+      } else {
+        timeoutId = setTimeout(() => {
+            if (playerReady && selectedProject && selectedProject.videoUrl && currentMediaIndex === 0 && !isFullscreen && document.getElementById(detailsContainerId)) {
+                 createPlayerInstance(detailsContainerId, detailsPlayerRef, selectedProject, videoCurrentTime, isVideoPlaying);
+            }
+        }, 50);
+      }
     }
     return () => {
-      if (fullscreenPlayerRef.current?.destroy) {
+      if (timeoutId) clearTimeout(timeoutId);
+      const playerInstance = detailsPlayerRef.current;
+      if (playerInstance && typeof playerInstance.destroy === 'function') {
+        try { playerInstance.destroy(); }
+        catch (e) { console.warn("Caught error during details player.destroy():", e); }
+      }
+      detailsPlayerRef.current = null;
+    };
+  }, [playerReady, selectedProject?.id, currentMediaIndex, isFullscreen]); // Only existence deps
+
+  // Details Player State Sync
+  useEffect(() => {
+    if (!isFullscreen && detailsPlayerRef.current && selectedProject && currentMediaIndex === 0) {
+        const player = detailsPlayerRef.current;
         try {
-          fullscreenPlayerRef.current.destroy();
-        } catch (e) {
-          console.error("Error destroying fullscreen player in cleanup:", e);
-        }
-        fullscreenPlayerRef.current = null;
-      }
-    };
-  }, [
-    isFullscreen,
-    playerReady,
-    selectedProject,
-    videoCurrentTime,
-    currentMediaIndex,
-  ]);
+            if (typeof player.seekTo === 'function' && Math.abs(player.getCurrentTime() - videoCurrentTime) > 0.5) {
+                player.seekTo(videoCurrentTime, true);
+            }
+            const playerState = player.getPlayerState();
+            if (isVideoPlaying && typeof player.playVideo === 'function' && playerState !== 1 && playerState !== 3) {
+                player.playVideo();
+            } else if (!isVideoPlaying && typeof player.pauseVideo === 'function' && playerState === 1) {
+                player.pauseVideo();
+            }
+        } catch (e) { console.warn("Error syncing details player state:", e); }
+    }
+  }, [videoCurrentTime, isVideoPlaying, isFullscreen, currentMediaIndex, selectedProject?.id]); // Include selectedProject.id for safety
 
+
+  // Fullscreen Player Lifecycle
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout | null = null;
+    const shouldPlayerExist = isFullscreen && playerReady && selectedProject && selectedProject.videoUrl && currentMediaIndex === 0;
+
+    if (shouldPlayerExist) {
+      const fullscreenContainerId = `youtube-player-container-fullscreen-${selectedProject!.id}`;
+      if (document.getElementById(fullscreenContainerId)) {
+        createPlayerInstance(fullscreenContainerId, fullscreenPlayerRef, selectedProject!, videoCurrentTime, isVideoPlaying);
+      } else {
+        timeoutId = setTimeout(() => {
+            if (isFullscreen && playerReady && selectedProject && selectedProject.videoUrl && currentMediaIndex === 0 && document.getElementById(fullscreenContainerId)) {
+                createPlayerInstance(fullscreenContainerId, fullscreenPlayerRef, selectedProject, videoCurrentTime, isVideoPlaying);
+            }
+        }, 50);
+      }
+    }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      const playerInstance = fullscreenPlayerRef.current;
+      if (playerInstance && typeof playerInstance.destroy === 'function') {
+        try { playerInstance.destroy(); }
+        catch (e) { console.warn("Caught error during fullscreen player.destroy():", e); }
+      }
+      fullscreenPlayerRef.current = null;
+    };
+  }, [isFullscreen, playerReady, selectedProject?.id, currentMediaIndex]); // Only existence deps
+
+  // Fullscreen Player State Sync
+  useEffect(() => {
+    if (isFullscreen && fullscreenPlayerRef.current && selectedProject && currentMediaIndex === 0) {
+        const player = fullscreenPlayerRef.current;
+         try {
+            if (typeof player.seekTo === 'function' && Math.abs(player.getCurrentTime() - videoCurrentTime) > 0.5) {
+                player.seekTo(videoCurrentTime, true);
+            }
+            const playerState = player.getPlayerState();
+            if (isVideoPlaying && typeof player.playVideo === 'function' && playerState !== 1 && playerState !== 3) {
+                player.playVideo();
+            } else if (!isVideoPlaying && typeof player.pauseVideo === 'function' && playerState === 1) {
+                player.pauseVideo();
+            }
+        } catch (e) { console.warn("Error syncing fullscreen player state:", e); }
+    }
+  }, [videoCurrentTime, isVideoPlaying, isFullscreen, currentMediaIndex, selectedProject?.id]); // Include selectedProject.id
+
+
+  // --- Event Handlers ---
   const handleMediaClick = () => {
     if (!selectedProject) return;
     if (isCurrentMediaVideo(selectedProject, currentMediaIndex)) {
       const player = detailsPlayerRef.current;
-      if (
-        player &&
-        typeof player.getCurrentTime === "function" &&
-        typeof player.pauseVideo === "function"
-      ) {
-        const currentTime = player.getCurrentTime();
-        setVideoCurrentTime(currentTime);
-        player.pauseVideo();
-        setIsFullscreen(true);
-      } else {
-        setVideoCurrentTime(0);
-        setIsFullscreen(true);
+      let currentTime = 0;
+      let playing = false;
+
+      if (player?.getCurrentTime && player?.getPlayerState) {
+        try {
+          currentTime = player.getCurrentTime();
+          playing = player.getPlayerState() === 1;
+        } catch (e) { console.error("Error getting details player state/time for fullscreen:", e); }
       }
+      setVideoCurrentTime(currentTime);
+      setIsVideoPlaying(playing);
+      setIsFullscreen(true);
     } else {
       setIsFullscreen(true);
     }
   };
 
   const handleCloseFullscreen = () => {
-    let lastFullscreenTime = videoCurrentTime;
-    if (
-      fullscreenPlayerRef.current &&
-      typeof fullscreenPlayerRef.current.getCurrentTime === "function"
-    ) {
+    let lastKnownTime = videoCurrentTime;
+    let wasPlayingInFullscreen = isVideoPlaying;
+
+    if (fullscreenPlayerRef.current?.getCurrentTime && fullscreenPlayerRef.current?.getPlayerState) {
       try {
-        lastFullscreenTime = fullscreenPlayerRef.current.getCurrentTime();
-        if (typeof fullscreenPlayerRef.current.pauseVideo === "function") {
-          fullscreenPlayerRef.current.pauseVideo();
-        }
-      } catch (e) {
-        console.error("Error getting/pausing fullscreen player time:", e);
-      }
-    } else {
-      console.warn("Fullscreen player not available to get time on close.");
+        lastKnownTime = fullscreenPlayerRef.current.getCurrentTime();
+        wasPlayingInFullscreen = fullscreenPlayerRef.current.getPlayerState() === 1;
+      } catch (e) { console.error("Error getting fullscreen player state/time on close:", e); }
     }
-    setVideoCurrentTime(lastFullscreenTime);
+
+    setVideoCurrentTime(lastKnownTime);
+    setIsVideoPlaying(wasPlayingInFullscreen);
     setIsFullscreen(false);
-    setTimeout(() => {
-      const detailsPlayer = detailsPlayerRef.current;
-      if (
-        detailsPlayer &&
-        typeof detailsPlayer.seekTo === "function" &&
-        typeof detailsPlayer.playVideo === "function" &&
-        selectedProject &&
-        isCurrentMediaVideo(selectedProject, currentMediaIndex)
-      ) {
-        const detailsElementId = `youtube-iframe-details-${selectedProject.id}`;
-        if (detailsPlayer.getIframe()?.id === detailsElementId) {
-          detailsPlayer.seekTo(lastFullscreenTime, true);
-          detailsPlayer.playVideo();
-        } else {
-          console.warn("Details player ref mismatch after closing fullscreen.");
-        }
-      } else {
-        console.log(
-          "Details player not available or not a video after closing fullscreen, or playVideo not ready."
-        );
-      }
-    }, 100);
   };
 
   const handleFullscreenThumbnailClick = (index: number) => {
-    if (selectedProject) {
-      if (isCurrentMediaVideo(selectedProject, index)) {
-        setVideoCurrentTime(0);
-      }
-      setCurrentMediaIndex(index);
-      if (fullscreenMediaThumbnailsContainerRef.current) {
-        const selectedThumb = fullscreenMediaThumbnailsContainerRef.current
-          .children[index] as HTMLElement;
-        if (
-          selectedThumb &&
-          typeof selectedThumb.scrollIntoView === "function"
-        ) {
-          selectedThumb.scrollIntoView({
-            behavior: "smooth",
-            block: "nearest",
-            inline: "center",
-          });
-        }
+    if (!selectedProject) return;
+
+    if (isCurrentMediaVideo(selectedProject, index)) {
+      setVideoCurrentTime(0);
+      setIsVideoPlaying(false);
+    }
+    setCurrentMediaIndex(index);
+
+    if (fullscreenMediaThumbnailsContainerRef.current) {
+      const selectedThumb = fullscreenMediaThumbnailsContainerRef.current.children[index] as HTMLElement;
+      if (selectedThumb?.scrollIntoView) {
+        selectedThumb.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
       }
     }
   };
 
   useEffect(() => {
-    if (
-      selectedProject &&
-      selectedProject.images &&
-      selectedProject.images.length > 0
-    ) {
+    if (selectedProject?.images?.length) {
       selectedProject.images.forEach((imageUrl) => {
         if (imageUrl && typeof imageUrl === "string") {
           const img = new window.Image();
@@ -707,64 +689,46 @@ function Projects() {
     inFullscreen: boolean = false
   ) => {
     const isVideo = isCurrentMediaVideo(project, index);
-    const baseId = inFullscreen
-      ? `youtube-iframe-fullscreen-${project.id}`
-      : `youtube-iframe-details-${project.id}`;
-    const commonClasses = inFullscreen
-      ? "object-contain rounded-lg"
-      : "object-cover rounded-lg";
+    const imageIndex = project.videoUrl ? index - 1 : index; // Calculate imageIndex for key
+
+    // Key changes when media type (video/image) or specific image changes, forcing unmount/remount
+    const mediaKey = isVideo
+      ? `media-video-${project.id}-${inFullscreen}`
+      : `media-image-${project.id}-${imageIndex}-${inFullscreen}`;
 
     if (isVideo && project.videoUrl) {
-      const videoId = project.videoUrl.split("v=")[1]?.split("&")[0];
-      if (!videoId) return <div>Error: Invalid Video URL</div>;
-      const iframeKey = `${baseId}-${project.id}`;
-
+      const playerContainerId = inFullscreen
+        ? `youtube-player-container-fullscreen-${project.id}`
+        : `youtube-player-container-details-${project.id}`;
       return (
-        <div
-          className={`relative w-full h-full ${
-            !inFullscreen ? "aspect-video" : ""
-          }`}
-        >
-          <iframe
-            key={iframeKey}
-            id={baseId}
-            src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&modestbranding=1&fs=0&origin=${
-              typeof window !== "undefined" ? window.location.origin : ""
-            }`}
-            title={project.title}
-            className={`${commonClasses} w-full h-full`}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen={false}
-          />
+        <div key={mediaKey} className={`relative w-full h-full ${!inFullscreen ? "aspect-video" : ""}`}>
+          <div
+            id={playerContainerId} // ID for YT API to target
+            className="w-full h-full"
+          >
+            {/* YouTube player iframe injected here */}
+          </div>
           {!inFullscreen && (
             <button
               onClick={handleMediaClick}
               className="absolute bottom-2 right-2 bg-black bg-opacity-50 p-2 rounded-lg hover:bg-opacity-70 transition-opacity"
-              title="Enter fullscreen"
-              aria-label="Enter fullscreen for video"
+              title="Enter fullscreen" aria-label="Enter fullscreen for video"
             >
-              {" "}
-              <Maximize2 className="w-5 h-5 text-white" />{" "}
+              <Maximize2 className="w-5 h-5 text-white" />
             </button>
           )}
         </div>
       );
-    } else {
-      const imageIndex = project.videoUrl ? index - 1 : index;
+    } else { 
       if (imageIndex < 0 || imageIndex >= project.images.length) {
-        return <div>Error: Image not found</div>;
+        return <div key={mediaKey}>Error: Image not found</div>; // Ensure key is present even for error
       }
       const imageUrl = project.images[imageIndex];
-      // MODIFIED: If this image is being rendered as the main media (either in details or fullscreen),
-      // it's considered high priority for display. The useEffect for selectedProject.images preloads it
-      // into the browser cache. Setting priority={true} here ensures Next/Image uses loading="eager",
-      // minimizing delays.
-      const currentImageIsPriority = true;
+      const commonImageClasses = inFullscreen ? "object-contain rounded-lg" : "object-cover rounded-lg";
       return (
         <div
-          className={`relative w-full h-full ${
-            !inFullscreen ? "cursor-pointer" : ""
-          }`}
+          key={mediaKey}
+          className={`relative w-full h-full ${!inFullscreen ? "cursor-pointer" : ""}`}
           onClick={!inFullscreen ? handleMediaClick : undefined}
           role={!inFullscreen ? "button" : undefined}
           aria-label={!inFullscreen ? "View image fullscreen" : undefined}
@@ -773,14 +737,10 @@ function Projects() {
             src={imageUrl}
             alt={`${project.title} - Image ${imageIndex + 1}`}
             fill
-            className={`${commonClasses}`}
-            sizes={
-              inFullscreen
-                ? "90vw"
-                : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            }
+            className={commonImageClasses}
+            sizes={inFullscreen ? "90vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
             quality={inFullscreen ? 90 : 85}
-            priority={currentImageIsPriority} // MODIFIED: Use the new simplified priority
+            priority={true}
             unoptimized={false}
           />
         </div>
@@ -791,67 +751,26 @@ function Projects() {
   return (
     <div className="flex flex-col items-center justify-start min-h-screen p-2 pt-8">
       <style jsx global>{`
-        .thumbnail-scrollbar::-webkit-scrollbar {
-          height: 16px;
-          background-color: transparent;
-        }
-        .thumbnail-scrollbar::-webkit-scrollbar-track {
-          background: #1a202c;
-          border-radius: 16px;
-          margin: 0 2px;
-        }
-        .thumbnail-scrollbar::-webkit-scrollbar-thumb {
-          background: #4a5568;
-          border-radius: 16px;
-          border: 2px solid #1a202c;
-        }
-        .thumbnail-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #718096;
-        }
-        .thumbnail-scrollbar {
-          scrollbar-width: auto;
-          scrollbar-color: #4a5568 #1a202c;
-        }
-
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.3s ease-out forwards;
-        }
-
-        /* Styles for indented paragraphs */
-        .project-description-paragraph,
-        .tooltip-description-paragraph {
-          text-indent: 4ch; /* Indent by the width of 4 '0' characters */
-          margin-top: 0;
-          margin-bottom: 0; /* Keeps paragraph spacing tight, like line breaks */
-        }
-        /* Ensure empty lines in source still take up space visually */
-        .project-description-paragraph:empty,
-        .tooltip-description-paragraph:empty {
-           min-height: 1em; /* Or adjust as needed for line height */
-        }
-
+        .thumbnail-scrollbar::-webkit-scrollbar { height: 16px; background-color: transparent; }
+        .thumbnail-scrollbar::-webkit-scrollbar-track { background: #1a202c; border-radius: 16px; margin: 0 2px; }
+        .thumbnail-scrollbar::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 16px; border: 2px solid #1a202c; }
+        .thumbnail-scrollbar::-webkit-scrollbar-thumb:hover { background: #718096; }
+        .thumbnail-scrollbar { scrollbar-width: auto; scrollbar-color: #4a5568 #1a202c; }
+        @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
+        .project-description-paragraph, .tooltip-description-paragraph { text-indent: 4ch; margin-top: 0; margin-bottom: 0; }
+        .project-description-paragraph:empty, .tooltip-description-paragraph:empty { min-height: 1em; }
       `}</style>
 
       <div className="w-full max-w-7xl px-4 flex flex-col items-center">
         <header className="text-center mb-8 w-full">
           <h1 className="text-4xl font-bold mb-4 break-words">My Projects</h1>
           <p className="text-lg mb-4 break-words whitespace-pre-wrap max-w-full">
-            {" "}
-            projects here and there and here and everywhere{" "}
+            projects here and there and here and everywhere
           </p>
           <div className="flex justify-center items-center gap-4 mb-4 flex-wrap">
-            {" "}
-            <span className="text-gray-300">Sorting by:</span>{" "}
+            <span className="text-gray-300">Sorting by:</span>
             <div className="flex gap-4 flex-wrap">
-              {" "}
               {sortButtonOptions.map(({ value, label }) => (
                 <button
                   key={value}
@@ -862,11 +781,10 @@ function Projects() {
                       : "bg-gray-700 text-gray-300 hover:bg-gray-600"
                   }`}
                 >
-                  {" "}
-                  {label}{" "}
+                  {label}
                 </button>
-              ))}{" "}
-            </div>{" "}
+              ))}
+            </div>
           </div>
         </header>
 
@@ -894,9 +812,7 @@ function Projects() {
                 onDragStart={(e) => e.preventDefault()}
                 style={{ maxHeight: "400px" }}
               >
-                {" "}
                 <div className="relative w-full h-48">
-                  {" "}
                   <Image
                     src={project.thumbnail}
                     alt={project.title}
@@ -906,8 +822,8 @@ function Projects() {
                     quality={85}
                     priority={project.relevance > 5}
                     loading="eager"
-                  />{" "}
-                </div>{" "}
+                  />
+                </div>
                 <div
                   className={`p-3 ${
                     selectedProject?.id === project.id
@@ -915,39 +831,34 @@ function Projects() {
                       : "bg-gray-800"
                   }`}
                 >
-                  {" "}
                   <h3
                     className="text-lg font-semibold text-white truncate"
                     title={project.title}
                   >
-                    {" "}
-                    {project.title}{" "}
-                  </h3>{" "}
+                    {project.title}
+                  </h3>
                   <div className="flex flex-wrap mt-2 mb-1">
-                    {" "}
                     {project.tags.slice(0, 3).map((tagKey) => (
                       <span
                         key={tagKey}
                         className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded mr-2 mb-1`}
                       >
-                        {" "}
-                        {TAGS[tagKey].name}{" "}
+                        {TAGS[tagKey].name}
                       </span>
-                    ))}{" "}
+                    ))}
                     {project.tags.length > 3 && (
                       <span className="text-gray-400 text-xs py-1 mb-1">
                         ...
                       </span>
-                    )}{" "}
-                  </div>{" "}
+                    )}
+                  </div>
                   <div className="text-sm text-gray-400 mt-1">
-                    {" "}
                     Created:{" "}
                     {project.createdAt instanceof Date
                       ? project.createdAt.toLocaleDateString()
-                      : "Loading date..."}{" "}
-                  </div>{" "}
-                </div>{" "}
+                      : "Loading date..."}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -972,8 +883,7 @@ function Projects() {
                 className="absolute top-2 right-2 text-white bg-red-500 hover:bg-red-700 w-6 h-6 flex items-center justify-center text-sm font-bold z-50 "
                 aria-label="Close project details"
               >
-                {" "}
-                ×{" "}
+                ×
               </button>
               <div className="p-4">
                 <div className="relative w-full h-56 bg-black rounded-lg overflow-hidden mb-2">
@@ -985,141 +895,75 @@ function Projects() {
                 >
                   {selectedProject.videoUrl &&
                     (() => {
-                      const videoId = selectedProject.videoUrl
-                        .split("v=")[1]
-                        ?.split("&")[0];
+                      const videoId = selectedProject.videoUrl.split("v=")[1]?.split("&")[0];
                       return (
                         <div
                           key={`video-thumb-${selectedProject.id}`}
                           className={`inline-block align-top w-28 h-20 mr-1 cursor-pointer rounded-md overflow-hidden relative ${
-                            currentMediaIndex === 0
-                              ? "ring-2 ring-blue-500"
-                              : "ring-1 ring-gray-700 hover:ring-gray-500"
+                            currentMediaIndex === 0 ? "ring-2 ring-blue-500" : "ring-1 ring-gray-700 hover:ring-gray-500"
                           }`}
-                          onClick={() => setCurrentMediaIndex(0)}
+                          onClick={() => {
+                            if (currentMediaIndex !== 0) {
+                                setVideoCurrentTime(0);
+                                setIsVideoPlaying(false);
+                            }
+                            setCurrentMediaIndex(0);
+                          }}
                           title={selectedProject.title + " - Video"}
                         >
                           {videoId ? (
-                            <Image
-                              src={`https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`}
-                              alt="Video thumbnail"
-                              fill
-                              className="object-cover pointer-events-none"
-                              quality={75}
-                              sizes="112px"
-                            />
+                            <Image src={`https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`} alt="Video thumbnail" fill className="object-cover pointer-events-none" quality={75} sizes="112px" />
                           ) : (
                             <div className="w-full h-full bg-gray-700 flex items-center justify-center pointer-events-none">
-                              {" "}
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="currentColor"
-                                className="w-8 h-8 text-white"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.279 20.001c-1.25.687-2.779-.217-2.779-1.643V5.653Z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>{" "}
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-white"><path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.279 20.001c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" /></svg>
                             </div>
                           )}
                           <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center group-hover:bg-opacity-10 transition-opacity pointer-events-none">
-                            {" "}
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              fill="currentColor"
-                              className="w-8 h-8 text-white opacity-75"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.279 20.001c-1.25.687-2.779-.217-2.779-1.643V5.653Z"
-                                clipRule="evenodd"
-                              />
-                            </svg>{" "}
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-white opacity-75"><path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.279 20.001c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" /></svg>
                           </div>
                         </div>
                       );
                     })()}
                   {selectedProject.images.map((imageUrl, imgIdx) => {
-                    const overallIndex = selectedProject.videoUrl
-                      ? imgIdx + 1
-                      : imgIdx;
+                    const overallIndex = selectedProject.videoUrl ? imgIdx + 1 : imgIdx;
                     return (
                       <div
                         key={`img-thumb-${selectedProject.id}-${imgIdx}`}
                         className={`inline-block align-top w-28 h-20 mr-1 cursor-pointer rounded-md overflow-hidden relative ${
-                          currentMediaIndex === overallIndex
-                            ? "ring-2 ring-blue-500"
-                            : "ring-1 ring-gray-700 hover:ring-gray-500"
+                          currentMediaIndex === overallIndex ? "ring-2 ring-blue-500" : "ring-1 ring-gray-700 hover:ring-gray-500"
                         }`}
                         onClick={() => setCurrentMediaIndex(overallIndex)}
                         title={`${selectedProject.title} - Image ${imgIdx + 1}`}
                       >
-                        <Image
-                          src={imageUrl}
-                          alt={`Thumbnail ${imgIdx + 1}`}
-                          fill
-                          className="object-cover pointer-events-none"
-                          sizes="112px"
-                          quality={70}
-                        />
+                        <Image src={imageUrl} alt={`Thumbnail ${imgIdx + 1}`} fill className="object-cover pointer-events-none" sizes="112px" quality={70} />
                       </div>
                     );
                   })}
                 </div>
                 <h3 className="text-xl font-semibold text-white mt-1 mb-3 break-words">
-                  {" "}
-                  {selectedProject.title}{" "}
+                  {selectedProject.title}
                 </h3>
                 <div className="flex flex-wrap mb-3">
-                  {" "}
                   {selectedProject.tags.map((tagKey) => (
-                    <div
-                      key={tagKey}
-                      className="relative inline-block mr-2 mb-2"
-                      onMouseEnter={(e) => handleTagHover(tagKey, e)}
-                      onMouseLeave={() => setHoveredTag(null)}
-                    >
-                      {" "}
-                      <span
-                        className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded cursor-help`}
-                      >
-                        {" "}
-                        {TAGS[tagKey].name}{" "}
-                      </span>{" "}
+                    <div key={tagKey} className="relative inline-block mr-2 mb-2" onMouseEnter={(e) => handleTagHover(tagKey, e)} onMouseLeave={() => setHoveredTag(null)}>
+                      <span className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded cursor-help`}>{TAGS[tagKey].name}</span>
                     </div>
-                  ))}{" "}
+                  ))}
                 </div>
-                {/* MODIFIED: Project description rendering */}
                 <div className="text-gray-300 text-sm mb-2 break-words">
                   {selectedProject.description.split('\n').map((paragraph, index) => (
-                    <p
-                      key={index}
-                      className="project-description-paragraph whitespace-pre-wrap"
-                    >
-                      {paragraph}
-                    </p>
+                    <p key={index} className="project-description-paragraph whitespace-pre-wrap">{paragraph}</p>
                   ))}
                 </div>
                 <p className="text-gray-400 text-sm mb-5">
-                  {" "}
-                  Created:{" "}
-                  {selectedProject.createdAt instanceof Date
-                    ? selectedProject.createdAt.toLocaleDateString()
-                    : "Loading date..."}{" "}
+                  Created: {selectedProject.createdAt instanceof Date ? selectedProject.createdAt.toLocaleDateString() : "Loading date..."}
                 </p>
                 <button
                   onClick={() => handleDownload(selectedProject)}
-                  className={`bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm w-full transition-opacity ${
-                    isLoading ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
+                  className={`bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm w-full transition-opacity ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                   disabled={isLoading}
                 >
-                  {" "}
-                  {isLoading ? "Processing..." : "Download"}{" "}
+                  {isLoading ? "Processing..." : "Download"}
                 </button>
               </div>
             </div>
@@ -1129,106 +973,27 @@ function Projects() {
 
       {isFullscreen && selectedProject && (
         <div className="fixed inset-0 bg-black bg-opacity-95 z-[100] flex flex-col items-center justify-center p-12 animate-fade-in">
-          <button
-            onClick={handleCloseFullscreen}
-            className="absolute top-3 right-3 text-white bg-red-500 hover:bg-red-700 w-10 h-10 flex items-center justify-center text-2xl font-bold rounded-full z-[120]"
-            aria-label="Close fullscreen"
-          >
-            {" "}
-            ×{" "}
-          </button>
+          <button onClick={handleCloseFullscreen} className="absolute top-3 right-3 text-white bg-red-500 hover:bg-red-700 w-10 h-10 flex items-center justify-center text-2xl font-bold rounded-full z-[120]" aria-label="Close fullscreen">×</button>
           <div className="relative w-full flex-grow flex items-center justify-center overflow-hidden p-1">
-            {" "}
             {renderMedia(selectedProject, currentMediaIndex, true)}
           </div>
           {getTotalMediaCount(selectedProject) > 1 && (
-            <div
-              ref={fullscreenMediaThumbnailsContainerRef}
-              className="w-full h-24 bg-black bg-opacity-60 p-2 overflow-x-auto whitespace-nowrap thumbnail-scrollbar flex items-center justify-center shrink-0 space-x-2 z-[110]"
-            >
-              {selectedProject.videoUrl &&
-                (() => {
-                  const videoId = selectedProject.videoUrl
-                    .split("v=")[1]
-                    ?.split("&")[0];
-                  return (
-                    <div
-                      key={`fs-video-thumb-${selectedProject.id}`}
-                      className={`inline-block flex-shrink-0 w-24 h-20 cursor-pointer rounded-md overflow-hidden relative align-top ${
-                        currentMediaIndex === 0
-                          ? "ring-2 ring-blue-400"
-                          : "ring-1 ring-gray-600 hover:ring-gray-400"
-                      }`}
-                      onClick={() => handleFullscreenThumbnailClick(0)}
-                      title={selectedProject.title + " - Video"}
-                    >
-                      {videoId ? (
-                        <Image
-                          src={`https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`}
-                          alt="Video thumbnail"
-                          fill
-                          className="object-cover pointer-events-none"
-                          quality={70}
-                          sizes="96px"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-700 flex items-center justify-center pointer-events-none">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                            className="w-6 h-6 text-white"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.279 20.001c-1.25.687-2.779-.217-2.779-1.643V5.653Z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center group-hover:bg-opacity-0 transition-opacity pointer-events-none">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                          className="w-6 h-6 text-white opacity-60"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.279 20.001c-1.25.687-2.779-.217-2.779-1.643V5.653Z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                  );
-                })()}
-              {selectedProject.images.map((imageUrl, imgIdx) => {
-                const overallIndex = selectedProject.videoUrl
-                  ? imgIdx + 1
-                  : imgIdx;
+            <div ref={fullscreenMediaThumbnailsContainerRef} className="w-full h-24 bg-black bg-opacity-60 p-2 overflow-x-auto whitespace-nowrap thumbnail-scrollbar flex items-center justify-center shrink-0 space-x-2 z-[110]">
+              {selectedProject.videoUrl && (() => {
+                const videoId = selectedProject.videoUrl.split("v=")[1]?.split("&")[0];
                 return (
-                  <div
-                    key={`fs-img-thumb-${selectedProject.id}-${imgIdx}`}
-                    className={`inline-block flex-shrink-0 w-24 h-20 cursor-pointer rounded-md overflow-hidden relative align-top ${
-                      currentMediaIndex === overallIndex
-                        ? "ring-2 ring-blue-400"
-                        : "ring-1 ring-gray-600 hover:ring-gray-400"
-                    }`}
-                    onClick={() => handleFullscreenThumbnailClick(overallIndex)}
-                    title={`${selectedProject.title} - Image ${imgIdx + 1}`}
-                  >
-                    <Image
-                      src={imageUrl}
-                      alt={`Thumbnail ${imgIdx + 1}`}
-                      fill
-                      className="object-cover pointer-events-none"
-                      sizes="96px"
-                      quality={70}
-                    />
-                  </div>
-                );
+                  <div key={`fs-video-thumb-${selectedProject.id}`} className={`inline-block flex-shrink-0 w-24 h-20 cursor-pointer rounded-md overflow-hidden relative align-top ${currentMediaIndex === 0 ? "ring-2 ring-blue-400" : "ring-1 ring-gray-600 hover:ring-gray-400"}`} onClick={() => handleFullscreenThumbnailClick(0)} title={selectedProject.title + " - Video"}>
+                    {videoId ? (<Image src={`https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`} alt="Video thumbnail" fill className="object-cover pointer-events-none" quality={70} sizes="96px" />)
+                     : (<div className="w-full h-full bg-gray-700 flex items-center justify-center pointer-events-none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white"><path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.279 20.001c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" /></svg></div>)}
+                    <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center group-hover:bg-opacity-0 transition-opacity pointer-events-none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white opacity-60"><path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.279 20.001c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" /></svg></div>
+                  </div>);
+              })()}
+              {selectedProject.images.map((imageUrl, imgIdx) => {
+                const overallIndex = selectedProject.videoUrl ? imgIdx + 1 : imgIdx;
+                return (
+                  <div key={`fs-img-thumb-${selectedProject.id}-${imgIdx}`} className={`inline-block flex-shrink-0 w-24 h-20 cursor-pointer rounded-md overflow-hidden relative align-top ${currentMediaIndex === overallIndex ? "ring-2 ring-blue-400" : "ring-1 ring-gray-600 hover:ring-gray-400"}`} onClick={() => handleFullscreenThumbnailClick(overallIndex)} title={`${selectedProject.title} - Image ${imgIdx + 1}`}>
+                    <Image src={imageUrl} alt={`Thumbnail ${imgIdx + 1}`} fill className="object-cover pointer-events-none" sizes="96px" quality={70} />
+                  </div>);
               })}
             </div>
           )}
@@ -1236,26 +1001,9 @@ function Projects() {
       )}
 
       {hoveredTag && (
-        <div
-          ref={tooltipRef}
-          className="fixed bg-gray-900 text-white text-xs p-2 rounded z-[130] break-words w-40 shadow-lg pointer-events-none"
-          style={{
-            left: `${tooltipPosition.x}px`,
-            top: `${tooltipPosition.y}px`,
-            transform: tooltipPosition.alignTop
-              ? "translateY(calc(-100% - 5px))"
-              : "translateY(5px)",
-            transition: "top 0.1s ease-out, left 0.1s ease-out",
-          }}
-        >
-          {/* MODIFIED: Tooltip description rendering */}
+        <div ref={tooltipRef} className="fixed bg-gray-900 text-white text-xs p-2 rounded z-[130] break-words w-40 shadow-lg pointer-events-none" style={{ left: `${tooltipPosition.x}px`, top: `${tooltipPosition.y}px`, transform: tooltipPosition.alignTop ? "translateY(calc(-100% - 5px))" : "translateY(5px)", transition: "top 0.1s ease-out, left 0.1s ease-out" }}>
           {TAGS[hoveredTag].description.split('\n').map((paragraph, index) => (
-            <p
-              key={index}
-              className="tooltip-description-paragraph whitespace-pre-wrap"
-            >
-              {paragraph}
-            </p>
+            <p key={index} className="tooltip-description-paragraph whitespace-pre-wrap">{paragraph}</p>
           ))}
         </div>
       )}

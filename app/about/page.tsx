@@ -270,7 +270,6 @@ const About = () => {
             titleComment: "i use windows (fear of change)",
             titlePreference: 'lightBlue',
             technologies: [
-                CppTech, // Added CppTech here directly as it seemed to be intended for this category
                 { icon: <FaPython />, name: 'Python', comment: 'the best choice for any non-performance oriented project', preference: 'lightGreen' },
             ]
         }
