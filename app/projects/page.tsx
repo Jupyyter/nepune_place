@@ -111,7 +111,8 @@ const projects: Project[] = [
     id: 0,
     title: "jhonny",
     thumbnail: "/imgs/jhonny.png",
-    description: `You play as Jhonny and you shoot gangsters.
+    description: `My first ever "game"
+You play as Jhonny and you shoot gangsters.
 I made it possible for a multiplayer game, but since I don't have servers for this, you will have to use Hamachi if you don't play multiplayer locally.
 I also don't recommend shooting until all the players are connected :)`,
     downloadUrls: ["jhonnyGang.zip"],
@@ -212,6 +213,7 @@ A classic game implemented in Java.`,
     title: "i dont wanna be a bunny anymore",
     thumbnail: endi.src,
     description: `You fight ikeaMan.
+%%PURPLE_START%%NO OTHER LIBS THAN SFML USED%%PURPLE_END%%
 I recommend you extract the files from the zip file if you wanna use the leveleditor properly.
 The level editor allows for custom map creation (obviously)`,
     downloadUrls: ["ikeaBattle.zip"],
@@ -274,7 +276,37 @@ async function fetchRepoCreationDate(repoName: string): Promise<Date | null> {
     return null;
   }
 }
+// Helper function (can be defined inside your Projects component or outside if preferred)
+const renderFormattedDescription = (description: string) => {
+  const purpleStartMarker = "%%PURPLE_START%%";
+  const purpleEndMarker = "%%PURPLE_END%%";
+  const purpleClassName = "text-purple-500 font-semibold"; // Or any other purple class
 
+  return description.split('\n').map((paragraph, index) => {
+    // Check if the current paragraph contains both markers
+    if (paragraph.includes(purpleStartMarker) && paragraph.includes(purpleEndMarker)) {
+      // Split the paragraph by the markers.
+      // This will result in an array like: [textBefore, textInside, textAfter]
+      // If the markers are at the start/end of the line, textBefore/textAfter will be empty strings.
+      const parts = paragraph.split(new RegExp(`${purpleStartMarker}|${purpleEndMarker}`));
+      
+      return (
+        <p key={index} className="project-description-paragraph whitespace-pre-wrap">
+          {parts[0]} {/* Text before the start marker */}
+          <span className={purpleClassName}>{parts[1]}</span> {/* Text between markers */}
+          {parts[2]} {/* Text after the end marker */}
+        </p>
+      );
+    }
+    
+    // If no markers, render the paragraph as is
+    return (
+      <p key={index} className="project-description-paragraph whitespace-pre-wrap">
+        {paragraph}
+      </p>
+    );
+  });
+};
 function Projects() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
@@ -941,10 +973,8 @@ function Projects() {
                     </div>
                   ))}
                 </div>
-                <div className="text-gray-300 text-sm mb-2 break-words">
-                  {selectedProject.description.split('\n').map((paragraph, index) => (
-                    <p key={index} className="project-description-paragraph whitespace-pre-wrap">{paragraph}</p>
-                  ))}
+                                <div className="text-gray-300 text-sm mb-2 break-words">
+                  {renderFormattedDescription(selectedProject.description)}
                 </div>
                 <p className="text-gray-400 text-sm mb-5">
                   Created: {selectedProject.createdAt instanceof Date && selectedProject.createdAt.getTime() !== new Date(0).getTime() ? selectedProject.createdAt.toLocaleDateString() : "Loading date..."}
