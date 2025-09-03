@@ -95,7 +95,7 @@ interface Project {
   relevance: number;
   repoName?: string;
   images: string[];
-  videoUrl?: string;
+  videoUrls?: string[]; // Changed from videoUrl to videoUrls
 }
 import jhonnyImg from "/public/imgs/jhonny.png";
 import badAppleImg from "/public/imgs/badApple.png";
@@ -117,10 +117,10 @@ I made it possible for a multiplayer game, but since I don't have servers for th
 I also don't recommend shooting until all the players are connected :)`,
     downloadUrls: ["jhonnyGang.zip"],
     tags: ["UNITY", "C#"],
-    createdAt: new Date(), // This will be overridden if repoName exists
+    createdAt: new Date(),
     relevance: 7,
     repoName: "jhonny",
-    videoUrl: "https://www.youtube.com/watch?v=pMxjJBKdl3Y&feature=youtu.be",
+    videoUrls: ["https://www.youtube.com/watch?v=pMxjJBKdl3Y&feature=youtu.be"],
     images: Array.from({ length: 3 }, (_, i) => `/imgs/jhonny${i}.png`),
   },
   {
@@ -131,11 +131,11 @@ I also don't recommend shooting until all the players are connected :)`,
 Yes, this can now be done by an average AI, but I developed this project when AI's coding capabilities were rudimentary, so I consider this a decent achievement.`,
     downloadUrls: ["asciiVideo.zip", "badApple.zip"],
     tags: ["CPP", "LARGE_FILE"],
-    createdAt: new Date(), // This will be overridden
+    createdAt: new Date(),
     relevance: 8,
     repoName: "BADAPPLE",
     images: Array.from({ length: 2 }, (_, i) => `/imgs/BADAPPLE${i}.png`),
-    videoUrl: "https://www.youtube.com/watch?v=qeyVAu1uZMM",
+    videoUrls: ["https://www.youtube.com/watch?v=qeyVAu1uZMM"],
   },
   {
     id: 2,
@@ -145,7 +145,7 @@ Yes, this can now be done by an average AI, but I developed this project when AI
 It's a short tale full of adventure :)`,
     downloadUrls: [`gabrielIsHungry.zip`, "gabrielIsHungry0.zip"],
     tags: ["GODOT", "GDSCRIPT", "LARGE_FILE"],
-    createdAt: new Date(), // This will be overridden
+    createdAt: new Date(),
     relevance: 6,
     repoName: "I-am-hungry-and-my-name-is-Gabriel",
     images: Array.from(
@@ -161,11 +161,11 @@ It's a short tale full of adventure :)`,
 Because of that, I made a game in which you fight john cena in an undertale-style fight.`,
     downloadUrls: [`bingChilling.zip`],
     tags: ["UNITY", "C#"],
-    createdAt: new Date(), // This will be overridden
+    createdAt: new Date(),
     relevance: 2,
     repoName: "fightJohnCena",
     images: Array.from({ length: 4 }, (_, i) => `/imgs/bingChilling${i}.png`),
-    videoUrl: "https://www.youtube.com/watch?v=iry5H_MSQkA",
+    videoUrls: ["https://www.youtube.com/watch?v=iry5H_MSQkA"],
   },
   {
     id: 4,
@@ -176,11 +176,11 @@ Unfortunately the contest required the usage of 'greenfoot'.
 The creation date shown here is wrong (the github api shows the date on which the repository was created, and i had to fork this project from my classmate for the api to work, so it shows the date on which i forked the project, true date: i dont remember, but it was 2024 :) )`,
     downloadUrls: [`shadowGang.zip`],
     tags: ["GREENFOOT", "JAVA"],
-    createdAt: new Date(), // This will be overridden
+    createdAt: new Date(),
     relevance: 4,
     repoName: "WizardGang",
     images: Array.from({ length: 6 }, (_, i) => `/imgs/WizardGang${i}.png`),
-    videoUrl: "https://www.youtube.com/watch?v=5HtLpXKm7Uc",
+    videoUrls: ["https://www.youtube.com/watch?v=5HtLpXKm7Uc"],
   },
   {
     id: 5,
@@ -190,7 +190,7 @@ The creation date shown here is wrong (the github api shows the date on which th
 It features three distinct rooms to explore.`,
     downloadUrls: [`cppGame2.zip`, "cppGame3.zip"],
     tags: ["CPP", "SDL2", "LARGE_FILE"],
-    createdAt: new Date(), // This will be overridden
+    createdAt: new Date(),
     relevance: 1,
     repoName: "project-rpg",
     images: Array.from({ length: 4 }, (_, i) => `/imgs/3roomAdventure${i}.png`),
@@ -203,7 +203,7 @@ It features three distinct rooms to explore.`,
 A classic game implemented in Java.`,
     downloadUrls: [`worldOfTanks.jar`],
     tags: ["JAVA", "JAR"],
-    createdAt: new Date(), // This will be overridden
+    createdAt: new Date(),
     relevance: 5,
     repoName: "checkers",
     images: Array.from({ length: 5 }, (_, i) => `/imgs/checkers${i}.png`),
@@ -218,10 +218,13 @@ I recommend you extract the files from the zip file if you wanna use the leveled
 The level editor allows for custom map creation (obviously)`,
     downloadUrls: ["ikeaBattle.zip"],
     tags: ["CPP", "SFML", "LARGE_FILE"],
-    createdAt: new Date(), // This will be overridden
+    createdAt: new Date(),
     relevance: 9,
     repoName: "99layers",
-    videoUrl: "https://www.youtube.com/watch?v=MGMpnPsCnlM&feature=youtu.be",
+    // Example with multiple videos
+    videoUrls: [
+      "https://www.youtube.com/watch?v=MGMpnPsCnlM&feature=youtu.be",
+    ],
     images: Array.from({ length: 4 }, (_, i) => `/imgs/ikea${i}.png`),
   },
   {
@@ -232,12 +235,41 @@ The level editor allows for custom map creation (obviously)`,
 "a sense of depth"`,
     downloadUrls: ["road.zip"],
     tags: ["GODOT", "GDSCRIPT"],
-    createdAt: new Date(), // No repoName, so this date will be used.
+    createdAt: new Date(),
     relevance: 0,
-    /*repoName: "99layers",*/ images: [
+    images: [
       "/imgs/the road0.png",
       "/imgs/the road1.png",
     ],
+  },
+  {
+    id: 9,
+    title: "fluid-sand",
+    thumbnail: "/imgs/fluid-sand.png",
+    description: `water behaving like water
+    not finished yed
+i might finish it someday`,
+    downloadUrls: ["road.zip"],
+    tags: ["SFML", "CPP"],
+    createdAt: new Date(),
+    videoUrls: ["https://www.youtube.com/watch?v=o3rVyOu2k-g&feature=youtu.be"],
+    relevance: 11,
+    images: [],
+  },
+  {
+    id: 10,
+    title: "pixels",
+    thumbnail: "/imgs/pixels.png",
+    description: `noita copy
+    "every pixel is simulated"`,
+    downloadUrls: ["road.zip"],
+    tags: ["SFML", "CPP"],
+    createdAt: new Date(),
+    relevance: 12,
+    videoUrls: ["https://www.youtube.com/watch?v=S83AUOvuE7I&feature=youtu.be",
+      "https://www.youtube.com/watch?v=rCCa2yJmGNQ&feature=youtu.be"
+    ],
+    images: [],
   },
 ];
 type SortOption = "relevance" | "date";
@@ -336,49 +368,36 @@ function Projects() {
   const fullscreenMediaThumbnailsContainerRef = useRef<HTMLDivElement>(null);
   const navbarHeight = 64;
 
-  const getTotalMediaCount = (project: Project) =>
-    project.images.length + (project.videoUrl ? 1 : 0);
-  const isCurrentMediaVideo = (project: Project | null, index: number) =>
-    project?.videoUrl && index === 0;
+  const getVideoCount = (project: Project) => project.videoUrls?.length || 0;
+  const getTotalMediaCount = (project: Project) => (project.videoUrls?.length || 0) + project.images.length;
+  const isCurrentMediaVideo = (project: Project | null, index: number) => {
+    if (!project) return false;
+    const numVideos = getVideoCount(project);
+    return numVideos > 0 && index < numVideos;
+  };
 
   // --- CORRECTED useEffect for fetching dates ---
   useEffect(() => {
-    // 1. Create a version of projects with placeholders for dates to be fetched.
-    //    We use the initial `projects` definition here.
     const initialProjectsWithPlaceholders = projects.map((p) => ({
       ...p,
-      // If repoName exists, set createdAt to new Date(0) as a placeholder.
-      // Otherwise, use the createdAt from the initial `projects` definition.
       createdAt: p.repoName ? new Date(0) : p.createdAt,
     }));
-    // Set this initial version to state. UI might briefly show epoch dates or "Loading date..."
-    // or the `new Date()` from hardcoded data for non-repo projects.
     setProjectsWithDates(initialProjectsWithPlaceholders);
 
-    // 2. Define an async function to fetch dates.
     const fetchAndSetAllDates = async () => {
-      // IMPORTANT: Map over `initialProjectsWithPlaceholders` (which has the new Date(0) placeholders for repo projects)
-      // NOT the original `projects` constant or the current `projectsWithDates` state directly in the map.
       const projectsWithFetchedDates = await Promise.all(
         initialProjectsWithPlaceholders.map(async (project) => {
-          // Check if this project has a repoName AND its createdAt is the placeholder new Date(0).
           if (project.repoName && project.createdAt.getTime() === new Date(0).getTime()) {
             const fetchedDate = await fetchRepoCreationDate(project.repoName);
-            // If a date is fetched, update the project. Otherwise, keep the placeholder.
             return fetchedDate ? { ...project, createdAt: fetchedDate } : project;
           }
-          // If no repoName or date wasn't a placeholder, return the project as is.
           return project;
         })
       );
-      // Update the state with the accurately fetched dates (or placeholders if fetching failed).
       setProjectsWithDates(projectsWithFetchedDates);
     };
 
-    // 3. Call the fetching function.
     fetchAndSetAllDates();
-
-    // The empty dependency array ensures this effect runs only once on component mount.
   }, []);
   // --- END CORRECTED useEffect ---
 
@@ -399,10 +418,10 @@ function Projects() {
   useEffect(() => {
     setCurrentMediaIndex(0);
     setVideoCurrentTime(0);
-    if (selectedProject && selectedProject.videoUrl && currentMediaIndex === 0) { // Check currentMediaIndex too
-      setIsVideoPlaying(true);
+    if (selectedProject && isCurrentMediaVideo(selectedProject, 0)) {
+        setIsVideoPlaying(true);
     } else {
-      setIsVideoPlaying(false);
+        setIsVideoPlaying(false);
     }
 
     if (selectedProject && mediaThumbnailsContainerRef.current) {
@@ -412,7 +431,7 @@ function Projects() {
         }
       });
     }
-  }, [selectedProject]); // currentMediaIndex is implicitly handled as it's reset above
+  }, [selectedProject]); 
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -453,7 +472,7 @@ function Projects() {
 
   const handleProjectClick = (project: Project) => {
     if (project.id !== selectedProject?.id) {
-      setSelectedProject(project); // This will trigger the useEffect above to set isVideoPlaying
+      setSelectedProject(project);
       setIsFullscreen(false);
     }
   };
@@ -535,10 +554,11 @@ function Projects() {
     elementId: string,
     playerRef: React.MutableRefObject<any>,
     projectForPlayer: Project,
+    videoIndex: number,
     initialTime: number,
     initialPlaying: boolean
   ) => {
-    if (!playerReady || !document.getElementById(elementId) || !projectForPlayer.videoUrl) return;
+      if (!playerReady || !document.getElementById(elementId) || !isCurrentMediaVideo(projectForPlayer, videoIndex)) return;
 
     if (playerRef.current && typeof playerRef.current.destroy === 'function') {
       try { playerRef.current.destroy(); }
@@ -546,9 +566,10 @@ function Projects() {
     }
     playerRef.current = null;
     
-    const videoId = projectForPlayer.videoUrl.split("v=")[1]?.split("&")[0];
+    const videoUrl = projectForPlayer.videoUrls![videoIndex];
+    const videoId = videoUrl.split("v=")[1]?.split("&")[0];
     if (!videoId) {
-        console.error("Invalid videoId for player:", projectForPlayer.title);
+        console.error("Invalid videoId for player:", projectForPlayer.title, videoUrl);
         return;
     }
 
@@ -580,16 +601,16 @@ function Projects() {
   // Details Player Lifecycle & State
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null;
-    const shouldPlayerExist = playerReady && selectedProject && selectedProject.videoUrl && currentMediaIndex === 0 && !isFullscreen;
+    const shouldPlayerExist = playerReady && selectedProject && isCurrentMediaVideo(selectedProject, currentMediaIndex) && !isFullscreen;
 
     if (shouldPlayerExist) {
-      const detailsContainerId = `youtube-player-container-details-${selectedProject!.id}`;
+      const detailsContainerId = `youtube-player-container-details-${selectedProject!.id}-${currentMediaIndex}`;
       if (document.getElementById(detailsContainerId)) {
-         createPlayerInstance(detailsContainerId, detailsPlayerRef, selectedProject!, videoCurrentTime, isVideoPlaying);
+         createPlayerInstance(detailsContainerId, detailsPlayerRef, selectedProject!, currentMediaIndex, videoCurrentTime, isVideoPlaying);
       } else {
         timeoutId = setTimeout(() => {
-            if (playerReady && selectedProject && selectedProject.videoUrl && currentMediaIndex === 0 && !isFullscreen && document.getElementById(detailsContainerId)) {
-                 createPlayerInstance(detailsContainerId, detailsPlayerRef, selectedProject, videoCurrentTime, isVideoPlaying);
+            if (playerReady && selectedProject && isCurrentMediaVideo(selectedProject, currentMediaIndex) && !isFullscreen && document.getElementById(detailsContainerId)) {
+                 createPlayerInstance(detailsContainerId, detailsPlayerRef, selectedProject, currentMediaIndex, videoCurrentTime, isVideoPlaying);
             }
         }, 50);
       }
@@ -609,16 +630,16 @@ function Projects() {
   // Fullscreen Player Lifecycle & State
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null;
-    const shouldPlayerExist = isFullscreen && playerReady && selectedProject && selectedProject.videoUrl && currentMediaIndex === 0;
+    const shouldPlayerExist = isFullscreen && playerReady && selectedProject && isCurrentMediaVideo(selectedProject, currentMediaIndex);
 
     if (shouldPlayerExist) {
-      const fullscreenContainerId = `youtube-player-container-fullscreen-${selectedProject!.id}`;
+      const fullscreenContainerId = `youtube-player-container-fullscreen-${selectedProject!.id}-${currentMediaIndex}`;
       if (document.getElementById(fullscreenContainerId)) {
-        createPlayerInstance(fullscreenContainerId, fullscreenPlayerRef, selectedProject!, videoCurrentTime, isVideoPlaying);
+        createPlayerInstance(fullscreenContainerId, fullscreenPlayerRef, selectedProject!, currentMediaIndex, videoCurrentTime, isVideoPlaying);
       } else {
         timeoutId = setTimeout(() => {
-            if (isFullscreen && playerReady && selectedProject && selectedProject.videoUrl && currentMediaIndex === 0 && document.getElementById(fullscreenContainerId)) {
-                createPlayerInstance(fullscreenContainerId, fullscreenPlayerRef, selectedProject, videoCurrentTime, isVideoPlaying);
+            if (isFullscreen && playerReady && selectedProject && isCurrentMediaVideo(selectedProject, currentMediaIndex) && document.getElementById(fullscreenContainerId)) {
+                createPlayerInstance(fullscreenContainerId, fullscreenPlayerRef, selectedProject, currentMediaIndex, videoCurrentTime, isVideoPlaying);
             }
         }, 50);
       }
@@ -641,18 +662,16 @@ function Projects() {
     if (isCurrentMediaVideo(selectedProject, currentMediaIndex)) {
       const player = detailsPlayerRef.current;
       let currentTime = 0;
-      let playing = false; // Default to false if player not ready
+      let playing = false;
 
       if (player?.getCurrentTime && player?.getPlayerState) {
         try {
           currentTime = player.getCurrentTime();
           const state = player.getPlayerState();
-          // Consider playing if state is PLAYING (1) or BUFFERING (3)
           playing = (state === 1 || state === 3);
         } catch (e) { console.error("Error getting details player state/time for fullscreen:", e); }
       } else {
-        // If player isn't there/ready, but we are transitioning a video, assume it should play
-        playing = isVideoPlaying; // Use the current state
+        playing = isVideoPlaying;
       }
       setVideoCurrentTime(currentTime);
       setIsVideoPlaying(playing);
@@ -664,7 +683,7 @@ function Projects() {
 
   const handleCloseFullscreen = () => {
     let lastKnownTime = videoCurrentTime;
-    let wasPlayingInFullscreen = isVideoPlaying; // Default to current state
+    let wasPlayingInFullscreen = isVideoPlaying;
 
     if (fullscreenPlayerRef.current?.getCurrentTime && fullscreenPlayerRef.current?.getPlayerState) {
       try {
@@ -684,10 +703,6 @@ function Projects() {
     if (isCurrentMediaVideo(selectedProject, index)) {
       setVideoCurrentTime(0);
       setIsVideoPlaying(true);
-    } else {
-        // If switching from video to image, preserve current video playing state
-        // but it won't apply until video is shown again.
-        // isVideoPlaying remains as it was.
     }
     setCurrentMediaIndex(index);
 
@@ -716,16 +731,17 @@ function Projects() {
     inFullscreen: boolean = false
   ) => {
     const isVideo = isCurrentMediaVideo(project, index);
-    const imageIndex = project.videoUrl ? index - 1 : index;
+    const videoCount = getVideoCount(project);
+    const imageIndex = index - videoCount;
 
     const mediaKey = isVideo
-      ? `media-video-${project.id}-${inFullscreen ? 'fs' : 'dt'}`
+      ? `media-video-${project.id}-${index}-${inFullscreen ? 'fs' : 'dt'}`
       : `media-image-${project.id}-${imageIndex}-${inFullscreen ? 'fs' : 'dt'}`;
 
-    if (isVideo && project.videoUrl) {
+    if (isVideo) {
       const playerContainerId = inFullscreen
-        ? `youtube-player-container-fullscreen-${project.id}`
-        : `youtube-player-container-details-${project.id}`;
+        ? `youtube-player-container-fullscreen-${project.id}-${index}`
+        : `youtube-player-container-details-${project.id}-${index}`;
       return (
         <div key={mediaKey} className={`relative w-full h-full ${!inFullscreen ? "aspect-video" : ""}`}>
           <div
@@ -918,21 +934,20 @@ function Projects() {
                   ref={mediaThumbnailsContainerRef}
                   className="py-2 px-1 overflow-x-auto whitespace-nowrap thumbnail-scrollbar"
                 >
-                  {selectedProject.videoUrl &&
-                    (() => {
-                      const videoId = selectedProject.videoUrl.split("v=")[1]?.split("&")[0];
+                  {selectedProject.videoUrls?.map((videoUrl, videoIdx) => {
+                      const videoId = videoUrl.split("v=")[1]?.split("&")[0];
                       return (
                         <div
-                          key={`video-thumb-${selectedProject.id}`}
+                          key={`video-thumb-${selectedProject.id}-${videoIdx}`}
                           className={`inline-block align-top w-28 h-20 mr-1 cursor-pointer rounded-md overflow-hidden relative ${
-                            currentMediaIndex === 0 ? "ring-2 ring-blue-500" : "ring-1 ring-gray-700 hover:ring-gray-500"
+                            currentMediaIndex === videoIdx ? "ring-2 ring-blue-500" : "ring-1 ring-gray-700 hover:ring-gray-500"
                           }`}
                           onClick={() => {
                             setVideoCurrentTime(0);
                             setIsVideoPlaying(true);
-                            setCurrentMediaIndex(0);
+                            setCurrentMediaIndex(videoIdx);
                           }}
-                          title={selectedProject.title + " - Video"}
+                          title={`${selectedProject.title} - Video ${videoIdx + 1}`}
                         >
                           {videoId ? (
                             <Image src={`https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`} alt="Video thumbnail" fill className="object-cover pointer-events-none" quality={75} sizes="112px" />
@@ -946,9 +961,9 @@ function Projects() {
                           </div>
                         </div>
                       );
-                    })()}
+                    })}
                   {selectedProject.images.map((imageUrl, imgIdx) => {
-                    const overallIndex = selectedProject.videoUrl ? imgIdx + 1 : imgIdx;
+                    const overallIndex = (selectedProject.videoUrls?.length || 0) + imgIdx;
                     return (
                       <div
                         key={`img-thumb-${selectedProject.id}-${imgIdx}`}
@@ -1000,17 +1015,17 @@ function Projects() {
           </div>
           {getTotalMediaCount(selectedProject) > 1 && (
             <div ref={fullscreenMediaThumbnailsContainerRef} className="w-full h-24 bg-black bg-opacity-60 p-2 overflow-x-auto whitespace-nowrap thumbnail-scrollbar flex items-center justify-center shrink-0 space-x-2 z-[110]">
-              {selectedProject.videoUrl && (() => {
-                const videoId = selectedProject.videoUrl.split("v=")[1]?.split("&")[0];
+              {selectedProject.videoUrls?.map((videoUrl, videoIdx) => {
+                const videoId = videoUrl.split("v=")[1]?.split("&")[0];
                 return (
-                  <div key={`fs-video-thumb-${selectedProject.id}`} className={`inline-block flex-shrink-0 w-24 h-20 cursor-pointer rounded-md overflow-hidden relative align-top ${currentMediaIndex === 0 ? "ring-2 ring-blue-400" : "ring-1 ring-gray-600 hover:ring-gray-400"}`} onClick={() => handleFullscreenThumbnailClick(0)} title={selectedProject.title + " - Video"}>
+                  <div key={`fs-video-thumb-${selectedProject.id}-${videoIdx}`} className={`inline-block flex-shrink-0 w-24 h-20 cursor-pointer rounded-md overflow-hidden relative align-top ${currentMediaIndex === videoIdx ? "ring-2 ring-blue-400" : "ring-1 ring-gray-600 hover:ring-gray-400"}`} onClick={() => handleFullscreenThumbnailClick(videoIdx)} title={`${selectedProject.title} - Video ${videoIdx + 1}`}>
                     {videoId ? (<Image src={`https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`} alt="Video thumbnail" fill className="object-cover pointer-events-none" quality={70} sizes="96px" />)
                      : (<div className="w-full h-full bg-gray-700 flex items-center justify-center pointer-events-none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white"><path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.279 20.001c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" /></svg></div>)}
                     <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center group-hover:bg-opacity-0 transition-opacity pointer-events-none"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white opacity-60"><path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.279 20.001c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" /></svg></div>
                   </div>);
-              })()}
+              })}
               {selectedProject.images.map((imageUrl, imgIdx) => {
-                const overallIndex = selectedProject.videoUrl ? imgIdx + 1 : imgIdx;
+                const overallIndex = (selectedProject.videoUrls?.length || 0) + imgIdx;
                 return (
                   <div key={`fs-img-thumb-${selectedProject.id}-${imgIdx}`} className={`inline-block flex-shrink-0 w-24 h-20 cursor-pointer rounded-md overflow-hidden relative align-top ${currentMediaIndex === overallIndex ? "ring-2 ring-blue-400" : "ring-1 ring-gray-600 hover:ring-gray-400"}`} onClick={() => handleFullscreenThumbnailClick(overallIndex)} title={`${selectedProject.title} - Image ${imgIdx + 1}`}>
                     <Image src={imageUrl} alt={`Thumbnail ${imgIdx + 1}`} fill className="object-cover pointer-events-none" sizes="96px" quality={70} />
