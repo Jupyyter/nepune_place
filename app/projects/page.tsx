@@ -249,7 +249,7 @@ The level editor allows for custom map creation (obviously)`,
     description: `water behaving like water
     not finished yed
 i might finish it someday`,
-    downloadUrls: ["road.zip"],
+    downloadUrls: ["waterSimulation.zip"],
     tags: ["SFML", "CPP"],
     createdAt: new Date(),
     videoUrls: ["https://www.youtube.com/watch?v=o3rVyOu2k-g&feature=youtu.be"],
@@ -262,7 +262,7 @@ i might finish it someday`,
     thumbnail: "/imgs/pixels.png",
     description: `noita copy
     "every pixel is simulated"`,
-    downloadUrls: ["road.zip"],
+    downloadUrls: ["pixleBrixel.zip"],
     tags: ["SFML", "CPP"],
     createdAt: new Date(),
     relevance: 12,
