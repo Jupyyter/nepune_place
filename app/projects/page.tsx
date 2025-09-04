@@ -252,6 +252,7 @@ i might finish it someday`,
     downloadUrls: ["waterSimulation.zip"],
     tags: ["SFML", "CPP"],
     createdAt: new Date(),
+    repoName: "fluid-sand",
     videoUrls: ["https://www.youtube.com/watch?v=o3rVyOu2k-g&feature=youtu.be"],
     relevance: 11,
     images: [],
@@ -265,6 +266,7 @@ i might finish it someday`,
     downloadUrls: ["pixleBrixel.zip"],
     tags: ["SFML", "CPP"],
     createdAt: new Date(),
+    repoName: "pixels",
     relevance: 12,
     videoUrls: ["https://www.youtube.com/watch?v=S83AUOvuE7I&feature=youtu.be",
       "https://www.youtube.com/watch?v=rCCa2yJmGNQ&feature=youtu.be"
@@ -1001,6 +1003,17 @@ function Projects() {
                 >
                   {isLoading ? "Processing..." : "Download"}
                 </button>
+                {selectedProject.repoName && (
+                  <a
+                    href={`https://github.com/${GITHUB_USERNAME}/${selectedProject.repoName}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full transition-colors mt-2 text-center"
+                    aria-label={`View source code for ${selectedProject.title} on GitHub`}
+                  >
+                    Source Code
+                  </a>
+                )}
               </div>
             </div>
           )}
