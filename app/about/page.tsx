@@ -638,7 +638,7 @@ const About = () => {
               </div>
             </div>
             <h2 className="text-3xl font-semibold text-center text-white">
-              Software i use for developing
+              Software I use for developing
             </h2>
           </div>
 
