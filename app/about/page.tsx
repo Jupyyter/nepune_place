@@ -516,7 +516,7 @@ const About = () => {
           ),
           name: "Greenfoot",
           comment:
-            "Don't like it. The sound system simply doesn't work properly for some reason. I don't recommend using this thing.",
+            "Don't like it. The sound system simply doesn't work properly for some reason. I don't recommend using this game engine.",
           preference: "red",
         },
       ],
@@ -602,7 +602,7 @@ const About = () => {
                 <span className="bg-green-500 text-black px-2 py-1 rounded">
                   I usually program games.
                 </span>
-                <p className="py-1">{aboutTexts[1]}</p>
+                <p className="text-xl text-gray-300 py-1">{aboutTexts[1]}</p>
               </p>
             }
           </div>
