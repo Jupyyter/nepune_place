@@ -36,7 +36,7 @@ export default function RootLayout({
         <SpeedInsights />
         <footer className="bg-black bg-opacity-25 mt-auto">
           <p className="px-5 py-2 text-xs text-white">
-            {" 2024 neptune. i should say something interesting but please don't steal. steal bad. jail."}
+            {" © 2025 Neptune."}
           </p>
         </footer>
       </body>

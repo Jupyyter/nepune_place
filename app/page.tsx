@@ -24,7 +24,6 @@ const imagesToPreload = [
   '/imgs/ikeaMan.jpg',
   '/imgs/THEROAD.jpg',
 
-  // From Projects page (Project Images - dynamically generated paths)
   '/imgs/jhonny0.png', '/imgs/jhonny1.png', '/imgs/jhonny2.png', '/imgs/jhonny3.png',
   '/imgs/BADAPPLE0.png', '/imgs/BADAPPLE1.png',
   '/imgs/GabrielIsHungry0.png', '/imgs/GabrielIsHungry1.png', '/imgs/GabrielIsHungry2.png', '/imgs/GabrielIsHungry3.png', '/imgs/GabrielIsHungry4.png', '/imgs/GabrielIsHungry5.png',
@@ -32,10 +31,7 @@ const imagesToPreload = [
   '/imgs/WizardGang0.png', '/imgs/WizardGang1.png', '/imgs/WizardGang2.png', '/imgs/WizardGang3.png', '/imgs/WizardGang4.png', '/imgs/WizardGang5.png', '/imgs/WizardGang6.png',
   '/imgs/3roomAdventure0.png', '/imgs/3roomAdventure1.png', '/imgs/3roomAdventure2.png', '/imgs/3roomAdventure3.png',
   '/imgs/checkers0.png', '/imgs/checkers1.png', '/imgs/checkers2.png', '/imgs/checkers3.png', '/imgs/checkers4.png',
-  // Ikea Man uses Jhonny images - already included above
   '/imgs/the road0.png', '/imgs/the road1.png',
-
-  // Add any other images from other pages if needed
 ];
 
 // Remove duplicates just in case (optional but good practice)
@@ -47,7 +43,7 @@ export default function Home() {
       <Head>
         <title>nepune place</title>
 
-        {/* Add preload links for each unique image */}
+        {}
         {uniqueImagesToPreload.map((imageUrl) => (
           <link
             key={imageUrl}
@@ -58,15 +54,15 @@ export default function Home() {
         ))}
       </Head>
 
-      {/* Your original page content */}
+      {}
       <div className="flex-grow flex items-center justify-center">
         <main className="text-center p-4">
-          <h1 className="text-4xl font-bold mb-4 py-1">nepune place</h1>
+          <h1 className="text-4xl font-bold mb-4 py-1">Neptune place</h1>
           <p className="text-lg py-1">
-            i use this site to represent myself on the internet and showcase my projects. nothing much
+            I use this site to represent myself on the internet and showcase my projects. Nothing much.
           </p>
           <p className="text-lg py-1">
-            -this site doesnt have animations because i hate them
+            -I prefer this site to have minimal animation so there isn&apos;t much of it.
           </p>
         </main>
       </div>

@@ -809,7 +809,7 @@ function Projects() {
         <header className="text-center mb-8 w-full">
           <h1 className="text-4xl font-bold mb-4 break-words">My Projects</h1>
           <p className="text-lg mb-4 break-words whitespace-pre-wrap max-w-full">
-            projects here and there and here and everywhere
+            -Most of them are games.
           </p>
           <div className="flex justify-center items-center gap-4 mb-4 flex-wrap">
             <span className="text-gray-300">Sorting by:</span>
