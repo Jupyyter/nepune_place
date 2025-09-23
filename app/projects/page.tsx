@@ -235,7 +235,7 @@ The level editor allows for custom map creation (obviously)`,
 "a sense of depth"`,
     downloadUrls: ["road.zip"],
     tags: ["GODOT", "GDSCRIPT"],
-    createdAt: new Date(),
+    createdAt: new Date('0000-00-00'),
     relevance: 0,
     images: [
       "/imgs/the road0.png",
