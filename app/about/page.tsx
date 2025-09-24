@@ -332,7 +332,6 @@ const LegendColor = ({
 }) => {
   const colorInfo = preferenceColors[colorKey];
   if (!colorInfo) return null;
-  // Simplified tooltip for legend, as it's static
   const SimpleTooltip = ({ text }: { text: string }) => (
     <div
       className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max max-w-xs hidden group-hover:block bg-purple-700 text-white text-xs sm:text-sm p-2 rounded z-30 shadow-lg pointer-events-none whitespace-normal text-center`}
@@ -366,14 +365,14 @@ const About = () => {
     name: "Git",
     comment:
       "I like typing commands instead of using an ui for managing my projects with github.",
-    preference: "darkGreen", // Changed to darkGreen as per user intent in rendering
+    preference: "darkGreen",
   };
 
   let categorizedTechnologies: Category[] = [
     {
       title: "Sites",
       titleComment:
-        "This is the only site I have ever coded (i don't really like web developement).",
+        "This is the only site I have ever coded (I don't really like web developement).",
       titlePreference: "yellow",
       technologies: [
         {
@@ -695,9 +694,7 @@ const About = () => {
                         className={`absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 z-10 
                                                             border ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS} rounded-full bg-black p-0.5`}
                       >
-                        {/* CppTech is already in "Other Windows Apps" list, so this special rendering might be redundant or for visual flair only */}
-                        {/* If CppTech is *only* to be shown here, remove it from the categorizedTechnologies.technologies list for "Other Windows Apps" */}
-                        {/* Assuming it's for visual flair at the intersection: */}
+                        {/* CppTech is already in "Other Windows Apps" list*/}
                         <TechnologyItem tech={CppTech} isOval={true} />
                       </div>
                     )}
