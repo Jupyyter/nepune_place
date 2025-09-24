@@ -40,7 +40,7 @@ export default function Contact() {
         <link rel="preload" href="/imgs/github.jpg" as="image" type="image/jpeg" />
       </Head>
       <main className="text-center p-4">
-        <h1 className="text-4xl font-bold mb-4">contacts</h1>
+        <h1 className="text-4xl font-bold mb-4">Contacts</h1>
         <ContactItem icon="/imgs/mail.jpg" text="my email: raducea.matei2005@gmail.com" />
         <ContactItem icon="/imgs/github.jpg" text="my github" link="https://github.com/Jupyyter" />
       </main>
