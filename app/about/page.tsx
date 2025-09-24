@@ -613,7 +613,7 @@ const About = () => {
             <div className="flex flex-col items-center max-w-xs sm:max-w-xl">
               <div className="text-center mb-1">
                 <p className="text-base sm:text-lg font-medium text-gray-200">
-                  What I specialize in and what i prefer{" "}
+                  What I specialize in and what I prefer{" "}
                   <u className="decoration-purple-400 decoration-2">
                     based on colors:
                   </u>
