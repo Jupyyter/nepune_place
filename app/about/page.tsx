@@ -618,7 +618,7 @@ const About = () => {
                   </u>
                 </p>
                 <p className="text-sm text-gray-400 mt-1">
-                  (hover/click on the colors/software for information about
+                  (Hover/click on the colors/software for information about
                   them)
                 </p>
               </div>
