@@ -34,7 +34,7 @@ const imagesToPreload = [
   '/imgs/the road0.png', '/imgs/the road1.png',
 ];
 
-// Remove duplicates just in case (optional but good practice)
+// Remove duplicates
 const uniqueImagesToPreload = Array.from(new Set(imagesToPreload));
 
 export default function Home() {

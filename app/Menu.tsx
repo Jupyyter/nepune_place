@@ -14,7 +14,7 @@ const Menu: React.FC = () => {
 
   return (
     <nav>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 whitespace-nowrap">
         <div className="flex justify-center items-center">
           {menuItems.map((item) => (
             <Link
