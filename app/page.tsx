@@ -59,7 +59,7 @@ export default function Home() {
         <main className="text-center p-4">
           <h1 className="text-4xl font-bold mb-4 py-1">Neptune place</h1>
           <p className="text-lg py-1">
-            I use this site to represent myself on the internet and showcase my projects. Nothing much.
+            -This site was written to look decent on mobile but it looks better on desktop.
           </p>
           <p className="text-lg py-1">
             -I prefer this site to have minimal animation so there isn&apos;t much of it.
