@@ -234,15 +234,15 @@ const TechnologyItem = ({
     ? "text-black"
     : "text-white";
   const itemClasses = isOval
-    ? `rounded-full p-2 flex flex-col justify-center items-center w-16 h-16` // Fixed size for oval
-    : "rounded-lg p-2 shadow-md w-auto h-auto"; // Auto size for regular items
-  const iconSize = isOval ? "text-2xl" : "text-3xl sm:text-4xl"; // Icon size
-  const textSize = isOval ? "text-xs" : "text-xs sm:text-sm"; // Text size beneath icon
+    ? `rounded-full p-1 sm:p-2 flex flex-col justify-center items-center w-12 h-12 sm:w-16 sm:h-16` // smaller on mobile
+    : "rounded-lg p-1 sm:p-2 shadow-md w-auto h-auto"; // smaller padding on mobile
+  const iconSize = isOval ? "text-xl sm:text-2xl" : "text-2xl sm:text-3xl md:text-4xl"; // smaller icons on mobile
+  const textSize = isOval ? "text-xs" : "text-xs sm:text-sm"; // keep text small
 
   return (
     <div
       ref={itemRef}
-      className={`relative flex flex-col items-center m-1 sm:m-2 transition-colors duration-200 ${bgColor} ${itemClasses}`}
+      className={`relative flex flex-col items-center m-0.5 sm:m-1 md:m-2 transition-colors duration-200 ${bgColor} ${itemClasses}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -255,7 +255,7 @@ const TechnologyItem = ({
         // Container for the icon itself
         <div
           className={`flex items-center justify-center ${
-            isOval ? "h-6 w-6 mb-0.5" : "h-8 w-8 sm:h-10 sm:w-10 mb-1"
+            isOval ? "h-4 w-4 sm:h-6 sm:w-6 mb-0.5" : "h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 mb-0.5 sm:mb-1"
           } ${preferenceColors[tech.preference]?.text || "text-white"}`}
         >
           {React.isValidElement(tech.icon) && typeof tech.icon !== "string" ? (
@@ -309,9 +309,9 @@ const CategoryTitleItem = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className={`rounded-lg p-2 shadow-md ${bgColor} cursor-default`}>
+      <div className={`rounded-lg p-1 sm:p-2 shadow-md ${bgColor} cursor-default`}>
         <h3
-          className={`text-2xl font-medium text-center capitalize ${textColor}`}
+          className={`text-lg sm:text-2xl font-medium text-center capitalize ${textColor}`}
         >
           {title}
         </h3>
