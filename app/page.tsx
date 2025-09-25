@@ -1,3 +1,6 @@
+// Add this line to force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 // Assuming this is pages/index.tsx or app/page.tsx
 import Head from 'next/head';
 
