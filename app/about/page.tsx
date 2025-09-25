@@ -81,7 +81,7 @@ interface Category {
 // --- Constants ---
 const BORDER_CLASS = "border-gray-400";
 const BORDER_THICKNESS_CLASS = "0px";
-const BASE_PADDING = "p-2 sm:p-6";
+const BASE_PADDING = "p-2 sm:p-6"; // Mobile smaller, desktop original
 
 // --- Reusable Components ---
 
@@ -120,14 +120,13 @@ const Tooltip = ({
     tooltipEl.style.visibility = "hidden";
 
     const preMeasureOffsetWidth = tooltipEl.offsetWidth;
-    const tooltipRect = tooltipEl.getBoundingClientRect(); // This might be 0 if visibility is hidden and not fully rendered
+    const tooltipRect = tooltipEl.getBoundingClientRect();
     const parentRect = parentEl.getBoundingClientRect();
 
     tooltipEl.style.display = originalDisplay;
     tooltipEl.style.visibility = originalVisibility;
 
     if (tooltipRect.width === 0 && preMeasureOffsetWidth === 0) {
-      // Fallback if width cannot be determined
       tooltipEl.style.left = "50%";
       tooltipEl.style.transform = "translateX(-50%)";
       return;
@@ -143,14 +142,12 @@ const Tooltip = ({
     const tooltipHalfWidth = effectiveTooltipWidth / 2;
 
     if (parentViewportCenterX - tooltipHalfWidth < spaceFromEdge) {
-      // Tooltip goes off left edge
       newLeftStyle = `${spaceFromEdge - parentRect.left}px`;
       newTransformStyle = "translateX(0%)";
     } else if (
       parentViewportCenterX + tooltipHalfWidth >
       window.innerWidth - spaceFromEdge
     ) {
-      // Tooltip goes off right edge
       newLeftStyle = `${
         window.innerWidth -
         spaceFromEdge -
@@ -166,7 +163,6 @@ const Tooltip = ({
 
   useEffect(() => {
     if (isParentHovered) {
-      // Double requestAnimationFrame to ensure styles are applied and measured correctly after DOM updates
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           if (isMountedRef.current && tooltipRef.current && parentRef.current) {
@@ -234,10 +230,10 @@ const TechnologyItem = ({
     ? "text-black"
     : "text-white";
   const itemClasses = isOval
-    ? `rounded-full p-1 sm:p-2 flex flex-col justify-center items-center w-12 h-12 sm:w-16 sm:h-16` // smaller on mobile
-    : "rounded-lg p-1 sm:p-2 shadow-md w-auto h-auto"; // smaller padding on mobile
-  const iconSize = isOval ? "text-xl sm:text-2xl" : "text-2xl sm:text-3xl md:text-4xl"; // smaller icons on mobile
-  const textSize = isOval ? "text-xs" : "text-xs sm:text-sm"; // keep text small
+    ? `rounded-full p-1 sm:p-2 flex flex-col justify-center items-center w-12 h-12 sm:w-16 sm:h-16` // Mobile smaller, desktop original
+    : "rounded-lg p-1 sm:p-2 shadow-md w-auto h-auto"; // Mobile smaller padding, desktop original
+  const iconSize = isOval ? "text-lg sm:text-2xl" : "text-2xl sm:text-3xl md:text-4xl"; // Mobile smaller, desktop original
+  const textSize = isOval ? "text-xs" : "text-xs sm:text-sm"; // Keep original responsive text
 
   return (
     <div
@@ -252,21 +248,18 @@ const TechnologyItem = ({
         isParentHovered={isHovered}
       />
       {tech.icon && (
-        // Container for the icon itself
         <div
           className={`flex items-center justify-center ${
             isOval ? "h-4 w-4 sm:h-6 sm:w-6 mb-0.5" : "h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 mb-0.5 sm:mb-1"
           } ${preferenceColors[tech.preference]?.text || "text-white"}`}
         >
           {React.isValidElement(tech.icon) && typeof tech.icon !== "string" ? (
-            // If icon is a React element (like Next/Image or react-icons component)
             React.cloneElement(tech.icon as React.ReactElement<any>, {
               className: `${iconSize} ${
                 preferenceColors[tech.preference]?.text || "text-white"
               } ${tech.icon.props.className || ""}`,
             })
           ) : (
-            // If icon is a simple string (like '#')
             <span className={iconSize}>{tech.icon}</span>
           )}
         </div>
@@ -559,21 +552,39 @@ const About = () => {
   });
 
   return (
-    <div className="flex flex-col items-center justify-start pt-6 text-gray-200 w-full min-h-screen overflow-x-hidden">
+    <div className="flex flex-col items-center justify-start pt-6 text-gray-200 w-full overflow-x-hidden sm:overflow-x-visible">
       <Head>
         <title>About Me</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-        {/* existing preload links */}
-        <link rel="preload" href="/imgs/godot.png" as="image" type="image/png" />
-        <link rel="preload" href="/imgs/gdscript.jpg" as="image" type="image/jpeg" />
-        <link rel="preload" href="/imgs/Greenfoot_Logo.jpg" as="image" type="image/jpeg" />
-        <link rel="preload" href="/imgs/sdl.svg" as="image" type="image/svg+xml" />
+        <link
+          rel="preload"
+          href="/imgs/godot.png"
+          as="image"
+          type="image/png"
+        />
+        <link
+          rel="preload"
+          href="/imgs/gdscript.jpg"
+          as="image"
+          type="image/jpeg"
+        />
+        <link
+          rel="preload"
+          href="/imgs/Greenfoot_Logo.jpg"
+          as="image"
+          type="image/jpeg"
+        />
+        <link
+          rel="preload"
+          href="/imgs/sdl.svg"
+          as="image"
+          type="image/svg+xml"
+        />
       </Head>
 
-      <main className="p-2 sm:p-4 w-full max-w-full flex flex-col items-center overflow-x-hidden">
-        {/* About text section */}
-        <div className="w-full max-w-4xl flex justify-center mb-6 sm:mb-10 px-2">
-          <div className="w-full max-w-full">
+      <main className="p-2 sm:p-4 w-full flex flex-col items-center">
+        <div className="w-full flex justify-center mb-6 sm:mb-17">
+          <div className="w-max">
             <h1 className="text-2xl sm:text-4xl font-bold mb-4 sm:mb-6 text-center text-white">
               Information about me:
             </h1>
@@ -589,10 +600,9 @@ const About = () => {
           </div>
         </div>
 
-        {/* Legend and technologies section */}
-        <div className="w-full max-w-full flex flex-col items-center overflow-x-hidden">
+        <div className="w-full flex flex-col items-center">
           <div className="w-full flex flex-col items-center gap-y-4 mb-5 px-2 sm:px-4 relative">
-            <div className="flex flex-col items-center w-full max-w-xs sm:max-w-xl">
+            <div className="flex flex-col items-center max-w-xs sm:max-w-xl">
               <div className="text-center mb-1">
                 <p className="text-sm sm:text-base md:text-lg font-medium">
                   What I specialize in and what I prefer{" "}
@@ -626,69 +636,66 @@ const About = () => {
             </h2>
           </div>
 
-          {/* Technologies table - make it responsive */}
-          <div className="w-full">
-  <div className="w-full">
-    <div className={`flex border-b ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS}`}>
-      {categorizedTechnologies.map((category, catIndex) => (
-        <div
-          key={`${category.title}-title-cell`}
-          className={`flex-1 ${BASE_PADDING} flex flex-col items-center justify-center
-                                              ${
-                                                catIndex > 0
-                                                  ? `border-l ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS}`
-                                                  : ""
-                                              }`}
-          style={{ minWidth: 0, width: `${100/categorizedTechnologies.length}%` }}
-        >
-          <CategoryTitleItem
-            title={category.title}
-            comment={category.titleComment}
-            preference={category.titlePreference}
-          />
-        </div>
-      ))}
-    </div>
-
-    <div className="flex">
-      {categorizedTechnologies.map((category, catIndex) => {
-        const isThirdColumn = catIndex === 2;
-        const shouldRenderCppIconHere = isThirdColumn;
-
-        return (
-          <div
-            key={`${category.title}-content-cell`}
-            className={`flex-1 ${BASE_PADDING} relative
+          {/* Original table structure with only mobile padding fix and C++ z-index fix */}
+          <div className="">
+            <div
+              className={`flex border-b ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS}`}
+            >
+              {categorizedTechnologies.map((category, catIndex) => (
+                <div
+                  key={`${category.title}-title-cell`}
+                  className={`flex-1 ${BASE_PADDING} flex flex-col items-center justify-center
                                                 ${
                                                   catIndex > 0
                                                     ? `border-l ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS}`
                                                     : ""
                                                 }`}
-            style={{ minWidth: 0, width: `${100/categorizedTechnologies.length}%` }}
-          >
-            <div className="flex flex-wrap justify-center items-start gap-1 sm:gap-2 min-h-[50px] w-full">
-              {category.technologies.map((tech) => (
-                <TechnologyItem key={tech.name} tech={tech} />
+                >
+                  <CategoryTitleItem
+                    title={category.title}
+                    comment={category.titleComment}
+                    preference={category.titlePreference}
+                  />
+                </div>
               ))}
             </div>
 
-            {shouldRenderCppIconHere && (
-              <div
-                className={`absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 z-0 
-                                                        border ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS} rounded-full bg-black p-0.5`}
-              >
-                <TechnologyItem tech={CppTech} isOval={true} />
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
-  </div>
-</div>
+            <div className="flex">
+              {categorizedTechnologies.map((category, catIndex) => {
+                const isThirdColumn = catIndex === 2;
+                const shouldRenderCppIconHere = isThirdColumn;
 
-          {/* Git section */}
-          <div className="mt-4 sm:mt-8 mb-0 flex flex-wrap items-center justify-center gap-2 px-2">
+                return (
+                  <div
+                    key={`${category.title}-content-cell`}
+                    className={`flex-1 ${BASE_PADDING} relative
+                                                    ${
+                                                      catIndex > 0
+                                                        ? `border-l ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS}`
+                                                        : ""
+                                                    }`}
+                  >
+                    <div className="flex flex-wrap justify-center items-start gap-1 sm:gap-2 min-h-[50px] w-full">
+                      {category.technologies.map((tech) => (
+                        <TechnologyItem key={tech.name} tech={tech} />
+                      ))}
+                    </div>
+
+                    {shouldRenderCppIconHere && (
+                      <div
+                        className={`absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 z-0 
+                                                            border ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS} rounded-full bg-black p-0.5`}
+                      >
+                        <TechnologyItem tech={CppTech} isOval={true} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-4 sm:mt-8 mb-0 flex items-center justify-center gap-2">
             <span className="text-base sm:text-lg text-gray-400">I use</span>
             <TechnologyItem tech={GitTech} />
             <span className="text-base sm:text-lg text-gray-400">
