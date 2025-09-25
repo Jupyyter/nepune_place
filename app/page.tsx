@@ -1,6 +1,6 @@
 // Assuming this is pages/index.tsx or app/page.tsx
 import Head from 'next/head';
-
+export const revalidate = 0;
 // Define the list of images from ALL other pages you want to preload
 const imagesToPreload = [
   // From About page
