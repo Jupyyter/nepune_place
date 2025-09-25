@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { Maximize2 } from "lucide-react";
+import { Maximize2, ArrowLeft } from "lucide-react";
 import { combineAndDownload, downloadSingleFile } from "./fileUtils";
 
 // --- Interfaces, TAGS, Projects Data ---
@@ -309,30 +309,26 @@ async function fetchRepoCreationDate(repoName: string): Promise<Date | null> {
     return null;
   }
 }
-// Helper function (can be defined inside your Projects component or outside if preferred)
+
+// Helper function for formatted descriptions
 const renderFormattedDescription = (description: string) => {
   const purpleStartMarker = "%%PURPLE_START%%";
   const purpleEndMarker = "%%PURPLE_END%%";
-  const purpleClassName = "text-purple-500 font-semibold"; // Or any other purple class
+  const purpleClassName = "text-purple-500 font-semibold";
 
   return description.split('\n').map((paragraph, index) => {
-    // Check if the current paragraph contains both markers
     if (paragraph.includes(purpleStartMarker) && paragraph.includes(purpleEndMarker)) {
-      // Split the paragraph by the markers.
-      // This will result in an array like: [textBefore, textInside, textAfter]
-      // If the markers are at the start/end of the line, textBefore/textAfter will be empty strings.
       const parts = paragraph.split(new RegExp(`${purpleStartMarker}|${purpleEndMarker}`));
       
       return (
         <p key={index} className="project-description-paragraph whitespace-pre-wrap">
-          {parts[0]} {/* Text before the start marker */}
-          <span className={purpleClassName}>{parts[1]}</span> {/* Text between markers */}
-          {parts[2]} {/* Text after the end marker */}
+          {parts[0]}
+          <span className={purpleClassName}>{parts[1]}</span>
+          {parts[2]}
         </p>
       );
     }
     
-    // If no markers, render the paragraph as is
     return (
       <p key={index} className="project-description-paragraph whitespace-pre-wrap">
         {paragraph}
@@ -340,6 +336,7 @@ const renderFormattedDescription = (description: string) => {
     );
   });
 };
+
 function Projects() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
@@ -352,13 +349,15 @@ function Projects() {
   });
   const [isMobile, setIsMobile] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>("relevance");
-  const [projectsWithDates, setProjectsWithDates] = useState<Project[]>( // Initialize with an empty array or structured projects
-    projects.map(p => ({ ...p, createdAt: p.repoName ? new Date(0) : p.createdAt })) // Initialize with placeholder for API or actual date
+  const [projectsWithDates, setProjectsWithDates] = useState<Project[]>(
+    projects.map(p => ({ ...p, createdAt: p.repoName ? new Date(0) : p.createdAt }))
   );
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
   const [playerReady, setPlayerReady] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [showMobileDetailView, setShowMobileDetailView] = useState(false);
+  const [lastScrollPosition, setLastScrollPosition] = useState(0);
 
   const detailsPlayerRef = useRef<any>(null);
   const fullscreenPlayerRef = useRef<any>(null);
@@ -377,7 +376,7 @@ function Projects() {
     return numVideos > 0 && index < numVideos;
   };
 
-  // --- CORRECTED useEffect for fetching dates ---
+  // Fetch repo creation dates
   useEffect(() => {
     const initialProjectsWithPlaceholders = projects.map((p) => ({
       ...p,
@@ -400,7 +399,6 @@ function Projects() {
 
     fetchAndSetAllDates();
   }, []);
-  // --- END CORRECTED useEffect ---
 
   const sortedProjects = [...projectsWithDates].sort((a, b) => {
     const timeA = a.createdAt instanceof Date ? a.createdAt.getTime() : 0;
@@ -473,14 +471,33 @@ function Projects() {
 
   const handleProjectClick = (project: Project) => {
     if (project.id !== selectedProject?.id) {
+      if (isMobile) {
+        // Store current scroll position before navigating
+        setLastScrollPosition(window.scrollY);
+      }
       setSelectedProject(project);
       setIsFullscreen(false);
+      if (isMobile) {
+        setShowMobileDetailView(true);
+      }
     }
   };
+  
   const closeProjectDetails = () => {
     setSelectedProject(null);
     setIsFullscreen(false);
+    setShowMobileDetailView(false);
   };
+  
+  const handleBackToGrid = () => {
+    setShowMobileDetailView(false);
+    setSelectedProject(null);
+    // Restore scroll position after a brief delay to allow DOM updates
+    setTimeout(() => {
+      window.scrollTo(0, lastScrollPosition);
+    }, 50);
+  };
+  
   const handleDownload = (project: Project) => {
     setIsLoading(true);
     if (project.downloadUrls.length === 1) {
@@ -491,6 +508,7 @@ function Projects() {
       combineAndDownload(project, setIsLoading);
     }
   };
+
   const handleTagHover = (
     tagKey: keyof typeof TAGS,
     event: React.MouseEvent<HTMLDivElement>
@@ -528,9 +546,11 @@ function Projects() {
     }
     setTooltipPosition({ x, y, alignTop });
   };
+
   const handleSortChange = (option: SortOption) => {
     setSortOption(option);
     setSelectedProject(null);
+    setShowMobileDetailView(false);
   };
 
   useEffect(() => {
@@ -559,7 +579,7 @@ function Projects() {
     initialTime: number,
     initialPlaying: boolean
   ) => {
-      if (!playerReady || !document.getElementById(elementId) || !isCurrentMediaVideo(projectForPlayer, videoIndex)) return;
+    if (!playerReady || !document.getElementById(elementId) || !isCurrentMediaVideo(projectForPlayer, videoIndex)) return;
 
     if (playerRef.current && typeof playerRef.current.destroy === 'function') {
       try { playerRef.current.destroy(); }
@@ -597,8 +617,6 @@ function Projects() {
     });
   };
 
-  // --- Player Lifecycle & State Sync useEffects ---
-
   // Details Player Lifecycle & State
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null;
@@ -627,11 +645,10 @@ function Projects() {
     };
   }, [playerReady, selectedProject?.id, currentMediaIndex, isFullscreen, videoCurrentTime, isVideoPlaying]);
 
-
-  // Fullscreen Player Lifecycle & State
+  // Fullscreen Player Lifecycle & State (only for desktop)
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null;
-    const shouldPlayerExist = isFullscreen && playerReady && selectedProject && isCurrentMediaVideo(selectedProject, currentMediaIndex);
+    const shouldPlayerExist = isFullscreen && !isMobile && playerReady && selectedProject && isCurrentMediaVideo(selectedProject, currentMediaIndex);
 
     if (shouldPlayerExist) {
       const fullscreenContainerId = `youtube-player-container-fullscreen-${selectedProject!.id}-${currentMediaIndex}`;
@@ -639,7 +656,7 @@ function Projects() {
         createPlayerInstance(fullscreenContainerId, fullscreenPlayerRef, selectedProject!, currentMediaIndex, videoCurrentTime, isVideoPlaying);
       } else {
         timeoutId = setTimeout(() => {
-            if (isFullscreen && playerReady && selectedProject && isCurrentMediaVideo(selectedProject, currentMediaIndex) && document.getElementById(fullscreenContainerId)) {
+            if (isFullscreen && !isMobile && playerReady && selectedProject && isCurrentMediaVideo(selectedProject, currentMediaIndex) && document.getElementById(fullscreenContainerId)) {
                 createPlayerInstance(fullscreenContainerId, fullscreenPlayerRef, selectedProject, currentMediaIndex, videoCurrentTime, isVideoPlaying);
             }
         }, 50);
@@ -654,12 +671,11 @@ function Projects() {
       }
       fullscreenPlayerRef.current = null;
     };
-  }, [isFullscreen, playerReady, selectedProject?.id, currentMediaIndex, videoCurrentTime, isVideoPlaying]);
+  }, [isFullscreen, playerReady, selectedProject?.id, currentMediaIndex, videoCurrentTime, isVideoPlaying, isMobile]);
 
-
-  // --- Event Handlers ---
-  const handleMediaClick = () => { // From details to fullscreen
-    if (!selectedProject) return;
+  const handleMediaClick = () => {
+    if (!selectedProject || isMobile) return; // Disable fullscreen on mobile
+    
     if (isCurrentMediaVideo(selectedProject, currentMediaIndex)) {
       const player = detailsPlayerRef.current;
       let currentTime = 0;
@@ -677,7 +693,7 @@ function Projects() {
       setVideoCurrentTime(currentTime);
       setIsVideoPlaying(playing);
       setIsFullscreen(true);
-    } else { // Image
+    } else {
       setIsFullscreen(true);
     }
   };
@@ -750,7 +766,7 @@ function Projects() {
             className="w-full h-full"
           >
           </div>
-          {!inFullscreen && (
+          {!inFullscreen && !isMobile && (
             <button
               onClick={handleMediaClick}
               className="absolute bottom-2 right-2 bg-black bg-opacity-50 p-2 rounded-lg hover:bg-opacity-70 transition-opacity"
@@ -770,10 +786,10 @@ function Projects() {
       return (
         <div
           key={mediaKey}
-          className={`relative w-full h-full ${!inFullscreen ? "cursor-pointer" : ""}`}
-          onClick={!inFullscreen ? handleMediaClick : undefined}
-          role={!inFullscreen ? "button" : undefined}
-          aria-label={!inFullscreen ? "View image fullscreen" : undefined}
+          className={`relative w-full h-full ${!inFullscreen && !isMobile ? "cursor-pointer" : ""}`}
+          onClick={!inFullscreen && !isMobile ? handleMediaClick : undefined}
+          role={!inFullscreen && !isMobile ? "button" : undefined}
+          aria-label={!inFullscreen && !isMobile ? "View image fullscreen" : undefined}
         >
           <Image
             src={imageUrl}
@@ -790,6 +806,126 @@ function Projects() {
     }
   };
 
+  // Mobile Detail View Component
+  const MobileDetailView = ({ project }: { project: Project }) => (
+    <div className="fixed inset-0 w-full min-h-screen bg-gray-900 pb-20 overflow-y-auto z-50">
+      {/* Header with back button */}
+      <div className="bg-gray-800 px-4 py-3 shadow-lg">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleBackToGrid}
+            className="flex items-center justify-center w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+            aria-label="Back to projects"
+          >
+            <ArrowLeft className="w-5 h-5 text-white" />
+          </button>
+          <h2 className="text-lg font-semibold text-white truncate flex-1">{project.title}</h2>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-4 space-y-4">
+        {/* Media Display */}
+        <div className="relative w-full h-56 bg-black rounded-lg overflow-hidden">
+          {renderMedia(project, currentMediaIndex, false)}
+        </div>
+
+        {/* Media Thumbnails */}
+        {getTotalMediaCount(project) > 1 && (
+          <div
+            ref={mediaThumbnailsContainerRef}
+            className="py-2 px-1 overflow-x-auto whitespace-nowrap thumbnail-scrollbar"
+          >
+            {project.videoUrls?.map((videoUrl, videoIdx) => {
+              const videoId = videoUrl.split("v=")[1]?.split("&")[0];
+              return (
+                <div
+                  key={`mobile-video-thumb-${project.id}-${videoIdx}`}
+                  className={`inline-block align-top w-28 h-20 mr-1 cursor-pointer rounded-md overflow-hidden relative ${
+                    currentMediaIndex === videoIdx ? "ring-2 ring-blue-500" : "ring-1 ring-gray-700 hover:ring-gray-500"
+                  }`}
+                  onClick={() => {
+                    setVideoCurrentTime(0);
+                    setIsVideoPlaying(true);
+                    setCurrentMediaIndex(videoIdx);
+                  }}
+                  title={`${project.title} - Video ${videoIdx + 1}`}
+                >
+                  {videoId ? (
+                    <Image src={`https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`} alt="Video thumbnail" fill className="object-cover pointer-events-none" quality={75} sizes="112px" />
+                  ) : (
+                    <div className="w-full h-full bg-gray-700 flex items-center justify-center pointer-events-none">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-white"><path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.279 20.001c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" /></svg>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center group-hover:bg-opacity-10 transition-opacity pointer-events-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-white opacity-75"><path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.279 20.001c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" /></svg>
+                  </div>
+                </div>
+              );
+            })}
+            {project.images.map((imageUrl, imgIdx) => {
+              const overallIndex = (project.videoUrls?.length || 0) + imgIdx;
+              return (
+                <div
+                  key={`mobile-img-thumb-${project.id}-${imgIdx}`}
+                  className={`inline-block align-top w-28 h-20 mr-1 cursor-pointer rounded-md overflow-hidden relative ${
+                    currentMediaIndex === overallIndex ? "ring-2 ring-blue-500" : "ring-1 ring-gray-700 hover:ring-gray-500"
+                  }`}
+                  onClick={() => setCurrentMediaIndex(overallIndex)}
+                  title={`${project.title} - Image ${imgIdx + 1}`}
+                >
+                  <Image src={imageUrl} alt={`Thumbnail ${imgIdx + 1}`} fill className="object-cover pointer-events-none" sizes="112px" quality={70} />
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Tags */}
+        <div className="flex flex-wrap gap-2">
+          {project.tags.map((tagKey) => (
+            <div key={tagKey} className="relative inline-block" onMouseEnter={(e) => handleTagHover(tagKey, e)} onMouseLeave={() => setHoveredTag(null)}>
+              <span className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded cursor-help`}>{TAGS[tagKey].name}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Description */}
+        <div className="text-gray-300 text-sm break-words">
+          {renderFormattedDescription(project.description)}
+        </div>
+
+        {/* Creation Date */}
+        <p className="text-gray-400 text-sm">
+          Created: {project.createdAt instanceof Date && project.createdAt.getTime() !== new Date(0).getTime() ? project.createdAt.toLocaleDateString() : "Loading date..."}
+        </p>
+
+        {/* Action Buttons */}
+        <div className="space-y-2">
+          <button
+            onClick={() => handleDownload(project)}
+            className={`bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-sm w-full transition-opacity ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+            disabled={isLoading}
+          >
+            {isLoading ? "Processing..." : "Download"}
+          </button>
+          {project.repoName && (
+            <a
+              href={`https://github.com/${GITHUB_USERNAME}/${project.repoName}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg text-sm w-full transition-colors text-center"
+              aria-label={`View source code for ${project.title} on GitHub`}
+            >
+              Source Code
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex flex-col items-center justify-start min-h-screen p-2 pt-8">
       <style jsx global>{`
@@ -804,222 +940,221 @@ function Projects() {
         .project-description-paragraph:empty, .tooltip-description-paragraph:empty { min-height: 1em; }
       `}</style>
 
-      <div className="w-full max-w-7xl px-4 flex flex-col items-center">
-        <header className="text-center mb-8 w-full">
-          <h1 className="text-4xl font-bold mb-4 break-words">My Projects</h1>
-          <p className="text-lg mb-4 break-words whitespace-pre-wrap max-w-full">
-            -Most of them are games.
-          </p>
-          <div className="flex justify-center items-center gap-4 mb-4 flex-wrap">
-            <span className="text-gray-300">Sorting by:</span>
-            <div className="flex gap-4 flex-wrap">
-              {sortButtonOptions.map(({ value, label }) => (
-                <button
-                  key={value}
-                  onClick={() => handleSortChange(value)}
-                  className={`px-4 py-2 rounded-lg ease-in-out ${
-                    sortOption === value
-                      ? "bg-purple-900 text-white hover:bg-purple-700"
-                      : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </header>
-
-        <div
-          className="flex justify-between w-full relative gap-8"
-          ref={projectsContainerRef}
-        >
-          <div
-            className={`grid gap-8 ${
-              selectedProject && !isMobile ? "w-[calc(70%-1rem)]" : "w-full"
-            }`}
-            style={{
-              gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-            }}
-          >
-            {sortedProjects.map((project) => (
-              <div
-                key={project.id}
-                className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer select-none hover:scale-105 ${
-                  selectedProject?.id === project.id
-                    ? "ring-2 ring-blue-500 scale-105"
-                    : ""
-                }`}
-                onClick={() => handleProjectClick(project)}
-                onDragStart={(e) => e.preventDefault()}
-                style={{ maxHeight: "400px" }}
-              >
-                <div className="relative w-full h-48">
-                  <Image
-                    src={project.thumbnail}
-                    alt={project.title}
-                    fill
-                    className="object-cover pointer-events-none"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    quality={85}
-                    priority={project.relevance > 5}
-                    loading="eager"
-                  />
-                </div>
-                <div
-                  className={`p-3 ${
-                    selectedProject?.id === project.id
-                      ? "bg-blue-900"
-                      : "bg-gray-800"
-                  }`}
-                >
-                  <h3
-                    className="text-lg font-semibold text-white truncate"
-                    title={project.title}
+      {/* Mobile Detail View */}
+      {isMobile && showMobileDetailView && selectedProject ? (
+        <MobileDetailView project={selectedProject} />
+      ) : (
+        <div className="w-full max-w-7xl px-4 flex flex-col items-center">
+          <header className="text-center mb-8 w-full">
+            <h1 className="text-4xl font-bold mb-4 break-words">My Projects</h1>
+            <p className="text-lg mb-4 break-words whitespace-pre-wrap max-w-full">
+              -Most of them are games.
+            </p>
+            <div className="flex justify-center items-center gap-4 mb-4 flex-wrap">
+              <span className="text-gray-300">Sorting by:</span>
+              <div className="flex gap-4 flex-wrap">
+                {sortButtonOptions.map(({ value, label }) => (
+                  <button
+                    key={value}
+                    onClick={() => handleSortChange(value)}
+                    className={`px-4 py-2 rounded-lg ease-in-out ${
+                      sortOption === value
+                        ? "bg-purple-900 text-white hover:bg-purple-700"
+                        : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                    }`}
                   >
-                    {project.title}
-                  </h3>
-                  <div className="flex flex-wrap mt-2 mb-1">
-                    {project.tags.slice(0, 3).map((tagKey) => (
-                      <span
-                        key={tagKey}
-                        className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded mr-2 mb-1`}
-                      >
-                        {TAGS[tagKey].name}
-                      </span>
-                    ))}
-                    {project.tags.length > 3 && (
-                      <span className="text-gray-400 text-xs py-1 mb-1">
-                        ...
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-sm text-gray-400 mt-1">
-                    Created:{" "}
-                    {project.createdAt instanceof Date && project.createdAt.getTime() !== new Date(0).getTime()
-                      ? project.createdAt.toLocaleDateString()
-                      : "Loading date..."}
-                  </div>
-                </div>
+                    {label}
+                  </button>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          </header>
 
-          {selectedProject && (
+          <div
+            className="flex justify-between w-full relative gap-8"
+            ref={projectsContainerRef}
+          >
             <div
-              className={`bg-gray-800 shadow-lg overflow-y-auto overflow-x-hidden relative ${
-                isMobile
-                  ? "fixed inset-0 top-[64px] z-40"
-                  : "w-[calc(30%-1rem)] sticky"
+              className={`grid gap-8 ${
+                selectedProject && !isMobile ? "w-[calc(70%-1rem)]" : "w-full"
               }`}
-              ref={detailsPanelRef}
               style={{
-                top: isMobile ? undefined : `${navbarHeight + 20}px`,
-                ...(isMobile
-                  ? { height: `calc(100vh - ${navbarHeight}px)` }
-                  : { maxHeight: `calc(100vh - ${navbarHeight + 40}px)` }),
+                gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
               }}
             >
-              <button
-                onClick={closeProjectDetails}
-                className="absolute top-2 right-2 text-white bg-red-500 hover:bg-red-700 w-6 h-6 flex items-center justify-center text-sm font-bold z-50 "
-                aria-label="Close project details"
-              >
-                ×
-              </button>
-              <div className="p-4">
-                <div className="relative w-full h-56 bg-black rounded-lg overflow-hidden mb-2">
-                  {renderMedia(selectedProject, currentMediaIndex, false)}
-                </div>
+              {sortedProjects.map((project) => (
                 <div
-                  ref={mediaThumbnailsContainerRef}
-                  className="py-2 px-1 overflow-x-auto whitespace-nowrap thumbnail-scrollbar"
+                  key={project.id}
+                  className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer select-none hover:scale-105 ${
+                    selectedProject?.id === project.id
+                      ? "ring-2 ring-blue-500 scale-105"
+                      : ""
+                  }`}
+                  onClick={() => handleProjectClick(project)}
+                  onDragStart={(e) => e.preventDefault()}
+                  style={{ maxHeight: "400px" }}
                 >
-                  {selectedProject.videoUrls?.map((videoUrl, videoIdx) => {
-                      const videoId = videoUrl.split("v=")[1]?.split("&")[0];
+                  <div className="relative w-full h-48">
+                    <Image
+                      src={project.thumbnail}
+                      alt={project.title}
+                      fill
+                      className="object-cover pointer-events-none"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      quality={85}
+                      priority={project.relevance > 5}
+                      loading="eager"
+                    />
+                  </div>
+                  <div
+                    className={`p-3 ${
+                      selectedProject?.id === project.id
+                        ? "bg-blue-900"
+                        : "bg-gray-800"
+                    }`}
+                  >
+                    <h3
+                      className="text-lg font-semibold text-white truncate"
+                      title={project.title}
+                    >
+                      {project.title}
+                    </h3>
+                    <div className="flex flex-wrap mt-2 mb-1">
+                      {project.tags.slice(0, 3).map((tagKey) => (
+                        <span
+                          key={tagKey}
+                          className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded mr-2 mb-1`}
+                        >
+                          {TAGS[tagKey].name}
+                        </span>
+                      ))}
+                      {project.tags.length > 3 && (
+                        <span className="text-gray-400 text-xs py-1 mb-1">
+                          ...
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-sm text-gray-400 mt-1">
+                      Created:{" "}
+                      {project.createdAt instanceof Date && project.createdAt.getTime() !== new Date(0).getTime()
+                        ? project.createdAt.toLocaleDateString()
+                        : "Loading date..."}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {selectedProject && !isMobile && (
+              <div
+                className="bg-gray-800 shadow-lg overflow-y-auto overflow-x-hidden relative w-[calc(30%-1rem)] sticky"
+                ref={detailsPanelRef}
+                style={{
+                  top: `${navbarHeight + 20}px`,
+                  maxHeight: `calc(100vh - ${navbarHeight + 40}px)`,
+                }}
+              >
+                <button
+                  onClick={closeProjectDetails}
+                  className="absolute top-2 right-2 text-white bg-red-500 hover:bg-red-700 w-6 h-6 flex items-center justify-center text-sm font-bold z-50"
+                  aria-label="Close project details"
+                >
+                  ×
+                </button>
+                <div className="p-4">
+                  <div className="relative w-full h-56 bg-black rounded-lg overflow-hidden mb-2">
+                    {renderMedia(selectedProject, currentMediaIndex, false)}
+                  </div>
+                  <div
+                    ref={mediaThumbnailsContainerRef}
+                    className="py-2 px-1 overflow-x-auto whitespace-nowrap thumbnail-scrollbar"
+                  >
+                    {selectedProject.videoUrls?.map((videoUrl, videoIdx) => {
+                        const videoId = videoUrl.split("v=")[1]?.split("&")[0];
+                        return (
+                          <div
+                            key={`video-thumb-${selectedProject.id}-${videoIdx}`}
+                            className={`inline-block align-top w-28 h-20 mr-1 cursor-pointer rounded-md overflow-hidden relative ${
+                              currentMediaIndex === videoIdx ? "ring-2 ring-blue-500" : "ring-1 ring-gray-700 hover:ring-gray-500"
+                            }`}
+                            onClick={() => {
+                              setVideoCurrentTime(0);
+                              setIsVideoPlaying(true);
+                              setCurrentMediaIndex(videoIdx);
+                            }}
+                            title={`${selectedProject.title} - Video ${videoIdx + 1}`}
+                          >
+                            {videoId ? (
+                              <Image src={`https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`} alt="Video thumbnail" fill className="object-cover pointer-events-none" quality={75} sizes="112px" />
+                            ) : (
+                              <div className="w-full h-full bg-gray-700 flex items-center justify-center pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-white"><path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.279 20.001c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" /></svg>
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center group-hover:bg-opacity-10 transition-opacity pointer-events-none">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-white opacity-75"><path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.279 20.001c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" /></svg>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    {selectedProject.images.map((imageUrl, imgIdx) => {
+                      const overallIndex = (selectedProject.videoUrls?.length || 0) + imgIdx;
                       return (
                         <div
-                          key={`video-thumb-${selectedProject.id}-${videoIdx}`}
+                          key={`img-thumb-${selectedProject.id}-${imgIdx}`}
                           className={`inline-block align-top w-28 h-20 mr-1 cursor-pointer rounded-md overflow-hidden relative ${
-                            currentMediaIndex === videoIdx ? "ring-2 ring-blue-500" : "ring-1 ring-gray-700 hover:ring-gray-500"
+                            currentMediaIndex === overallIndex ? "ring-2 ring-blue-500" : "ring-1 ring-gray-700 hover:ring-gray-500"
                           }`}
-                          onClick={() => {
-                            setVideoCurrentTime(0);
-                            setIsVideoPlaying(true);
-                            setCurrentMediaIndex(videoIdx);
-                          }}
-                          title={`${selectedProject.title} - Video ${videoIdx + 1}`}
+                          onClick={() => setCurrentMediaIndex(overallIndex)}
+                          title={`${selectedProject.title} - Image ${imgIdx + 1}`}
                         >
-                          {videoId ? (
-                            <Image src={`https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`} alt="Video thumbnail" fill className="object-cover pointer-events-none" quality={75} sizes="112px" />
-                          ) : (
-                            <div className="w-full h-full bg-gray-700 flex items-center justify-center pointer-events-none">
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-white"><path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.279 20.001c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" /></svg>
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center group-hover:bg-opacity-10 transition-opacity pointer-events-none">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-white opacity-75"><path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.279 20.001c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" /></svg>
-                          </div>
+                          <Image src={imageUrl} alt={`Thumbnail ${imgIdx + 1}`} fill className="object-cover pointer-events-none" sizes="112px" quality={70} />
                         </div>
                       );
                     })}
-                  {selectedProject.images.map((imageUrl, imgIdx) => {
-                    const overallIndex = (selectedProject.videoUrls?.length || 0) + imgIdx;
-                    return (
-                      <div
-                        key={`img-thumb-${selectedProject.id}-${imgIdx}`}
-                        className={`inline-block align-top w-28 h-20 mr-1 cursor-pointer rounded-md overflow-hidden relative ${
-                          currentMediaIndex === overallIndex ? "ring-2 ring-blue-500" : "ring-1 ring-gray-700 hover:ring-gray-500"
-                        }`}
-                        onClick={() => setCurrentMediaIndex(overallIndex)}
-                        title={`${selectedProject.title} - Image ${imgIdx + 1}`}
-                      >
-                        <Image src={imageUrl} alt={`Thumbnail ${imgIdx + 1}`} fill className="object-cover pointer-events-none" sizes="112px" quality={70} />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mt-1 mb-3 break-words">
+                    {selectedProject.title}
+                  </h3>
+                  <div className="flex flex-wrap mb-3">
+                    {selectedProject.tags.map((tagKey) => (
+                      <div key={tagKey} className="relative inline-block mr-2 mb-2" onMouseEnter={(e) => handleTagHover(tagKey, e)} onMouseLeave={() => setHoveredTag(null)}>
+                        <span className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded cursor-help`}>{TAGS[tagKey].name}</span>
                       </div>
-                    );
-                  })}
-                </div>
-                <h3 className="text-xl font-semibold text-white mt-1 mb-3 break-words">
-                  {selectedProject.title}
-                </h3>
-                <div className="flex flex-wrap mb-3">
-                  {selectedProject.tags.map((tagKey) => (
-                    <div key={tagKey} className="relative inline-block mr-2 mb-2" onMouseEnter={(e) => handleTagHover(tagKey, e)} onMouseLeave={() => setHoveredTag(null)}>
-                      <span className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded cursor-help`}>{TAGS[tagKey].name}</span>
-                    </div>
-                  ))}
-                </div>
-                                <div className="text-gray-300 text-sm mb-2 break-words">
-                  {renderFormattedDescription(selectedProject.description)}
-                </div>
-                <p className="text-gray-400 text-sm mb-5">
-                  Created: {selectedProject.createdAt instanceof Date && selectedProject.createdAt.getTime() !== new Date(0).getTime() ? selectedProject.createdAt.toLocaleDateString() : "Loading date..."}
-                </p>
-                <button
-                  onClick={() => handleDownload(selectedProject)}
-                  className={`bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm w-full transition-opacity ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Processing..." : "Download"}
-                </button>
-                {selectedProject.repoName && (
-                  <a
-                    href={`https://github.com/${GITHUB_USERNAME}/${selectedProject.repoName}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full transition-colors mt-2 text-center"
-                    aria-label={`View source code for ${selectedProject.title} on GitHub`}
+                    ))}
+                  </div>
+                  <div className="text-gray-300 text-sm mb-2 break-words">
+                    {renderFormattedDescription(selectedProject.description)}
+                  </div>
+                  <p className="text-gray-400 text-sm mb-5">
+                    Created: {selectedProject.createdAt instanceof Date && selectedProject.createdAt.getTime() !== new Date(0).getTime() ? selectedProject.createdAt.toLocaleDateString() : "Loading date..."}
+                  </p>
+                  <button
+                    onClick={() => handleDownload(selectedProject)}
+                    className={`bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm w-full transition-opacity ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                    disabled={isLoading}
                   >
-                    Source Code
-                  </a>
-                )}
+                    {isLoading ? "Processing..." : "Download"}
+                  </button>
+                  {selectedProject.repoName && (
+                    <a
+                      href={`https://github.com/${GITHUB_USERNAME}/${selectedProject.repoName}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg text-sm w-full transition-colors mt-2 text-center"
+                      aria-label={`View source code for ${selectedProject.title} on GitHub`}
+                    >
+                      Source Code
+                    </a>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
-      {isFullscreen && selectedProject && (
+      {isFullscreen && selectedProject && !isMobile && (
         <div className="fixed inset-0 bg-black bg-opacity-95 z-[100] flex flex-col items-center justify-center p-12 animate-fade-in">
           <button onClick={handleCloseFullscreen} className="absolute top-3 right-3 text-white bg-red-500 hover:bg-red-700 w-10 h-10 flex items-center justify-center text-2xl font-bold rounded-full z-[120]" aria-label="Close fullscreen">×</button>
           <div className="relative w-full flex-grow flex items-center justify-center overflow-hidden p-1">
