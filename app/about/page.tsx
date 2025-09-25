@@ -439,7 +439,7 @@ const About = () => {
           icon: <SiSfml />,
           name: "SFML",
           comment:
-            "Practical graphics library when you want to make things appear on the screen. I choose it over SDL2 altho thats just because it's more simple.",
+            "Practical graphics library when you want to make things appear on the screen. I choose it over SDL altho thats just because it's more simple.",
           preference: "lightGreen",
         },
         {
@@ -476,16 +476,16 @@ const About = () => {
           icon: (
             <Image
               src="/imgs/sdl.svg"
-              alt="SDL2"
+              alt="SDL"
               width={32}
               height={32}
               className="rounded filter invert"
               priority={true}
             />
           ),
-          name: "SDL2",
+          name: "SDL",
           comment:
-            "It's ok. I had a good experience with SDL2, but I would only use it over SFML when developing Android or iOS apps. I don't really know why, but I think I simply dont like how the code looks.",
+            "It's ok. I had a good experience with SDL, but I would only use it over SFML when developing Android or iOS apps. I don't really know why, but I think I simply dont like how the code looks.",
           preference: "lightBlue",
         },
         {
