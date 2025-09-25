@@ -584,11 +584,11 @@ const About = () => {
 
       <main className="p-2 sm:p-4 w-full flex flex-col items-center">
         <div className="w-full flex justify-center mb-6 sm:mb-17">
-          <div className="w-max">
+          <div className="w-full sm:w-max px-4 sm:px-0">
             <h1 className="text-2xl sm:text-4xl font-bold mb-4 sm:mb-6 text-center text-white">
               Information about me:
             </h1>
-            <div className="text-lg sm:text-xl text-gray-300">
+            <div className="text-lg sm:text-xl text-gray-300 text-center sm:text-left">
               <p className="py-1">
                 {aboutTexts[0]}
                 <span className="bg-green-500 text-black px-2 py-1 rounded">
@@ -636,7 +636,7 @@ const About = () => {
             </h2>
           </div>
 
-          {/* Original table structure with only mobile padding fix and C++ z-index fix */}
+          {/* Updated table structure with mobile-only top spacing */}
           <div className="">
             <div
               className={`flex border-b ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS}`}
@@ -675,7 +675,7 @@ const About = () => {
                                                         : ""
                                                     }`}
                   >
-                    <div className="flex flex-wrap justify-center items-start gap-1 sm:gap-2 min-h-[50px] w-full">
+                    <div className="flex flex-wrap justify-center items-start gap-1 sm:gap-2 min-h-[50px] w-full mt-4 sm:mt-0">
                       {category.technologies.map((tech) => (
                         <TechnologyItem key={tech.name} tech={tech} />
                       ))}
