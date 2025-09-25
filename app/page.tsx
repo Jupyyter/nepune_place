@@ -3,7 +3,7 @@ import Head from 'next/head';
 
 // Define the list of images from ALL other pages you want to preload
 const imagesToPreload = [
-  // From About page (assuming you still want these)
+  // From About page
   '/imgs/Greenfoot_Logo.jpg',
   '/imgs/gdscript.jpg',
   '/imgs/godot.png',

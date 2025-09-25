@@ -12,10 +12,10 @@ const ContactItem = ({ icon, text, link }: { icon: string, text: string, link?: 
     >
       <Image
         src={icon}
-        alt="" // Consider adding meaningful alt text, e.g., "Email icon"
+        alt=""
         width={50}
         height={50}
-        priority // Correctly prioritizing this image
+        priority
         draggable="false"
       />
     </div>

@@ -95,7 +95,7 @@ interface Project {
   relevance: number;
   repoName?: string;
   images: string[];
-  videoUrls?: string[]; // Changed from videoUrl to videoUrls
+  videoUrls?: string[];
 }
 import jhonnyImg from "/public/imgs/jhonny.png";
 import badAppleImg from "/public/imgs/badApple.png";
@@ -221,7 +221,6 @@ The level editor allows for custom map creation (obviously)`,
     createdAt: new Date(),
     relevance: 9,
     repoName: "99layers",
-    // Example with multiple videos
     videoUrls: [
       "https://www.youtube.com/watch?v=MGMpnPsCnlM&feature=youtu.be",
     ],

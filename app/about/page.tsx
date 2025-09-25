@@ -80,8 +80,8 @@ interface Category {
 
 // --- Constants ---
 const BORDER_CLASS = "border-gray-400";
-const BORDER_THICKNESS_CLASS = "0px"; // Note: "0px" effectively means no border. If you want a thin border, use "border" or "border-t/r/b/l"
-const BASE_PADDING = "p-6"; // Padding for each cell in the 2x3 grid
+const BORDER_THICKNESS_CLASS = "0px";
+const BASE_PADDING = "p-6";
 
 // --- Reusable Components ---
 
@@ -562,7 +562,7 @@ const About = () => {
     <div className="flex flex-col items-center justify-start pt-6 text-gray-200 w-full">
       <Head>
         <title>About Me</title>
-        {/* MODIFIED: Added type attribute for better preloading hints */}
+        {}
         <link
           rel="preload"
           href="/imgs/godot.png"
@@ -668,9 +668,6 @@ const About = () => {
               {categorizedTechnologies.map((category, catIndex) => {
                 const isThirdColumn = catIndex === 2; // "Other Windows Apps"
                 const isSecondColumn = catIndex === 1; // "Games"
-
-                // Determine if CppTech should be rendered at the border intersection.
-                // It seems it was intended between "Games" and "Other Windows Apps"
                 const shouldRenderCppIconHere = isThirdColumn;
 
                 return (
