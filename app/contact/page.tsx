@@ -4,24 +4,31 @@ import Image from 'next/image';
 import Head from 'next/head';
 
 const ContactItem = ({ icon, text, link }: { icon: string, text: string, link?: string }) => (
-  <div className="flex items-stretch mb-4">
+  <div className="flex flex-col items-center sm:flex-row sm:items-stretch mb-4">
     <div
-      className="flex-shrink-0 w-12 h-12 mr-4 relative"
+      className="flex-shrink-0 w-12 h-12 sm:mr-4 mb-2 sm:mb-0 relative"
       style={{ userSelect: 'none' }}
       draggable="false"
     >
       <Image
-        src={icon}
-        alt=""
-        width={50}
-        height={50}
-        priority
-        draggable="false"
-      />
+  src={icon}
+  alt=""
+  width={50}
+  height={50}
+  priority
+  draggable="false"
+  className="rounded-full object-cover"
+/>
+
     </div>
-    <div className="flex-grow flex items-center min-h-[3rem]">
+    <div className="flex-grow flex items-center min-h-[3rem] text-center sm:text-left">
       {link ? (
-        <a href={link} className="text-lg text-yellow-400 hover:text-yellow-300 underline" target="_blank" rel="noopener noreferrer">
+        <a
+          href={link}
+          className="text-lg text-yellow-400 hover:text-yellow-300 underline"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           {text}
         </a>
       ) : (
@@ -30,6 +37,7 @@ const ContactItem = ({ icon, text, link }: { icon: string, text: string, link?: 
     </div>
   </div>
 );
+
 
 export default function Contact() {
   return (
