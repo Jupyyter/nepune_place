@@ -7,7 +7,7 @@ const Menu: React.FC = () => {
   const pathname = usePathname();
   const menuItems = [
     { path: "/", label: "Home" },
-    { path: "/about", label: "About Me" },
+    { path: "/about", label: "About Mee" },
     { path: "/projects", label: "Projects" },
     { path: "/contact", label: "Contact" },
   ];
