@@ -590,7 +590,7 @@ const About = () => {
       </Head>
 
       <main className="p-4 w-full flex flex-col items-center">
-        <div className="w-full flex justify-center mb-10">
+        <div className="w-full flex justify-center mb-6">
           <div className="w-max">
             <h1 className="text-4xl font-bold mb-6 text-center text-white">
               Information about me:
@@ -616,6 +616,10 @@ const About = () => {
                   <u className="decoration-purple-400 decoration-2">
                     based on colors:
                   </u>
+                </p>
+                <p className="text-sm text-gray-400 mt-1">
+                  (hover/click on the colors/software for information about
+                  them)
                 </p>
               </div>
               <div className="flex flex-wrap justify-center">
@@ -688,8 +692,8 @@ const About = () => {
 
                     {shouldRenderCppIconHere && (
                       <div
-                        className={`absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 z-10 
-                                                            border ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS} rounded-full bg-black p-0.5`}
+                        className={`absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 z-0
+                        border ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS} rounded-full bg-black p-0.5`}
                       >
                         {/* CppTech is already in "Other Windows Apps" list*/}
                         <TechnologyItem tech={CppTech} isOval={true} />
