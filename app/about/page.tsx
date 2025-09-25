@@ -559,72 +559,53 @@ const About = () => {
   });
 
   return (
-    <div className="flex flex-col items-center justify-start pt-6 text-gray-200 w-full">
+    <div className="flex flex-col items-center justify-start pt-6 text-gray-200 w-full min-h-screen overflow-x-hidden">
       <Head>
         <title>About Me</title>
-        {}
-        <link
-          rel="preload"
-          href="/imgs/godot.png"
-          as="image"
-          type="image/png"
-        />
-        <link
-          rel="preload"
-          href="/imgs/gdscript.jpg"
-          as="image"
-          type="image/jpeg"
-        />
-        <link
-          rel="preload"
-          href="/imgs/Greenfoot_Logo.jpg"
-          as="image"
-          type="image/jpeg"
-        />
-        <link
-          rel="preload"
-          href="/imgs/sdl.svg"
-          as="image"
-          type="image/svg+xml"
-        />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        {/* existing preload links */}
+        <link rel="preload" href="/imgs/godot.png" as="image" type="image/png" />
+        <link rel="preload" href="/imgs/gdscript.jpg" as="image" type="image/jpeg" />
+        <link rel="preload" href="/imgs/Greenfoot_Logo.jpg" as="image" type="image/jpeg" />
+        <link rel="preload" href="/imgs/sdl.svg" as="image" type="image/svg+xml" />
       </Head>
 
-      <main className="p-4 w-full flex flex-col items-center">
-        <div className="w-full flex justify-center mb-6">
-          <div className="w-max">
-            <h1 className="text-4xl font-bold mb-6 text-center text-white">
+      <main className="p-2 sm:p-4 w-full max-w-full flex flex-col items-center overflow-x-hidden">
+        {/* About text section */}
+        <div className="w-full max-w-4xl flex justify-center mb-6 sm:mb-10 px-2">
+          <div className="w-full max-w-full">
+            <h1 className="text-2xl sm:text-4xl font-bold mb-4 sm:mb-6 text-center text-white">
               Information about me:
             </h1>
-            {
-              <p className="text-xl text-gray-300 py-1">
+            <div className="text-lg sm:text-xl text-gray-300">
+              <p className="py-1">
                 {aboutTexts[0]}
                 <span className="bg-green-500 text-black px-2 py-1 rounded">
                   I usually program games.
                 </span>
-                <p className="text-xl text-gray-300 py-1">{aboutTexts[1]}</p>
               </p>
-            }
+              <p className="py-1">{aboutTexts[1]}</p>
+            </div>
           </div>
         </div>
 
-        <div className="w-full flex flex-col items-center">
-          <div className="w-full flex flex-col items-center gap-y-4 mb-5 px-4 relative">
-            <div className="flex flex-col items-center max-w-xs sm:max-w-xl">
+        {/* Legend and technologies section */}
+        <div className="w-full max-w-full flex flex-col items-center overflow-x-hidden">
+          <div className="w-full flex flex-col items-center gap-y-4 mb-5 px-2 sm:px-4 relative">
+            <div className="flex flex-col items-center w-full max-w-xs sm:max-w-xl">
               <div className="text-center mb-1">
-                <p className="text-base sm:text-lg font-medium text-gray-200">
+                <p className="text-sm sm:text-base md:text-lg font-medium">
                   What I specialize in and what I prefer{" "}
                   <u className="decoration-purple-400 decoration-2">
                     based on colors:
                   </u>
                 </p>
-                <p className="text-sm  mt-1">
-                  (Hover/click on the colors/software for information about
-                  them)
+                <p className="text-xs sm:text-sm text-gray-100 mt-1">
+                  (hover/click on the colors/software for information about them)
                 </p>
               </div>
               <div className="flex flex-wrap justify-center">
                 {Object.keys(preferenceColors)
-                  // Filter out 'gray' unless GitTech or CppTech specifically use it.
                   .filter(
                     (key) =>
                       key !== "gray" ||
@@ -640,76 +621,78 @@ const About = () => {
                   ))}
               </div>
             </div>
-            <h2 className="text-3xl font-semibold text-center text-white">
+            <h2 className="text-xl sm:text-3xl font-semibold text-center text-white">
               Software I use for developing
             </h2>
           </div>
 
-          <div className="">
-            <div
-              className={`flex border-b ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS}`}
-            >
-              {categorizedTechnologies.map((category, catIndex) => (
-                <div
-                  key={`${category.title}-title-cell`}
-                  className={`flex-1 ${BASE_PADDING} flex flex-col items-center justify-center
+          {/* Technologies table - make it responsive */}
+          <div className="w-full">
+  <div className="w-full">
+    <div className={`flex border-b ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS}`}>
+      {categorizedTechnologies.map((category, catIndex) => (
+        <div
+          key={`${category.title}-title-cell`}
+          className={`flex-1 ${BASE_PADDING} flex flex-col items-center justify-center
+                                              ${
+                                                catIndex > 0
+                                                  ? `border-l ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS}`
+                                                  : ""
+                                              }`}
+          style={{ minWidth: 0, width: `${100/categorizedTechnologies.length}%` }}
+        >
+          <CategoryTitleItem
+            title={category.title}
+            comment={category.titleComment}
+            preference={category.titlePreference}
+          />
+        </div>
+      ))}
+    </div>
+
+    <div className="flex">
+      {categorizedTechnologies.map((category, catIndex) => {
+        const isThirdColumn = catIndex === 2;
+        const shouldRenderCppIconHere = isThirdColumn;
+
+        return (
+          <div
+            key={`${category.title}-content-cell`}
+            className={`flex-1 ${BASE_PADDING} relative
                                                 ${
                                                   catIndex > 0
                                                     ? `border-l ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS}`
                                                     : ""
                                                 }`}
-                >
-                  <CategoryTitleItem
-                    title={category.title}
-                    comment={category.titleComment}
-                    preference={category.titlePreference}
-                  />
-                </div>
+            style={{ minWidth: 0, width: `${100/categorizedTechnologies.length}%` }}
+          >
+            <div className="flex flex-wrap justify-center items-start gap-1 sm:gap-2 min-h-[50px] w-full">
+              {category.technologies.map((tech) => (
+                <TechnologyItem key={tech.name} tech={tech} />
               ))}
             </div>
 
-            <div className="flex">
-              {categorizedTechnologies.map((category, catIndex) => {
-                const isThirdColumn = catIndex === 2; // "Other Windows Apps"
-                const isSecondColumn = catIndex === 1; // "Games"
-                const shouldRenderCppIconHere = isThirdColumn;
-
-                return (
-                  <div
-                    key={`${category.title}-content-cell`}
-                    className={`flex-1 ${BASE_PADDING} relative
-                                                    ${
-                                                      catIndex > 0
-                                                        ? `border-l ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS}`
-                                                        : ""
-                                                    }`}
-                  >
-                    <div className="flex flex-wrap justify-center items-start gap-1 sm:gap-2 min-h-[50px] w-full">
-                      {category.technologies.map((tech) => (
-                        <TechnologyItem key={tech.name} tech={tech} />
-                      ))}
-                    </div>
-
-                    {shouldRenderCppIconHere && (
-                      <div
-                        className={`absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 z-0
-                        border ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS} rounded-full bg-black p-0.5`}
-                      >
-                        {/* CppTech is already in "Other Windows Apps" list*/}
-                        <TechnologyItem tech={CppTech} isOval={true} />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            {shouldRenderCppIconHere && (
+              <div
+                className={`absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 z-0 
+                                                        border ${BORDER_CLASS} ${BORDER_THICKNESS_CLASS} rounded-full bg-black p-0.5`}
+              >
+                <TechnologyItem tech={CppTech} isOval={true} />
+              </div>
+            )}
           </div>
+        );
+      })}
+    </div>
+  </div>
+</div>
 
-          <div className="mt-8 mb-0 flex items-center justify-center gap-2">
-            <span className="text-lg text-gray-400">I use</span>
+          {/* Git section */}
+          <div className="mt-4 sm:mt-8 mb-0 flex flex-wrap items-center justify-center gap-2 px-2">
+            <span className="text-base sm:text-lg text-gray-400">I use</span>
             <TechnologyItem tech={GitTech} />
-            <span className="text-lg text-gray-400">
-              with alll my projects.
+            <span className="text-base sm:text-lg text-gray-400">
+              with all my projects.
             </span>
           </div>
         </div>
