@@ -1,8 +1,13 @@
 // next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Your existing output configuration
-  output: process.env.NODE_ENV === 'production' ? 'export' : undefined,
+  // REMOVE the static export for Vercel deployment
+  // output: process.env.NODE_ENV === 'production' ? 'export' : undefined,
+  
+  // Add cache-busting to force updates
+  generateBuildId: () => {
+    return Date.now().toString()
+  },
 
   // Add the images configuration here
   images: {
