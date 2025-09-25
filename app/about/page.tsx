@@ -81,7 +81,7 @@ interface Category {
 // --- Constants ---
 const BORDER_CLASS = "border-gray-400";
 const BORDER_THICKNESS_CLASS = "0px";
-const BASE_PADDING = "p-6";
+const BASE_PADDING = "p-2 sm:p-6";
 
 // --- Reusable Components ---
 
@@ -617,7 +617,7 @@ const About = () => {
                     based on colors:
                   </u>
                 </p>
-                <p className="text-sm text-gray-400 mt-1">
+                <p className="text-sm  mt-1">
                   (Hover/click on the colors/software for information about
                   them)
                 </p>
