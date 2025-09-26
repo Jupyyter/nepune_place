@@ -142,7 +142,7 @@ Yes, this can now be done by an average AI, but I developed this project when AI
     thumbnail: "/imgs/GabrielIsHungry.png",
     description: `A story game inspired by the life of Tarrare.
 I made this to see if I can create a game based on dialogue.`,
-    downloadUrls: [`gabrielIsHungry.zip`, "gabrielIsHungry0.zip"],
+    downloadUrls: [`Hungry.zip`, "Hungry0.zip"],
     tags: ["GODOT", "GDSCRIPT", "LARGE_FILE"],
     createdAt: new Date(),
     relevance: 6,
