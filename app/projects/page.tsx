@@ -347,7 +347,7 @@ function Projects() {
     y: 0,
     alignTop: false,
   });
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
   const [sortOption, setSortOption] = useState<SortOption>("relevance");
   const [projectsWithDates, setProjectsWithDates] = useState<Project[]>(
     projects.map(p => ({ ...p, createdAt: p.repoName ? new Date(0) : p.createdAt }))
@@ -979,7 +979,9 @@ function Projects() {
                 selectedProject && !isMobile ? "w-[calc(70%-1rem)]" : "w-full"
               }`}
               style={{
-                gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+                gridTemplateColumns: isMobile 
+                  ? "repeat(2, minmax(0, 1fr))" 
+                  : "repeat(auto-fill, minmax(250px, 1fr))",
               }}
             >
               {sortedProjects.map((project) => (
@@ -992,15 +994,17 @@ function Projects() {
                   }`}
                   onClick={() => handleProjectClick(project)}
                   onDragStart={(e) => e.preventDefault()}
-                  style={{ maxHeight: "400px" }}
+                  style={{ 
+                    maxHeight: isMobile ? "280px" : "400px" 
+                  }}
                 >
-                  <div className="relative w-full h-48">
+                  <div className={`relative w-full ${isMobile ? "h-32" : "h-48"}`}>
                     <Image
                       src={project.thumbnail}
                       alt={project.title}
                       fill
                       className="object-cover pointer-events-none"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                       quality={85}
                       priority={project.relevance > 5}
                       loading="eager"
@@ -1014,13 +1018,13 @@ function Projects() {
                     }`}
                   >
                     <h3
-                      className="text-lg font-semibold text-white truncate"
+                      className={`${isMobile ? "text-sm" : "text-lg"} font-semibold text-white truncate`}
                       title={project.title}
                     >
                       {project.title}
                     </h3>
                     <div className="flex flex-wrap mt-2 mb-1">
-                      {project.tags.slice(0, 3).map((tagKey) => (
+                      {project.tags.slice(0, isMobile ? 2 : 3).map((tagKey) => (
                         <span
                           key={tagKey}
                           className={`${TAGS[tagKey].color} text-white text-xs px-2 py-1 rounded mr-2 mb-1`}
@@ -1028,7 +1032,7 @@ function Projects() {
                           {TAGS[tagKey].name}
                         </span>
                       ))}
-                      {project.tags.length > 3 && (
+                      {project.tags.length > (isMobile ? 2 : 3) && (
                         <span className="text-gray-400 text-xs py-1 mb-1">
                           ...
                         </span>
