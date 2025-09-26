@@ -214,7 +214,7 @@ A classic game implemented in Java.`,
     thumbnail: endi.src,
     description: `A platformer in which you play as a bunny.
 This is my first project in which I also made a level editor.
-Sorry for the music`,
+Sorry for the music.`,
     downloadUrls: ["ikeaBattle.zip"],
     tags: ["CPP", "SFML", "LARGE_FILE"],
     createdAt: new Date(),
