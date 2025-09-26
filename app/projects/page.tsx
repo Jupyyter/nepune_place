@@ -111,7 +111,7 @@ const projects: Project[] = [
     id: 0,
     title: "Johnny_game",
     thumbnail: "/imgs/jhonny.png",
-    description: `My first ever "game"
+    description: `My first ever game.
 You play as Johnny Bravo and you shoot gangsters.
 I made it possible for a multiplayer game, but since I don't have servers for this, Hamachi is needed.`,
     downloadUrls: ["jhonnyGang.zip"],
@@ -213,7 +213,8 @@ A classic game implemented in Java.`,
     title: "Bunny_game",
     thumbnail: endi.src,
     description: `A platformer in which you play as a bunny.
-This is my first project in which I also made a level editor.`,
+This is my first project in which I also made a level editor.
+Sorry for the music`,
     downloadUrls: ["ikeaBattle.zip"],
     tags: ["CPP", "SFML", "LARGE_FILE"],
     createdAt: new Date(),
