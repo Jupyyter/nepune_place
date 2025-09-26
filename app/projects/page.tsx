@@ -109,45 +109,44 @@ import endi from "/public/imgs/endi.png";
 const projects: Project[] = [
   {
     id: 0,
-    title: "jhonny",
+    title: "Johnny_game",
     thumbnail: "/imgs/jhonny.png",
     description: `My first ever "game"
-You play as Jhonny and you shoot gangsters.
-I made it possible for a multiplayer game, but since I don't have servers for this, you will have to use Hamachi if you don't play multiplayer locally.
-I also don't recommend shooting until all the players are connected :)`,
+You play as Johnny Bravo and you shoot gangsters.
+I made it possible for a multiplayer game, but since I don't have servers for this, Hamachi is needed.`,
     downloadUrls: ["jhonnyGang.zip"],
     tags: ["UNITY", "C#"],
     createdAt: new Date(),
     relevance: 7,
-    repoName: "jhonny",
+    repoName: "Johnny_game",
     videoUrls: ["https://www.youtube.com/watch?v=pMxjJBKdl3Y&feature=youtu.be"],
     images: Array.from({ length: 3 }, (_, i) => `/imgs/jhonny${i}.png`),
   },
   {
     id: 1,
-    title: "video in ascii",
+    title: "ASCII_video_player",
     thumbnail: "/imgs/badApple.png",
     description: `This program plays any video in ASCII, with the default video being Bad Apple.
-Yes, this can now be done by an average AI, but I developed this project when AI's coding capabilities were rudimentary, so I consider this a decent achievement.`,
+Yes, this can now be done by an average AI, but I developed this project when AI's coding capabilities were rudimentary, so I consider this a decent learning experience.`,
     downloadUrls: ["asciiVideo.zip", "badApple.zip"],
     tags: ["CPP", "LARGE_FILE"],
     createdAt: new Date(),
     relevance: 8,
-    repoName: "BADAPPLE",
+    repoName: "ASCII_video_player",
     images: Array.from({ length: 2 }, (_, i) => `/imgs/BADAPPLE${i}.png`),
     videoUrls: ["https://www.youtube.com/watch?v=qeyVAu1uZMM"],
   },
   {
     id: 2,
-    title: "gabriel the hungry",
+    title: "Hungry",
     thumbnail: "/imgs/GabrielIsHungry.png",
-    description: `This is the story of gabriel.
-It's a short tale full of adventure :)`,
+    description: `A story game inspired by the life of Tarrare.
+    I made this to see if I can create a game based on dialogue.`,
     downloadUrls: [`gabrielIsHungry.zip`, "gabrielIsHungry0.zip"],
     tags: ["GODOT", "GDSCRIPT", "LARGE_FILE"],
     createdAt: new Date(),
     relevance: 6,
-    repoName: "I-am-hungry-and-my-name-is-Gabriel",
+    repoName: "Hungry",
     images: Array.from(
       { length: 6 },
       (_, i) => `/imgs/GabrielIsHungry${i}.png`
@@ -155,49 +154,50 @@ It's a short tale full of adventure :)`,
   },
   {
     id: 3,
-    title: "fight Jhon Cena",
+    title: "Undertale_copy",
     thumbnail: bingChillingImg.src,
     description: `I like Undertale.
-Because of that, I made a game in which you fight john cena in an undertale-style fight.`,
+I just wanted to see if I can create something similar, so i made this.`,
     downloadUrls: [`bingChilling.zip`],
     tags: ["UNITY", "C#"],
     createdAt: new Date(),
     relevance: 2,
-    repoName: "fightJohnCena",
+    repoName: "Undertale_copy",
     images: Array.from({ length: 4 }, (_, i) => `/imgs/bingChilling${i}.png`),
     videoUrls: ["https://www.youtube.com/watch?v=iry5H_MSQkA"],
   },
   {
     id: 4,
-    title: "shadow wizzard money gang",
+    title: "Wizard_gang",
     thumbnail: shadowGangImg.src,
     description: `I made this with a classmate (code: 95% me, art: 1% me ) for a contest.
-Unfortunately the contest required the usage of 'greenfoot'.
-The creation date shown here is wrong (the github api shows the date on which the repository was created, and i had to fork this project from my classmate for the api to work, so it shows the date on which i forked the project, true date: i dont remember, but it was 2024 :) )`,
+Unfortunately the contest required the usage of 'Greenfoot'.
+I had about 1 week to create this game, but the majority of the code and sprites were made in the last 3 days.`,
     downloadUrls: [`shadowGang.zip`],
     tags: ["GREENFOOT", "JAVA"],
     createdAt: new Date(),
     relevance: 4,
-    repoName: "WizardGang",
+    repoName: "Wizard_gang",
     images: Array.from({ length: 6 }, (_, i) => `/imgs/WizardGang${i}.png`),
     videoUrls: ["https://www.youtube.com/watch?v=5HtLpXKm7Uc"],
   },
   {
     id: 5,
-    title: "the 3 room adventure",
+    title: "The_3_room_game",
     thumbnail: cppGameImg.src,
-    description: `A simple project made in c++ using sdl2 instead of a game engine.
-It features three distinct rooms to explore.`,
+    description: `A simple project made in c++ using sdl2.
+It features three distinct rooms to explore.
+I wanted to see if I can make something similar to a game without using a game engine.`,
     downloadUrls: [`cppGame2.zip`, "cppGame3.zip"],
     tags: ["CPP", "SDL2", "LARGE_FILE"],
     createdAt: new Date(),
     relevance: 1,
-    repoName: "project-rpg",
+    repoName: "The_3_room_game",
     images: Array.from({ length: 4 }, (_, i) => `/imgs/3roomAdventure${i}.png`),
   },
   {
     id: 6,
-    title: "checkers",
+    title: "Checkers_game",
     thumbnail: checkersImg.src,
     description: `Checkers.
 A classic game implemented in Java.`,
@@ -205,22 +205,20 @@ A classic game implemented in Java.`,
     tags: ["JAVA", "JAR"],
     createdAt: new Date(),
     relevance: 5,
-    repoName: "checkers",
+    repoName: "Checkers_game",
     images: Array.from({ length: 5 }, (_, i) => `/imgs/checkers${i}.png`),
   },
   {
     id: 7,
-    title: "i dont wanna be a bunny anymore",
+    title: "Bunny_game",
     thumbnail: endi.src,
-    description: `You fight ikeaMan.
-%%PURPLE_START%%NO OTHER LIBS THAN SFML USED%%PURPLE_END%%
-I recommend you extract the files from the zip file if you wanna use the leveleditor properly.
-The level editor allows for custom map creation (obviously)`,
+    description: `A platformer in which you play as a bunny.
+    This is my first project in which I also made a level editor.`,
     downloadUrls: ["ikeaBattle.zip"],
     tags: ["CPP", "SFML", "LARGE_FILE"],
     createdAt: new Date(),
     relevance: 9,
-    repoName: "99layers",
+    repoName: "Bunny_game",
     videoUrls: [
       "https://www.youtube.com/watch?v=MGMpnPsCnlM&feature=youtu.be",
     ],
@@ -231,11 +229,14 @@ The level editor allows for custom map creation (obviously)`,
     title: "the road",
     thumbnail: "/imgs/THEROAD.jpg",
     description: `Just a parallax effect.
-"a sense of depth"`,
+"A sense of depth."`,
     downloadUrls: ["road.zip"],
     tags: ["GODOT", "GDSCRIPT"],
     createdAt: new Date('0000-00-00'),
     relevance: 0,
+    videoUrls: [
+      "https://www.youtube.com/watch?v=ZDzq4kmFn28",
+    ],
     images: [
       "/imgs/the road0.png",
       "/imgs/the road1.png",
@@ -243,29 +244,27 @@ The level editor allows for custom map creation (obviously)`,
   },
   {
     id: 9,
-    title: "fluid-sand",
+    title: "Water_simulation",
     thumbnail: "/imgs/fluid-sand.png",
-    description: `water behaving like water
-    not finished yed
-i might finish it someday`,
+    description: `Water simulation made using the "Flip" method.`,
     downloadUrls: ["waterSimulation.zip"],
     tags: ["SFML", "CPP"],
     createdAt: new Date(),
-    repoName: "fluid-sand",
+    repoName: "Water_simulation",
     videoUrls: ["https://www.youtube.com/watch?v=o3rVyOu2k-g&feature=youtu.be"],
     relevance: 11,
     images: [],
   },
   {
     id: 10,
-    title: "pixels",
+    title: "Pixels",
     thumbnail: "/imgs/pixels.png",
-    description: `noita copy
-    "every pixel is simulated"`,
+    description: `A copy of the game "Noita" where every pixel is simulated.
+    Each pixel behaves and interacts with the other pixels differently depending on what element it represents.`,
     downloadUrls: ["pixleBrixel.zip"],
     tags: ["SFML", "CPP"],
     createdAt: new Date(),
-    repoName: "pixels",
+    repoName: "Pixels",
     relevance: 12,
     videoUrls: ["https://www.youtube.com/watch?v=S83AUOvuE7I&feature=youtu.be",
       "https://www.youtube.com/watch?v=rCCa2yJmGNQ&feature=youtu.be"
