@@ -227,7 +227,7 @@ A classic game implemented in Java.`,
   {
     id: 8,
     title: "the road",
-    thumbnail: "/imgs/THEROAD.jpg",
+    thumbnail: "/imgs/the road1.png",
     description: `Just a parallax effect.
 "A sense of depth."`,
     downloadUrls: ["road.zip"],
