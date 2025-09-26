@@ -2,4 +2,4 @@
 
 Made using Next.js, TypeScript and Tailwind.
 
-Access it here: https://effulgent-starlight-43396c.netlify.app/
+Access it here: https://neptune-place.vercel.app/
